@@ -1,102 +1,121 @@
 # SmartAIModelsRouters
 
-**HIF — Hybrid Intelligent Flow** is a provider-agnostic AI orchestration layer designed to make Claude Code, OpenAI/Codex, Gemini and other supported assistants work faster and more efficiently.
+**HIF — Hybrid Intelligent Flow** is a multi-provider AI task orchestrator. It is designed to make Claude, ChatGPT, Gemini and GitHub Copilot delegate work to the right models, parallelize independent tasks, reuse shared task memory and reduce unnecessary context/token usage.
 
-The primary user experience is the `/hif` command: describe an outcome once, and HIF plans the work, splits it into independent tasks, routes each task to the most suitable provider/model, executes safe parallel work, and consolidates the results.
+HIF is built around two workflows:
 
-> Status: architecture / MVP foundation. This repository does not yet claim a production-ready router or universal session takeover.
+- **\`/hif\`** — plan and route a goal across suitable providers, then return one consolidated result.
+- **\`/hifnode\`** — split a complex goal into specialist nodes (architect, researcher, implementer, tester, reviewer, writer), run independent nodes concurrently and share one HIF session ID and approved memory.
 
-## Product goals
+> **Project status:** public repository and architecture/MVP foundation. The portable skill instructions and integration guides are being prepared. The production orchestration service, persistent shared memory, remote MCP gateway, adaptive resource manager and end-to-end host integrations are not yet complete. Do not treat a skill file alone as a working multi-provider router.
 
-- Reduce wall-clock time through dependency-aware parallel execution.
-- Reduce token use through task-specific model selection, compact task briefs, context minimization and deduplication.
-- Route by capability, latency, price, availability, privacy and user policy.
-- Provide explicit fallback on rate limits, transient failures and provider outages.
-- Keep a provider-neutral task graph and durable execution state.
-- Integrate through native adapters rather than pretending all assistants share one session format.
+## What HIF is intended to do
 
-## The `/hif` experience
+1. **Task planning:** turn a user goal into a dependency-aware task graph.
+2. **Model routing:** choose by task capability, price, measured latency, availability, privacy policy and budget.
+3. **Parallel execution:** dispatch independent nodes concurrently with bounded concurrency.
+4. **Shared session memory:** reuse role definitions, approved facts, summaries, node outputs and artifact references under one HIF session ID.
+5. **Context optimization:** send each model only the relevant task brief and evidence, not the full conversation by default.
+6. **Pre-emptive fallback:** prefer another eligible model when a trustworthy usage metric reaches the configured 80% threshold; never invent unavailable quota percentages.
+7. **Resource management:** adapt concurrency to CPU/RAM pressure, optional GPU/VRAM telemetry and provider-specific concurrency limits.
+8. **Verification and synthesis:** validate results and return one useful answer with routing, usage and timing information.
 
-Examples:
+## Example requests
 
-```text
-/hif Analyse ce dépôt, identifie les bugs prioritaires et propose un plan de correction.
-/hif Implémente l'écran de connexion, ajoute les tests et prépare la documentation.
-/hif --parallel Compare ces trois solutions et produis une recommandation.
-/hif status
-/hif stop
-```
+\`\`\`text
+/hif Analyse ce dépôt et propose un plan de correction priorisé.
+/hifnode Conçois, implémente, teste et documente le module de facturation.
+/hif Compare trois architectures et produis une recommandation argumentée.
+\`\`\`
 
-HIF should return a plan before destructive or externally visible actions. Read-only analysis and isolated tasks may run concurrently. File edits must use isolated workspaces/worktrees or explicit conflict coordination.
+Slash-command syntax depends on the host. In Claude Code, local skills can provide \`/hif\` and \`/hifnode\`. Web apps generally import the skill and invoke it by selecting or asking for the HIF workflow; they do not necessarily expose the same slash syntax.
 
-## Architecture (target)
+## Supported host targets
 
-```text
-Claude Code / Codex / other host
-          | native skill, command, MCP adapter
-          v
-       HIF Gateway
-          |
-   Planner + Task Graph
-          |
-     Policy Engine
-          |
-   Model/Provider Router
-     /    |     |     \
- Claude OpenAI Gemini OpenRouter ...
-          |
- Parallel Executors + Retry/Fallback
-          |
- Context/Artifact Store
-          |
- Result Validator + Synthesizer
-          |
-     Host session (/hif)
-```
+| Assistant | Distribution method | Target |
+|---|---|---|
+| Claude web/Desktop | Import skill ZIP in Customize > Skills | Instructions and workflow |
+| Claude Code | User-level/project Agent Skills and optional plugin | Local command/skill + future MCP tools |
+| ChatGPT | Import skill ZIP on eligible plans; optional custom MCP app | Instructions + future HIF service tools |
+| Gemini web app | Import skill in Gemini Skills | Instructions and workflow |
+| Gemini CLI | User/workspace Agent Skills or extension | Terminal skill + future MCP tools |
+| GitHub Copilot | Agent Skills in VS Code/Copilot-supported harnesses | User/workspace skill + future MCP tools |
+| OpenAI Codex | Agent Skills under \`.agents/skills\` | CLI/IDE skill + future MCP tools |
 
-### Core components
+Read [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) for exact per-product setup and limitations.
 
-1. **CLI and host adapters** — expose `/hif` in supported clients using their documented extension points.
-2. **Planner** — converts a user goal into typed tasks, dependencies, acceptance criteria and context budgets.
-3. **Router** — selects provider/model per task using capability, configured budget, latency history, availability and privacy rules.
-4. **Executor** — runs independent tasks concurrently with bounded concurrency, timeouts, cancellation and retries.
-5. **Context manager** — sends only relevant files, summaries and task contracts; avoids forwarding entire transcripts by default.
-6. **Artifact store** — stores task inputs/outputs and references so downstream tasks receive concise context.
-7. **Verifier/synthesizer** — validates outputs, merges results and returns a concise report with provenance.
-8. **Telemetry** — records token usage, estimated cost, duration, retries and routing decisions without logging secrets or sensitive prompt content by default.
+## Platform targets
 
-## Non-negotiable design principles
+HIF targets:
+- Windows 10/11 developer clients.
+- Windows Server with a dedicated service account.
+- Linux workstations and servers.
+- Container deployments (Docker/Podman) as a later packaging target.
 
-- No quota circumvention, credential sharing, account farming or unsupported subscription pooling.
-- Use official APIs and user-authorized credentials. Respect provider terms, rate limits and budget limits.
-- Distinguish subscription quotas from API billing; never imply API fallback is free.
-- Never claim quota visibility where a provider does not expose it.
-- Never silently change a user's existing assistant configuration. Installation must be opt-in, reversible and backed up.
-- Do not claim that changing provider transfers the native session. HIF passes a task brief, selected context and artifacts; the host remains responsible for its own conversation.
-- Require approval for destructive file operations, deployments, purchases, external messages or other high-impact actions.
-- Redact API keys and authorization headers; encrypt secrets at rest where persisted.
-- Maintain auditability: explain why a model/provider was selected and what data was sent.
+The target deployment profiles and their current status are in [docs/PLATFORM-SUPPORT.md](docs/PLATFORM-SUPPORT.md).
 
-## Initial MVP
+## Repository layout
 
-- Python 3.12+ orchestration service and CLI (implementation decision subject to ADR).
-- Provider abstraction with an OpenAI-compatible adapter and explicit provider-specific adapters.
-- Task graph with dependencies and bounded parallel execution.
-- Heuristic router using task type, capability, configured price/latency and health.
-- Token/cost budgets, per-task timeout and global cancellation.
-- Mock provider and deterministic tests so CI requires no paid API keys.
-- Claude Code plugin exposing `/hif` and MCP tools.
-- Codex adapter documented as a separate integration; do not assume Claude plugin files work in Codex.
-- Windows-first installation, with macOS/Linux compatibility where practical.
+- \`skills/hif/SKILL.md\` — portable main orchestration skill.
+- \`skills/hifnode/SKILL.md\` — portable parallel-node workflow.
+- \`.claude/skills/\`, \`.gemini/skills/\`, \`.agents/skills/\`, \`.github/skills/\` — host-discoverable copies.
+- \`docs/INTEGRATIONS.md\` — Claude, ChatGPT, Gemini and Copilot setup.
+- \`docs/NODE-ORCHESTRATION.md\` — shared-session DAG and node design.
+- \`docs/SHARED-MEMORY.md\` — shared memory model and retrieval policy.
+- \`docs/RESOURCE-MANAGEMENT.md\` — CPU/RAM/GPU and concurrency scheduling.
+- \`docs/QUOTA-FAILOVER.md\` — anticipatory fallback policy.
+- \`docs/PLATFORM-SUPPORT.md\` — Windows client/server and Linux deployment.
+- \`docs/ROADMAP.md\` — implementation status and milestones.
 
-## Repository map
+## Install skill instructions
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/ROADMAP.md](docs/ROADMAP.md), [docs/SECURITY.md](docs/SECURITY.md) and [docs/ADR/0001-orchestration-boundary.md](docs/ADR/0001-orchestration-boundary.md).
+### Windows PowerShell (Claude Code, Codex, Gemini CLI, Copilot)
 
-## Development
+\`\`\`powershell
+git clone https://github.com/yassineelhif5-pixel/SmartAIModelsRouters.git
+cd SmartAIModelsRouters
+.\\scripts\\install-hif-skills.ps1
+\`\`\`
 
-The first implementation milestone will establish the Python package, configuration schema, provider protocol, mock adapter, planner/executor interfaces and tests. See the roadmap before adding real provider integrations.
+### Linux/macOS (Claude Code, Codex, Gemini CLI, Copilot)
+
+\`\`\`bash
+git clone https://github.com/yassineelhif5-pixel/SmartAIModelsRouters.git
+cd SmartAIModelsRouters
+bash scripts/install-hif-skills.sh
+\`\`\`
+
+To create uploadable skill packages for Claude web, ChatGPT or Gemini web:
+
+\`\`\`bash
+python scripts/package-skills.py
+\`\`\`
+
+The ZIP files are written to \`dist/\`. See [docs/INSTALLATION.md](docs/INSTALLATION.md).
+
+## Important architecture and safety boundaries
+
+- HIF uses explicitly authorized provider APIs and obeys provider terms and rate limits.
+- An API key and API billing are separate from a consumer chat subscription unless the provider explicitly says otherwise.
+- HIF only shares task briefs, approved memory and artifacts. It does not transfer another provider's private native conversation state or hidden reasoning.
+- The 80% fallback rule only uses a provider-reported usage measure or HIF's own metered budget. Estimates are clearly labelled.
+- Parallel file-writing tasks require isolated worktrees/workspaces or serialized merge stages.
+- Secrets are never stored in skills, committed to Git or printed in logs.
+- A remote HIF gateway must use authentication, TLS and access controls.
+
+## Documentation
+
+Start with:
+- [Architecture](docs/ARCHITECTURE.md)
+- [Integrations](docs/INTEGRATIONS.md)
+- [Installation](docs/INSTALLATION.md)
+- [Node orchestration](docs/NODE-ORCHESTRATION.md)
+- [Shared memory](docs/SHARED-MEMORY.md)
+- [Resource management](docs/RESOURCE-MANAGEMENT.md)
+- [Quota failover](docs/QUOTA-FAILOVER.md)
+- [Security](docs/SECURITY.md)
+- [Roadmap](docs/ROADMAP.md)
 
 ## License
 
-TBD. A license must be selected before external contributions or redistribution; until then, all rights are reserved by default.
+No open-source license has been selected yet. Until a LICENSE file is added, the repository is public but all rights are reserved by default.
