@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "hif": {
+      "url": "https://YOUR-HIF-HOST.example.com/mcp",
+      "transport": "streamable-http"
+    }
+  }
+}
