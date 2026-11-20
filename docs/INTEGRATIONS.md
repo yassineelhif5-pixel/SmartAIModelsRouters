@@ -150,3 +150,20 @@ This does not merge native chat histories across Claude, ChatGPT, Gemini and Cop
 - ChatGPT and Gemini web have upload instructions in this guide.
 - Microsoft 365 Copilot has a documented Copilot Studio/MCP integration target.
 - Production HIF provider execution, shared session memory, remote authenticated MCP gateway and fully tested host-specific adapters remain implementation work.
+
+
+# ChatGPT support and plan requirements
+
+The current OpenAI Help Center describes importable ChatGPT Skills for eligible Business, Enterprise, Healthcare and Edu accounts. It does not list ChatGPT Go among the eligible plans for imported Skills.
+
+Custom remote MCP access has separate plan limits:
+- Business: workspace admins/owners create and publish custom MCP apps.
+- Enterprise/Edu: admins/owners and members explicitly authorized by RBAC can create/test; admins/owners publish.
+- Pro: custom MCP server access is read/fetch-only; full MCP write/modify support is not available.
+- Go: not listed among the plans supported by the current custom MCP server connection documentation.
+
+Therefore, a ChatGPT Go user should not assume the native ChatGPT Skill or custom MCP integration can be installed. The HIF skill package can still be used in other supported clients, and ChatGPT integration can be enabled later if the account/workspace has the required plan and controls.
+
+Official plan and permission details:
+- https://help.openai.com/fr-fr/articles/20001066-skills-in-chatgpt
+- https://help.openai.com/fr-fr/articles/12584461-connecting-custom-mcp-servers-in-chatgpt
