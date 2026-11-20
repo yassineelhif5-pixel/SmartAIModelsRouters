@@ -101,3 +101,12 @@ HIF will use authorized provider APIs and credentials. API usage can be billed s
 - ChatGPT / Claude web / Gemini web: verify each imported skill appears and is enabled in the Skills area.
 
 Remember: skill discovery only installs instructions. Real parallel dispatch, common memory, provider selection and automatic 80% fallback require the HIF runtime and MCP/API integration.
+
+
+## ChatGPT plan note
+
+Imported ChatGPT Skills are currently documented for eligible Business, Enterprise, Healthcare and Edu accounts; ChatGPT Go is not listed in the eligible-plan documentation. Custom MCP server access has separate requirements: Business and Enterprise/Edu support full MCP according to workspace permissions, while Pro is read/fetch-only. Go is not listed as a supported custom-MCP plan in the current Help Center article. Verify the current availability in the ChatGPT workspace before planning this integration.
+
+Official details:
+- https://help.openai.com/fr-fr/articles/20001066-skills-in-chatgpt
+- https://help.openai.com/fr-fr/articles/12584461-connecting-custom-mcp-servers-in-chatgpt
