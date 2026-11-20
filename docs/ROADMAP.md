@@ -3,58 +3,73 @@
 ## Phase 0 — Repository foundation
 - [x] Define product scope and architecture.
 - [x] Define security and orchestration boundary.
-- [ ] Choose license.
-- [ ] Add contribution and code-of-conduct policies.
+- [x] Document Windows client, Windows Server and Linux deployment targets.
+- [x] Define HIF Node parallel DAG execution and shared session-memory requirements.
+- [x] Document CPU/RAM/GPU-aware scheduling and 80% pre-emptive failover policy.
+- [x] Add portable \`hif\` and \`hifnode\` skill instructions for Claude, ChatGPT, Gemini, Copilot and Codex targets.
+- [x] Add cross-platform skill installation and ZIP packaging scripts.
+- [ ] Choose and add an explicit open-source license.
+- [ ] Add code-of-conduct policy.
 
-## Phase 1 — Core engine (MVP)
-- [ ] Python package and CLI entry point.
-- [ ] Typed configuration and validation.
-- [ ] Provider protocol and mock provider.
-- [ ] Task and execution data models.
-- [ ] Planner interface and deterministic planner for tests.
-- [ ] Dependency DAG scheduler.
-- [ ] Bounded parallel executor and cancellation.
-- [ ] Router with capability, budget, latency and health filters.
-- [ ] Token/cost accounting with unknown values represented explicitly.
-- [ ] SQLite execution state and artifact references.
-- [ ] Unit and integration tests; CI without paid credentials.
+## Phase 1 — Core engine
+- [ ] Complete and validate Python CLI package.
+- [ ] Implement typed provider protocol and mock provider.
+- [ ] Implement deterministic task planner and schema validation.
+- [ ] Implement dependency DAG scheduler.
+- [ ] Implement bounded parallel executor, cancellation and durable run state.
+- [ ] Implement provider router with capability, budget, latency, health and usage-threshold filters.
+- [ ] Implement shared session ID, role registry and persistent memory/artifact index.
+- [ ] Implement per-task and per-session token/cost accounting.
+- [ ] Add CPU/RAM telemetry adapters for Windows, Linux and macOS.
+- [ ] Add adaptive concurrency with hysteresis and provider-specific caps.
+- [ ] Add deterministic tests that require no paid API credentials.
 
-## Phase 2 — First integrations
-- [ ] OpenAI-compatible API adapter.
-- [ ] Anthropic Messages API adapter.
-- [ ] Gemini adapter.
-- [ ] Provider health, rate limit and retry normalization.
-- [ ] Provider configuration examples using environment variables.
-- [ ] Secret redaction and structured logs.
+## Phase 2 — Provider integrations
+- [ ] Anthropic API adapter.
+- [ ] OpenAI API adapter.
+- [ ] Gemini API adapter.
+- [ ] OpenRouter and DeepSeek adapters.
+- [ ] Normalize usage, retry headers, quota errors and reset windows.
+- [ ] Implement anticipatory fallback at configurable 80% usage where measurable.
+- [ ] Add secret redaction, structured logs and budget enforcement.
 
-## Phase 3 — HIF user experience
-- [ ] Claude Code plugin exposing `/hif`.
-- [ ] MCP tools: plan, execute, status, cancel, providers.
-- [ ] Codex-specific skill/MCP integration.
-- [ ] Windows installer and reversible user-level setup.
-- [ ] `/hif status`, `/hif providers`, `/hif cancel`.
+## Phase 3 — Host integrations
+- [ ] Claude Code skill/plugin + MCP tools.
+- [ ] Claude web skill ZIP package validation.
+- [ ] ChatGPT skill ZIP package and custom MCP app.
+- [ ] Gemini web skill package validation.
+- [ ] Gemini CLI extension and MCP setup.
+- [ ] GitHub Copilot skill/MCP integration.
+- [ ] Codex skill/MCP integration.
+- [ ] Cross-host session continuity through explicit HIF memory.
 
-## Phase 4 — Optimization and reliability
-- [ ] Adaptive routing from measured latency and cost.
-- [ ] Semantic/context cache with invalidation and privacy controls.
-- [ ] Prompt/task deduplication.
-- [ ] Parallel task tuning and per-provider concurrency.
-- [ ] Evaluation suite for quality, speed and cost trade-offs.
-- [ ] Dashboard and usage reports.
+## Phase 4 — Deployment and operations
+- [ ] Windows client installer with reversible user-level setup.
+- [ ] Windows Server service wrapper, health checks and service recovery.
+- [ ] Linux systemd unit, hardening and log rotation.
+- [ ] Authenticated remote MCP gateway with TLS and tenant isolation.
+- [ ] Docker/Podman image running as non-root.
+- [ ] Resource telemetry dashboard and usage reports.
+- [ ] Backup, restore and memory-retention controls.
 
 ## Phase 5 — Advanced orchestration
 - [ ] Isolated Git worktree execution for code changes.
-- [ ] Specialized agents (research, coding, testing, review, documentation).
-- [ ] Output verification and automated test feedback loops.
-- [ ] Remote gateway with authentication and tenant isolation.
-- [ ] Optional local-model execution through Ollama.
+- [ ] Specialist node templates (architect, research, coding, test, review, documentation).
+- [ ] Conflict detection and artifact merge stages.
+- [ ] Context cache with hash-based invalidation and privacy controls.
+- [ ] Prompt/task deduplication.
+- [ ] Quality/speed/cost evaluation suite.
+- [ ] Optional local inference through Ollama.
 
 ## MVP acceptance criteria
-- A single request can be represented as a validated task graph.
-- Independent mock tasks execute concurrently; dependent tasks wait.
-- A 429/mock quota error triggers eligible fallback and records the reason.
-- Global and per-task budgets stop execution before overspend.
-- Cancellation stops pending work and signals active executors.
-- No API key is required to run the test suite.
-- Claude Code can invoke the local service using `/hif`.
-- Logs do not expose secrets.
+- One user goal creates a validated task graph with stable task IDs.
+- Independent nodes overlap; dependencies are respected.
+- Every node in one run shares the same HIF session ID and approved memory.
+- CPU/RAM pressure and provider limits bound concurrency.
+- An observed 80% usage threshold triggers pre-emptive routing to another eligible provider.
+- Unreported quota remains unknown; estimates are labelled as estimates.
+- A 429 or temporary provider outage triggers bounded fallback.
+- Global and per-task budgets prevent overspending.
+- Cancellation stops pending work and signals running tasks.
+- Host skills fail clearly when the backend/MCP service is missing.
+- CI can run without real provider credentials.
