@@ -101,10 +101,13 @@ class HIFEngine:
         node: PlannedNode,
         dependency_outputs: dict[str, NodeResult],
     ) -> NodeResult:
+        memory_keys = list(dict.fromkeys([
+            "goal", "project_context", f"role:{node.role}", *node.context_keys
+        ]))
         memory = self.store.get_memory(
             session_id,
-            keys=node.context_keys or None,
-            limit=10,
+            keys=memory_keys,
+            limit=12,
         )
         dependencies = "\n\n".join(
             f"DEPENDENCY {key} ({value.role})\n{value.content}"
@@ -200,6 +203,13 @@ class HIFEngine:
             from hif.schemas import ExecutionPlan
             plan = ExecutionPlan.model_validate_json(extract_json(planning_response.content))
             self.store.add_memory(sid, "plan", "planner", plan.model_dump_json())
+            for planned_node in plan.nodes:
+                self.store.add_memory(
+                    sid,
+                    f"role:{planned_node.role}",
+                    "planner",
+                    f"{planned_node.title}\n{planned_node.instructions}",
+                )
 
             nodes_by_id = {node.id: node for node in plan.nodes}
             pending = set(nodes_by_id)
