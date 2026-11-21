@@ -61,3 +61,10 @@ async def test_oidc_verifier_rejects_wrong_audience_and_missing_scope(verifier) 
 async def test_oidc_verifier_rejects_bad_signature(verifier) -> None:
     instance, _secret = verifier
     assert await instance.verify_token(make_token("wrong-signing-secret-that-is-also-long-enough")) is None
+
+
+@pytest.mark.asyncio
+async def test_oidc_verifier_rejects_expired_token_and_wrong_issuer(verifier) -> None:
+    instance, secret = verifier
+    assert await instance.verify_token(make_token(secret, exp=int(time.time()) - 120)) is None
+    assert await instance.verify_token(make_token(secret, iss="https://attacker.example")) is None
