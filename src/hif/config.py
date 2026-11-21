@@ -7,6 +7,10 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv(override=False)
+
 
 def _parse_csv(value: str | None) -> tuple[str, ...]:
     return tuple(part.strip() for part in (value or "").split(",") if part.strip())
