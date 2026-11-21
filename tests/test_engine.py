@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from datetime import timedelta
 
 import pytest
 from pydantic import ValidationError
@@ -13,7 +14,7 @@ from hif.providers import ModelResponse, ProviderError
 from hif.resources import AdaptiveConcurrency, ResourceSnapshot
 from hif.router import ModelRouter
 from hif.schemas import ExecutionPlan
-from hif.storage import HIFStore
+from hif.storage import HIFStore, utc_now
 
 
 class ParallelGraphProvider:
@@ -117,8 +118,7 @@ def test_store_persists_shared_memory_and_usage(tmp_path) -> None:
 
     memories = store.get_memory(session_id, keys=["goal", "role:architect"])
     assert {item["memory_key"] for item in memories} == {"goal", "role:architect"}
-    assert store.model_usage_since("mock/model", __import__("hif.storage").storage.utc_now()
-                                   - __import__("datetime").timedelta(days=1)) == 20
+    assert store.model_usage_since("mock/model", utc_now() - timedelta(days=1)) == 20
 
 
 def test_router_falls_back_at_eighty_percent(tmp_path) -> None:
