@@ -21,3 +21,19 @@ jobs:
       - run: ruff check . --select E4,E7,E9,F
       - run: python -m compileall -q src tests
       - run: pytest
+      - name: Check shell installer syntax
+        if: runner.os == 'Linux'
+        run: bash -n scripts/install-hif-skills.sh scripts/install-hif-runtime.sh
+      - name: Check PowerShell installer syntax
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $paths = @("scripts/install-hif-skills.ps1", "scripts/install-hif-runtime.ps1")
+          foreach ($path in $paths) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path), [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | Format-List | Out-String | Write-Error
+            }
+          }
