@@ -61,6 +61,11 @@ def create_mcp_server(
         return json.dumps(_engine().status(session_id), ensure_ascii=False, indent=2)
 
     @server.tool()
+    def hif_models() -> str:
+        """Return the configured primary model, fallback chain and credential readiness."""
+        return json.dumps(_engine().model_configuration(), ensure_ascii=False, indent=2)
+
+    @server.tool()
     def hif_usage() -> str:
         """Return HIF-measured token usage, not official provider subscription quotas."""
         settings = Settings.from_env()
