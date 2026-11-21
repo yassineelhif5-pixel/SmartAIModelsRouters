@@ -123,7 +123,66 @@ Available tools:
 
 The REST and MCP interfaces use the same HIF engine instance within the gateway process and therefore share the configured SQLite database and provider concurrency controls.
 
-## 5. TLS and reverse proxy
+
+## 5. OAuth 2.1 / OIDC for ChatGPT and enterprise clients
+
+The gateway can act as an OAuth **resource server** for MCP. It does not implement the identity provider or issue user tokens. Your identity provider (for example Microsoft Entra ID, Auth0 or Keycloak) performs user sign-in, consent and the authorization-code + PKCE flow. HIF validates the resulting signed JWT on each MCP request.
+
+When OAuth is configured:
+- The MCP endpoint /mcp is authenticated by the OIDC JWT verifier.
+- The MCP SDK publishes RFC 9728 Protected Resource Metadata at the well-known endpoint and supplies the OAuth challenge on unauthenticated MCP requests.
+- The verifier checks JWT signature using the configured JWKS, issuer, audience, expiration and required scopes.
+- The REST operator endpoints /v1/* continue to require HIF_GATEWAY_API_KEY.
+- The health endpoint remains public and minimal.
+
+This distinction matters for ChatGPT: custom ChatGPT MCP connections use OAuth 2.1 authorization-code + PKCE for authenticated servers. Do not configure the shared HIF API key as a substitute for ChatGPT user authentication. OpenAI's connector documentation also states that ChatGPT does not support customer-provided API keys or machine-to-machine client-credentials grants for this flow. See the official [OpenAI MCP authentication guide](https://developers.openai.com/plugins/build/auth).
+
+### Configure a Microsoft Entra ID resource application
+
+Create an Entra app registration for HIF's API/resource server:
+
+1. Register an application named HIF MCP Resource.
+2. Under Expose an API, set the Application ID URI (for example api://<resource-app-client-id>).
+3. Add a delegated scope named hif.access and grant the required user/admin consent.
+4. Configure the app to issue v2 access tokens.
+5. Note the tenant ID and resource app client ID.
+
+Set these HIF values in .env (replace placeholders with the actual Entra values):
+
+    HIF_GATEWAY_OAUTH_ISSUER_URL=https://login.microsoftonline.com/<tenant-id>/v2.0
+    HIF_GATEWAY_OAUTH_RESOURCE_URL=https://hif.example.com/mcp
+    HIF_GATEWAY_OAUTH_AUDIENCE=<resource-app-client-id>
+    HIF_GATEWAY_OAUTH_JWKS_URL=https://login.microsoftonline.com/<tenant-id>/discovery/v2.0/keys
+    HIF_GATEWAY_OAUTH_REQUIRED_SCOPES=hif.access
+    HIF_GATEWAY_OAUTH_ALGORITHMS=RS256
+
+The audience must exactly match the aud claim in the access token issued for the HIF resource application. The scope value must match the scp claim. If your identity provider emits a different audience or claim layout, configure those values accordingly; do not weaken signature, issuer, audience or expiry validation.
+
+### Register ChatGPT as an OAuth client
+
+1. Create a separate Entra app registration for the ChatGPT MCP client.
+2. Configure it as a web/public client according to the OAuth client credentials supported by your ChatGPT connector setup. Use authorization code + PKCE (S256), not client credentials.
+3. Add the exact redirect URI displayed by ChatGPT's custom MCP connection setup to the Entra app registration.
+4. Add delegated permission to the HIF resource app's hif.access scope and grant consent as required by your tenant.
+5. In ChatGPT, open Plugins, choose Add custom MCP server, set the HTTPS server URL to https://hif.example.com/mcp, choose OAuth and enter the Entra authorization endpoint, token endpoint, client ID, client secret if the connector flow requests one, and hif.access scope.
+6. Complete the user sign-in/consent flow and test the HIF tools.
+
+Typical Entra endpoints:
+
+    Authorization: https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/authorize
+    Token:         https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token
+
+Use the exact callback URI, token authentication method and client type shown by the ChatGPT connector UI. Entra tenant policies and ChatGPT workspace permissions may restrict this configuration.
+
+### Connect other remote MCP clients
+
+For any remote client that supports OAuth 2.1 authorization-code + PKCE, configure its issuer, authorization endpoint, token endpoint, client ID, redirect URI and requested scope according to that client's documentation. Gemini web and Microsoft 365 Copilot support varies by product surface, tenant and rollout; verify their current OAuth/MCP requirements rather than assuming that importing an Agent Skill connects it to HIF.
+
+### Security boundary
+
+OIDC is enabled only when all HIF_GATEWAY_OAUTH_* settings are configured. If not enabled, /mcp uses the shared HIF bearer key like the REST endpoints. With OIDC enabled, the static HIF key does not bypass OAuth on /mcp; it remains for REST operator endpoints only. Keep both credentials in a secret store and rotate them according to your policy.
+
+## 6. TLS and reverse proxy
 
 Never expose the gateway over plain HTTP on a public or untrusted network.
 
@@ -144,7 +203,7 @@ Direct TLS binding is also supported by setting both (and configuring the exact 
 
 The private key must be readable only by the service identity. For Windows, use an appropriately ACL-protected certificate/key file or prefer IIS reverse proxy termination.
 
-## 6. Security controls and limitations
+## 7. Security controls and limitations
 
 - Bearer secret must contain at least 32 characters.
 - Authentication uses constant-time comparison.
@@ -153,18 +212,18 @@ The private key must be readable only by the service identity. For Windows, use 
 - REST and MCP request bodies are capped by HIF_GATEWAY_MAX_REQUEST_BYTES.
 - MCP DNS-rebinding protection is enabled: remote Host values must be explicitly allowlisted with HIF_GATEWAY_ALLOWED_HOSTS; browser Origin values must be explicitly allowlisted with HIF_GATEWAY_ALLOWED_ORIGINS when present.
 - Rate limiting is a per-process, per-source-IP fixed window; it is not distributed and may be shared across clients behind a proxy.
-- One gateway key currently authorizes all exposed tools. There are no separate read/run/admin scopes.
+- In API-key mode, one gateway key authorizes all exposed tools. In OIDC mode, the MCP endpoint enforces the configured scope set; REST endpoints still use the operator key. Fine-grained read/run/admin scopes are not yet implemented.
 - All clients share the service account's HIF database and provider credentials. Do not use this deployment for mutually untrusted users.
 - Use a private network or trusted reverse proxy with TLS. Do not bind to a public interface without TLS.
 - Keep provider credentials and the gateway key out of logs and source control.
 - Review data residency, provider retention and API billing before sending project context to external models.
 
-## 7. Production hardening still required
+## 8. Production hardening still required
 
 Before a public SaaS or multi-customer deployment, implement:
-- OAuth 2.1 / OIDC authorization and per-user or per-tenant identity.
+- Per-user or per-tenant identity isolation, fine-grained scopes and separate policy enforcement for each tool.
 - Tenant-scoped databases/memory, provider credentials and encryption keys.
-- Fine-grained tool scopes and approval policies.
+- Fine-grained tool scopes and approval policies beyond the configured gateway-wide OAuth scope.
 - Distributed rate limits, concurrency quotas and global spend limits.
 - Durable audit trail with secret/context redaction.
 - Secret rotation, revocation and key management.
