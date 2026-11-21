@@ -7,9 +7,9 @@ HIF is built around two workflows:
 - **/hif** — plan and route a goal across suitable providers, then return one consolidated result.
 - **/hifnode** — split a complex goal into specialist nodes (architect, researcher, implementer, tester, reviewer, writer), run independent nodes concurrently and share one HIF session ID and approved memory.
 
-> **Project status:** local MVP core is implemented and CI-tested: text-only provider dispatch, DAG nodes, shared SQLite session memory, measured-token fallback budgets, retry handling and CPU/RAM-aware bounded concurrency. The authenticated remote MCP gateway, desktop/web tool execution, file-editing agents, Windows Service/systemd packaging and full end-to-end host integrations remain future work.
+> **Project status:** HIF 0.3.0 adds an authenticated REST + Streamable HTTP MCP gateway for a single-tenant private pilot. The local text-only engine, DAG nodes, shared SQLite session memory, measured-token fallback budgets, retry handling and CPU/RAM-aware bounded concurrency remain available. OAuth/OIDC, tenant isolation, file-editing agents, Windows Service/systemd packaging and full end-to-end host integrations remain future work.
 
-## Implemented in local MVP 0.2.0
+## Implemented in HIF 0.3.0
 
 1. **Task planning:** create and validate a dependency-aware graph of up to 12 specialist nodes.
 2. **Model routing:** use an ordered model pool, task-type preferences, per-model HIF token budgets and retry cooldowns.
@@ -19,11 +19,13 @@ HIF is built around two workflows:
 6. **Pre-emptive fallback:** filter a model from new tasks when HIF-measured usage reaches the configured 80% budget.
 7. **Resource management:** bound concurrency using CPU/RAM telemetry and configured per-provider semaphores.
 8. **Local integration:** provide a CLI and stdio MCP server with hif_run and hifnode_run tools.
-9. **Testing:** exercise the core using mock providers; CI runs without paid API keys.
+9. **Local integration:** CLI and stdio MCP server with hif_run and hifnode_run tools.
+10. **Remote gateway:** authenticated REST and Streamable HTTP MCP, public minimal health check, bearer auth, request-size caps, per-IP rate limiting and TLS guard.
+11. **Testing:** mock-provider tests plus gateway security tests; CI runs without paid API keys.
 
 ## Planned optimization capabilities
 
-Dynamic price/latency/quality scoring, provider-specific official quota APIs, per-task spending caps, automatic recovery/cancellation, file-editing agents, artifact hashing/cache, GPU/VRAM telemetry, dashboard, authenticated remote MCP gateway and Windows Service/Linux systemd packaging are not yet implemented. See docs/ROADMAP.md.
+Dynamic price/latency/quality scoring, provider-specific official quota APIs, per-task spending caps, automatic recovery/cancellation, file-editing agents, artifact hashing/cache, GPU/VRAM telemetry, dashboard, OAuth/OIDC, tenant isolation and Windows Service/Linux systemd packaging are not yet implemented. See docs/ROADMAP.md.
 
 ## Supported host targets
 
@@ -68,6 +70,7 @@ Creates dist/hif.zip and dist/hifnode.zip. Upload instructions for Claude, ChatG
 ## Core documentation
 
 - Architecture: docs/ARCHITECTURE.md
+- Gateway: docs/GATEWAY.md
 - Quickstart: docs/QUICKSTART.md
 - Installation: docs/INSTALLATION.md
 - Integrations: docs/INTEGRATIONS.md
@@ -88,7 +91,7 @@ Creates dist/hif.zip and dist/hifnode.zip. Upload instructions for Claude, ChatG
 - Parallel file-writing tasks require isolated worktrees/workspaces or serialized merge stages.
 - Secrets are never stored in skills, committed to Git or printed in logs.
 - Local SQLite session memory is shared across projects for the same OS user by default.
-- A remote HIF gateway must use authentication, TLS and access controls.
+- The HIF 0.3 gateway uses a shared bearer secret for a single-tenant private pilot; remote deployments must use TLS and network restrictions. It is not yet a public multi-tenant SaaS.
 
 ## License
 
