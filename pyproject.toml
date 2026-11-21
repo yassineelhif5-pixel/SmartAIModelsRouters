@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "smart-ai-models-routers"
-version = "0.2.0"
+version = "0.3.0"
 description = "HIF: provider-agnostic task orchestration for AI assistants"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -26,6 +26,7 @@ dev = ["pytest>=8.3", "pytest-asyncio>=0.24", "ruff>=0.6", "mypy>=1.11"]
 [project.scripts]
 hif = "hif.cli:app"
 hif-mcp = "hif.mcp_server:main"
+hif-gateway = "hif.gateway:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/hif"]
