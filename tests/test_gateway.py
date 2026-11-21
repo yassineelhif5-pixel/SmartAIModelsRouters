@@ -85,3 +85,23 @@ def test_gateway_application_mounts_health_rest_and_mcp_routes(tmp_path, monkeyp
         assert usage.status_code == 200
         assert usage.json()["source"] == "hif_measured_tokens"
         assert any(getattr(route, "path", None) == "/mcp" for route in app.routes)
+
+
+def test_remote_gateway_requires_explicit_mcp_host_allowlist(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("HIF_GATEWAY_API_KEY", "r" * 48)
+    monkeypatch.setenv("HIF_DATABASE_PATH", str(tmp_path / "remote.sqlite3"))
+    monkeypatch.setenv("HIF_GATEWAY_HOST", "0.0.0.0")
+    monkeypatch.delenv("HIF_GATEWAY_ALLOWED_HOSTS", raising=False)
+
+    from hif.gateway import create_app
+
+    import pytest
+
+    with pytest.raises(RuntimeError, match="HIF_GATEWAY_ALLOWED_HOSTS"):
+        create_app()
+
+    monkeypatch.setenv(
+        "HIF_GATEWAY_ALLOWED_HOSTS", "hif.example.com,hif.example.com:*"
+    )
+    app = create_app()
+    assert any(getattr(route, "path", None) == "/mcp" for route in app.routes)
