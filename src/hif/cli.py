@@ -124,6 +124,15 @@ def usage() -> None:
     )
 
 
+
+@app.command()
+def gateway() -> None:
+    """Start the authenticated HTTP REST + Streamable HTTP MCP gateway."""
+    from hif.gateway import main as gateway_main
+
+    gateway_main()
+
+
 @app.command()
 def mcp() -> None:
     """Start the local stdio MCP server."""
