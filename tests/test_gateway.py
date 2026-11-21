@@ -139,6 +139,11 @@ def test_gateway_publishes_oauth_resource_metadata_when_oidc_is_configured(
         protected = client.post("/mcp", json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
         assert protected.status_code == 401
         assert "resource_metadata" in protected.headers.get("www-authenticate", "")
+        assert client.get("/v1/usage").status_code == 401
+        operator_usage = client.get(
+            "/v1/usage", headers={"Authorization": "Bearer " + "o" * 48}
+        )
+        assert operator_usage.status_code == 200
 
 
 def test_oauth_mcp_path_bypasses_operator_key_but_keeps_rate_limit() -> None:
