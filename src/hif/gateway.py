@@ -256,6 +256,11 @@ async def _status(request: Request) -> Response:
     return JSONResponse(result)
 
 
+async def _models(request: Request) -> Response:
+    """Return the active provider chain; this route is protected by gateway auth."""
+    return JSONResponse(_engine().model_configuration())
+
+
 async def _usage(request: Request) -> Response:
     engine = _engine()
     return JSONResponse(
@@ -341,6 +346,7 @@ def create_app():
             Route("/v1/node", _node, methods=["POST"]),
             Route("/v1/sessions/{session_id:str}", _status, methods=["GET"]),
             Route("/v1/usage", _usage, methods=["GET"]),
+            Route("/v1/models", _models, methods=["GET"]),
         ]
     )
     app.add_middleware(
