@@ -157,3 +157,20 @@ def test_mcp_path_requires_operator_key_when_oidc_is_disabled() -> None:
         oauth_enabled=False,
     )
     assert TestClient(app).get("/mcp").status_code == 401
+
+
+def test_partial_oidc_configuration_is_rejected(monkeypatch) -> None:
+    from hif.config import Settings
+
+    monkeypatch.setenv(
+        "HIF_GATEWAY_OAUTH_ISSUER_URL", "https://login.example.com/tenant/v2.0"
+    )
+    monkeypatch.delenv("HIF_GATEWAY_OAUTH_RESOURCE_URL", raising=False)
+    monkeypatch.delenv("HIF_GATEWAY_OAUTH_AUDIENCE", raising=False)
+    monkeypatch.delenv("HIF_GATEWAY_OAUTH_JWKS_URL", raising=False)
+    monkeypatch.delenv("HIF_GATEWAY_OAUTH_REQUIRED_SCOPES", raising=False)
+
+    import pytest
+
+    with pytest.raises(ValueError, match="OAuth gateway requires"):
+        Settings.from_env()
