@@ -1,6 +1,6 @@
-# HIF Quickstart — local MVP 0.2.0
+# HIF Quickstart — local MVP 0.3.0
 
-This quickstart starts the local HIF runtime. It does not deploy the remote gateway needed by web-only assistants.
+This quickstart installs the HIF runtime and starts its local authenticated REST + Streamable HTTP MCP gateway. Remote clients still need a reachable HTTPS deployment.
 
 ## 1. Clone and install
 
@@ -82,7 +82,37 @@ The MCP server currently exposes:
 - hif_session_status: persisted node state.
 - hif_usage: measured HIF token usage.
 
-## 5. Test without spending API credits
+
+## 5. Start the authenticated gateway
+
+Configure these values in .env:
+
+    HIF_GATEWAY_API_KEY=<random-secret-at-least-32-characters>
+    HIF_GATEWAY_HOST=127.0.0.1
+    HIF_GATEWAY_PORT=8765
+    HIF_GATEWAY_RATE_LIMIT_PER_MINUTE=60
+    HIF_GATEWAY_MAX_REQUEST_BYTES=65536
+
+Generate a key:
+
+    python -c "import secrets; print(secrets.token_urlsafe(48))"
+
+Keep the key in a protected secret store or service environment. Do not commit it.
+
+Start the gateway:
+
+    hif gateway
+
+Local endpoints:
+- Health: http://127.0.0.1:8765/healthz
+- REST API: http://127.0.0.1:8765/v1/run and /v1/node
+- MCP Streamable HTTP: http://127.0.0.1:8765/mcp
+
+All endpoints except /healthz require Authorization: Bearer <secret>. See GATEWAY.md for REST examples, remote MCP client configuration and TLS reverse-proxy deployment.
+
+The first gateway is single-tenant and uses one shared bearer secret. Do not expose it to untrusted users or the public internet without a trusted TLS reverse proxy and network restrictions. OAuth/OIDC and tenant isolation are future work.
+
+## 6. Test without spending API credits
 
 Run the test suite:
 
@@ -93,11 +123,11 @@ Run the test suite:
 
 CI executes these checks on Ubuntu and Windows. Test providers are mocks; these tests do not prove live provider credentials, current model availability, production throughput or billing behavior.
 
-## 6. Current limits
+## 7. Current limits
 
 - Text-only provider tasks; the engine does not yet edit project files, run shell commands, browse or deploy.
 - Parallel work is dependency-aware but bounded by HIF settings and local CPU/RAM telemetry.
 - Provider routing currently uses configured order, task preferences, HIF-measured token budgets and temporary cooldowns. Dynamic price/latency/quality scoring is planned.
 - The 80% threshold filters models using the HIF token budget meter. Provider-native subscription quota percentages are used only if a future official integration can obtain them.
 - SQLite memory is per OS user by default and shared across projects on that machine. Remote multi-device memory needs the authenticated remote gateway, which is not implemented yet.
-- ChatGPT web, Gemini web and Microsoft 365 Copilot need a reachable authenticated remote MCP gateway. The current stdio server is for local MCP-compatible clients.
+- ChatGPT web, Gemini web and Microsoft 365 Copilot can target the new remote MCP endpoint once it is deployed behind HTTPS and configured in the host. Their plan, tenant and remote-MCP permissions still apply.
