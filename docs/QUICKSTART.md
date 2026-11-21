@@ -92,6 +92,7 @@ Configure these values in .env:
     HIF_GATEWAY_PORT=8765
     HIF_GATEWAY_RATE_LIMIT_PER_MINUTE=60
     HIF_GATEWAY_MAX_REQUEST_BYTES=65536
+    HIF_GATEWAY_ALLOWED_HOSTS=hif.example.com,hif.example.com:*
 
 Generate a key:
 
@@ -108,7 +109,7 @@ Local endpoints:
 - REST API: http://127.0.0.1:8765/v1/run and /v1/node
 - MCP Streamable HTTP: http://127.0.0.1:8765/mcp
 
-All endpoints except /healthz require Authorization: Bearer <secret>. See GATEWAY.md for REST examples, remote MCP client configuration and TLS reverse-proxy deployment.
+All endpoints except /healthz require Authorization: Bearer <secret>. For a remote hostname, set HIF_GATEWAY_ALLOWED_HOSTS to the exact public hostname and wildcard-port form; the MCP SDK enforces this allowlist to prevent DNS rebinding. See GATEWAY.md for REST examples, remote MCP client configuration and TLS reverse-proxy deployment.
 
 The first gateway is single-tenant and uses one shared bearer secret. Do not expose it to untrusted users or the public internet without a trusted TLS reverse proxy and network restrictions. OAuth/OIDC and tenant isolation are future work.
 
