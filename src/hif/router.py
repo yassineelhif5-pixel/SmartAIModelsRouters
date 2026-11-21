@@ -34,7 +34,11 @@ class ModelRouter:
         return tuple(eligible)
 
     def mark_unavailable(self, model: str, retry_after: float | None = None) -> None:
-        delay = min(max(float(retry_after or 30.0), 1.0), 900.0)
+        try:
+            requested_delay = float(retry_after) if retry_after is not None else 30.0
+        except (TypeError, ValueError):
+            requested_delay = 30.0
+        delay = min(max(requested_delay, 1.0), 900.0)
         self._cooldown_until[model] = time.monotonic() + delay
 
     def usage_percent(self, model: str) -> float:
