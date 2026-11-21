@@ -7,7 +7,7 @@ HIF is built around two workflows:
 - **/hif** — plan and route a goal across suitable providers, then return one consolidated result.
 - **/hifnode** — split a complex goal into specialist nodes (architect, researcher, implementer, tester, reviewer, writer), run independent nodes concurrently and share one HIF session ID and approved memory.
 
-> **Project status:** public repository and architecture/MVP foundation. Portable skill instructions and installation scripts are in the repository. The production orchestration service, persistent shared memory, remote MCP gateway, adaptive resource manager and end-to-end host integrations are not yet complete.
+> **Project status:** local MVP core is implemented and CI-tested: text-only provider dispatch, DAG nodes, shared SQLite session memory, measured-token fallback budgets, retry handling and CPU/RAM-aware bounded concurrency. The authenticated remote MCP gateway, desktop/web tool execution, file-editing agents, Windows Service/systemd packaging and full end-to-end host integrations remain future work.
 
 ## What HIF is intended to do
 
@@ -52,6 +52,7 @@ HIF targets Windows 10/11, Windows Server, Linux and later Docker/Podman deploym
     git clone https://github.com/yassineelhif5-pixel/SmartAIModelsRouters.git
     cd SmartAIModelsRouters
     bash scripts/install-hif-skills.sh
+    bash scripts/install-hif-runtime.sh
 
 ### Web assistant ZIP packages
 
@@ -80,6 +81,7 @@ Creates dist/hif.zip and dist/hifnode.zip. Upload instructions for Claude, ChatG
 - The 80% fallback rule uses provider-reported usage or HIF's own metered budget. Estimates are clearly labelled.
 - Parallel file-writing tasks require isolated worktrees/workspaces or serialized merge stages.
 - Secrets are never stored in skills, committed to Git or printed in logs.
+- Local SQLite session memory is shared across projects for the same OS user by default.
 - A remote HIF gateway must use authentication, TLS and access controls.
 
 ## License
