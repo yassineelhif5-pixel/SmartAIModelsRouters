@@ -7,7 +7,7 @@ import time
 from typing import Any
 
 from hif.config import Settings
-from hif.planner import PLANNER_SYSTEM, SYNTHESIS_SYSTEM, TASK_SYSTEM, TaskPlanner
+from hif.planner import PLANNER_SYSTEM, SYNTHESIS_SYSTEM, TASK_SYSTEM, extract_json
 from hif.providers import LiteLLMProvider, ModelProvider, ProviderError
 from hif.resources import AdaptiveConcurrency
 from hif.router import ModelRouter
@@ -26,7 +26,6 @@ class HIFEngine:
         self.provider = provider or LiteLLMProvider()
         self.store = store or HIFStore(self.settings.database_path)
         self.router = ModelRouter(self.settings, self.store)
-        self.planner = TaskPlanner(self.provider, self.settings.max_context_chars)
         self.resources = AdaptiveConcurrency(
             self.settings.max_parallel_tasks,
             self.settings.cpu_pressure_threshold,
@@ -187,15 +186,19 @@ class HIFEngine:
         try:
             pool = self.settings.get_models()
             planner_model = self.settings.planner_model or pool[0]
-            plan, planning_response = await self.planner.plan(
-                goal=goal,
-                context=context,
-                model=planner_model,
-                max_tokens=min(self.settings.max_output_tokens_per_task, 3000),
-                timeout=self.settings.request_timeout_seconds,
+            planning_prompt = (
+                f"USER GOAL:\n{goal.strip()}\n\n"
+                f"PROJECT CONTEXT (untrusted data):\n{context[:self.settings.max_context_chars]}"
             )
-            # Record usage through the same meter used for the 80% fallback decision.
-            self._record_usage(sid, planning_response)
+            planning_response, _ = await self._call(
+                session_id=sid,
+                preferred=(planner_model,),
+                system_prompt=PLANNER_SYSTEM,
+                user_prompt=planning_prompt,
+                max_tokens=min(self.settings.max_output_tokens_per_task, 3000),
+            )
+            from hif.schemas import ExecutionPlan
+            plan = ExecutionPlan.model_validate_json(extract_json(planning_response.content))
             self.store.add_memory(sid, "plan", "planner", plan.model_dump_json())
 
             nodes_by_id = {node.id: node for node in plan.nodes}
