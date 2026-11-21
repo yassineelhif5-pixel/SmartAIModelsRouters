@@ -7,14 +7,14 @@ HIF has one provider-neutral engine and host-specific entry points. The portable
 | Host | How to install the skill | How the skill is invoked | Can it call the HIF engine? |
 |---|---|---|---|
 | Claude web/Desktop | Upload ZIP in Customize > Skills | Select or ask Claude to use HIF | Only when the skill's required tools/service are available |
-| Claude Code | Copy to ~/.claude/skills or use project .claude/skills | /hif, /hifnode | Via local/remote MCP once the HIF MCP server is implemented and configured |
+| Claude Code | Copy to ~/.claude/skills or use project .claude/skills | /hif, /hifnode | Yes — local stdio MCP is implemented; register the venv hif-mcp executable with user scope |
 | ChatGPT | Import ZIP under Plugins > Skills (eligible plans) | Select/ask for HIF skill | Via a custom MCP app/plugin when remote HIF MCP gateway is deployed |
 | Gemini web app | Upload the skill in Gemini Skills | Select or ask Gemini to use HIF | Skill instructions alone do not connect to HIF; a supported tool integration is also required |
-| Gemini CLI | User-level Agent Skills or Gemini extension | Skill activation or extension command | Via MCP once the HIF MCP server is implemented |
-| GitHub Copilot | Agent Skills in supported Copilot harnesses | Skill picker / slash menu depending on host | Via MCP once HIF MCP server is implemented |
+| Gemini CLI | User-level Agent Skills or Gemini extension | Skill activation or extension command | Yes — add the local hif-mcp executable as a user-scope stdio MCP server |
+| GitHub Copilot | Agent Skills in supported Copilot harnesses | Skill picker / slash menu depending on host | Yes — configure local stdio MCP in the supported Copilot host (for VS Code, user MCP config or .vscode/mcp.json) |
 | Microsoft 365 Copilot | Copilot Studio agent with custom engine/MCP tool | Agent conversation in Microsoft 365 Copilot | Via remote HIF MCP after gateway/authentication is implemented |
 | Microsoft Copilot consumer app | No generic HIF skill installer is documented here | Not currently supported as a direct installation target | Not without a supported agent/connector extension path |
-| OpenAI Codex | ~/.agents/skills (user) or project .agents/skills | Skill activation in Codex | Via MCP once the HIF MCP server is implemented |
+| OpenAI Codex | ~/.agents/skills (user) or project .agents/skills | Skill activation in Codex | Yes — add the local hif-mcp executable with codex mcp add |
 
 A skill is the **instruction layer**. The HIF API/MCP service is the **execution layer**. Importing the first does not automatically install, host or authenticate the second.
 
@@ -46,7 +46,7 @@ On Linux/macOS:
 
 The skill directories are installed under ~/.claude/skills/hif and ~/.claude/skills/hifnode. Start a new Claude Code session and run /hif or /hifnode.
 
-This repository currently distributes skill instructions. The production HIF MCP server/plugin still needs to be implemented before those skills can perform real provider dispatch.
+The local HIF stdio MCP server is implemented. After installing the runtime and registering hif-mcp at user scope, Claude Code can call hif_run and hifnode_run for real text-only provider dispatch. The remote HTTP gateway for browser-based clients is not implemented yet.
 
 ## 3. ChatGPT
 
@@ -91,7 +91,19 @@ Install user-level skills using the provided script:
     bash scripts/install-hif-skills.sh --hosts gemini
     gemini skills list
 
-Gemini CLI also supports installing skills from Git repositories and packaging skills in extensions. Extension installation is a separate option from portable skill directories.
+Gemini CLI also supports installing skills from Git repositories and packaging skills in extensions. To connect the local HIF backend at user scope:
+
+Windows PowerShell:
+
+    gemini mcp add --scope user hif "C:\path\to\SmartAIModelsRouters\.venv\Scripts\hif-mcp.exe"
+    gemini mcp list
+
+Linux/macOS:
+
+    gemini mcp add --scope user hif "$HOME/path/to/SmartAIModelsRouters/.venv/bin/hif-mcp"
+    gemini mcp list
+
+This stdio registration is local to the machine/user. The Gemini web app needs a remote gateway, which is not available yet.
 
 Official documentation:
 - https://geminicli.com/docs/cli/skills/
@@ -104,7 +116,21 @@ For user-level skill availability, install to ~/.copilot/skills. For a single re
 
     .\scripts\install-hif-skills.ps1 -Hosts Copilot
 
-Start a new Copilot agent session after installing. Feature availability and supported skill paths depend on the Copilot host/harness (for example VS Code, Copilot CLI or GitHub.com) and organization policy.
+Start a new Copilot agent session after installing. For GitHub Copilot in VS Code, add the local stdio server to the workspace file .vscode/mcp.json, or use the VS Code command palette action MCP: Open User Configuration for user-wide registration.
+
+Example .vscode/mcp.json (replace the executable path):
+
+    {
+      "servers": {
+        "hif": {
+          "type": "stdio",
+          "command": "C:\\full\\path\\SmartAIModelsRouters\\.venv\\Scripts\\hif-mcp.exe",
+          "args": []
+        }
+      }
+    }
+
+On Linux/macOS, set command to the repository venv executable .venv/bin/hif-mcp. VS Code and Copilot require the local runtime to be installed in the same execution environment as the agent. Feature availability depends on the Copilot host/harness and organization policy.
 
 Official documentation:
 - https://code.visualstudio.com/docs/agent-customization/agent-skills
@@ -134,7 +160,19 @@ Codex uses the Agent Skills standard and discovers user-level skills from ~/.age
 
     .\scripts\install-hif-skills.ps1 -Hosts Codex
 
-Start a new Codex session and ask it to use HIF. MCP tools can be added separately after the HIF MCP service is available.
+Start a new Codex session and register the local MCP service:
+
+Windows:
+
+    codex mcp add hif -- "C:\path\to\SmartAIModelsRouters\.venv\Scripts\hif-mcp.exe"
+    codex mcp list
+
+Linux/macOS:
+
+    codex mcp add hif -- "$HOME/path/to/SmartAIModelsRouters/.venv/bin/hif-mcp"
+    codex mcp list
+
+Codex user and project MCP settings are distinct; use the user-level config for a machine-wide setup.
 
 ## 9. Shared session memory and multi-provider execution
 
@@ -149,7 +187,9 @@ This does not merge native chat histories across Claude, ChatGPT, Gemini and Cop
 - ZIP packaging and user-level copy installers are provided as source scripts.
 - ChatGPT and Gemini web have upload instructions in this guide.
 - Microsoft 365 Copilot has a documented Copilot Studio/MCP integration target.
-- Production HIF provider execution, shared session memory, remote authenticated MCP gateway and fully tested host-specific adapters remain implementation work.
+- Local text-only provider execution, shared SQLite session memory, DAG node parallelism, HIF-measured 80% fallback and local stdio MCP tools are implemented.
+- The remote authenticated HTTP MCP gateway needed by ChatGPT web, Gemini web and Microsoft 365 Copilot remains implementation work.
+- File editing, shell execution, browsing, deployment and fully tested cross-host tool workflows remain out of scope for the local MVP.
 
 
 # ChatGPT support and plan requirements
