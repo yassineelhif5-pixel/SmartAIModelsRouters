@@ -11,18 +11,19 @@
 - [ ] Choose and add an explicit open-source license.
 - [ ] Add code-of-conduct policy.
 
-## Phase 1 — Core engine
-- [ ] Complete and validate Python CLI package.
-- [ ] Implement typed provider protocol and mock provider.
-- [ ] Implement deterministic task planner and schema validation.
-- [ ] Implement dependency DAG scheduler.
-- [ ] Implement bounded parallel executor, cancellation and durable run state.
-- [ ] Implement provider router with capability, budget, latency, health and usage-threshold filters.
-- [ ] Implement shared session ID, role registry and persistent memory/artifact index.
-- [ ] Implement per-task and per-session token/cost accounting.
-- [ ] Add CPU/RAM telemetry adapters for Windows, Linux and macOS.
-- [ ] Add adaptive concurrency with hysteresis and provider-specific caps.
-- [ ] Add deterministic tests that require no paid API credentials.
+## Phase 1 — Local core MVP
+- [x] Python CLI with run, node, status, usage and MCP commands.
+- [x] Typed provider protocol and deterministic mock provider.
+- [x] Structured task planner and DAG/schema validation.
+- [x] Dependency-aware scheduler with bounded parallel node execution.
+- [ ] Add cancellation and resumable interrupted runs.
+- [x] Ordered model pool, per-task model preferences, HIF token budgets, 80% pre-emptive filtering and cooldown fallback.
+- [x] Shared session ID, role definitions and persistent per-user SQLite memory.
+- [x] Record per-node and per-session provider-reported input/output token usage and estimated cost when available.
+- [ ] Add a durable artifact index and file/content hash references.
+- [x] CPU/RAM telemetry through psutil on supported Windows/Linux/macOS hosts.
+- [x] Adaptive concurrency with global and per-provider request caps.
+- [x] Deterministic tests and CI that require no paid API credentials.
 
 ## Phase 2 — Provider integrations
 - [ ] Anthropic API adapter.
