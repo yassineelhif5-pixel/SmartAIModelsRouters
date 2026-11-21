@@ -128,6 +128,10 @@ class Settings:
                 raise ValueError(f"{name} must be greater than zero.")
         if not 0.10 <= threshold <= 1.0:
             raise ValueError("HIF_USAGE_FALLBACK_THRESHOLD must be between 0.10 and 1.0.")
+        if gateway_rate_limit < 1 or gateway_max_bytes < 1024:
+            raise ValueError("Gateway rate limit must be positive and request size at least 1024 bytes.")
+        if not 1 <= gateway_port <= 65535:
+            raise ValueError("HIF_GATEWAY_PORT must be between 1 and 65535.")
 
         database_setting = os.getenv("HIF_DATABASE_PATH", "").strip()
         database_path = (
