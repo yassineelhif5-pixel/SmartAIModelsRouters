@@ -155,8 +155,9 @@ Set these HIF values in .env (replace placeholders with the actual Entra values)
     HIF_GATEWAY_OAUTH_JWKS_URL=https://login.microsoftonline.com/<tenant-id>/discovery/v2.0/keys
     HIF_GATEWAY_OAUTH_REQUIRED_SCOPES=hif.access
     HIF_GATEWAY_OAUTH_ALGORITHMS=RS256
+    HIF_GATEWAY_OAUTH_ALLOWED_CLIENT_IDS=<chatgpt-client-app-id>
 
-The audience must exactly match the aud claim in the access token issued for the HIF resource application. The scope value must match the scp claim. If your identity provider emits a different audience or claim layout, configure those values accordingly; do not weaken signature, issuer, audience or expiry validation.
+The audience must exactly match the aud claim in the access token issued for the HIF resource application. The scope value must match the scp claim. Set HIF_GATEWAY_OAUTH_ALLOWED_CLIENT_IDS to the client application IDs you trust (for example, the ChatGPT OAuth client registration); leaving it empty allows any client in the tenant that can obtain the required delegated scope. HIF also requires a user sub claim. If your identity provider emits a different audience or claim layout, configure those values accordingly; do not weaken signature, issuer, audience or expiry validation.
 
 ### Register ChatGPT as an OAuth client
 
