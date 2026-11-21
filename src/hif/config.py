@@ -116,8 +116,15 @@ class Settings:
         if not 0.10 <= threshold <= 1.0:
             raise ValueError("HIF_USAGE_FALLBACK_THRESHOLD must be between 0.10 and 1.0.")
 
+        database_setting = os.getenv("HIF_DATABASE_PATH", "").strip()
+        database_path = (
+            Path(database_setting).expanduser()
+            if database_setting
+            else default_database_path()
+        )
+
         return cls(
-            database_path=Path(os.getenv("HIF_DATABASE_PATH", str(default_database_path()))).expanduser(),
+            database_path=database_path,
             model_pool=_parse_csv(os.getenv("HIF_MODEL_POOL")),
             planner_model=os.getenv("HIF_PLANNER_MODEL") or None,
             task_model_preferences=_parse_json_model_map(
