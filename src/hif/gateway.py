@@ -327,7 +327,6 @@ def create_app():
     # FastMCP owns the MCP lifespan and publishes RFC 9728 metadata when OAuth is enabled.
     gateway_mcp = create_mcp_server(auth=auth_settings, token_verifier=token_verifier)
     app = gateway_mcp.streamable_http_app(
-        host=settings.gateway_host,
         max_request_body_size=settings.gateway_max_request_bytes,
         transport_security=transport_security,
     )
