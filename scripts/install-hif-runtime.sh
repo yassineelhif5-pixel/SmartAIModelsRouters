@@ -25,7 +25,7 @@ fi
 
 "$PYTHON_BIN" -m venv .venv
 .venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install -e ".[dev]"
+.venv/bin/python -m pip install -e ".[providers]"
 
 if [[ ! -f .env ]]; then
   cp .env.example .env
