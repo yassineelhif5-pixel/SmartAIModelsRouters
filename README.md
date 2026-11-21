@@ -9,16 +9,21 @@ HIF is built around two workflows:
 
 > **Project status:** local MVP core is implemented and CI-tested: text-only provider dispatch, DAG nodes, shared SQLite session memory, measured-token fallback budgets, retry handling and CPU/RAM-aware bounded concurrency. The authenticated remote MCP gateway, desktop/web tool execution, file-editing agents, Windows Service/systemd packaging and full end-to-end host integrations remain future work.
 
-## What HIF is intended to do
+## Implemented in local MVP 0.2.0
 
-1. **Task planning:** turn a user goal into a dependency-aware task graph.
-2. **Model routing:** choose by task capability, price, measured latency, availability, privacy policy and budget.
-3. **Parallel execution:** dispatch independent nodes concurrently with bounded concurrency.
-4. **Shared session memory:** reuse role definitions, approved facts, summaries, node outputs and artifact references under one HIF session ID.
-5. **Context optimization:** send each model only the relevant task brief and evidence, not the full conversation by default.
-6. **Pre-emptive fallback:** prefer another eligible model when a trustworthy usage metric reaches the configured 80% threshold; never invent unavailable quota percentages.
-7. **Resource management:** adapt concurrency to CPU/RAM pressure, optional GPU/VRAM telemetry and provider-specific concurrency limits.
-8. **Verification and synthesis:** validate results and return one useful answer with routing, usage and timing information.
+1. **Task planning:** create and validate a dependency-aware graph of up to 12 specialist nodes.
+2. **Model routing:** use an ordered model pool, task-type preferences, per-model HIF token budgets and retry cooldowns.
+3. **Parallel execution:** dispatch independent nodes concurrently and wait for dependencies.
+4. **Shared session memory:** store role definitions, approved facts, node outputs, statuses and usage in a per-user SQLite database shared across projects.
+5. **Context optimization:** supply each node with a compact brief, selected memory and dependency outputs instead of the full chat history.
+6. **Pre-emptive fallback:** filter a model from new tasks when HIF-measured usage reaches the configured 80% budget.
+7. **Resource management:** bound concurrency using CPU/RAM telemetry and configured per-provider semaphores.
+8. **Local integration:** provide a CLI and stdio MCP server with hif_run and hifnode_run tools.
+9. **Testing:** exercise the core using mock providers; CI runs without paid API keys.
+
+## Planned optimization capabilities
+
+Dynamic price/latency/quality scoring, provider-specific official quota APIs, per-task spending caps, automatic recovery/cancellation, file-editing agents, artifact hashing/cache, GPU/VRAM telemetry, dashboard, authenticated remote MCP gateway and Windows Service/Linux systemd packaging are not yet implemented. See docs/ROADMAP.md.
 
 ## Supported host targets
 
