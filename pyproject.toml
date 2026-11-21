@@ -16,6 +16,7 @@ dependencies = [
   "litellm>=1.60",
   "mcp>=1.12,<2",
   "uvicorn>=0.30",
+  "PyJWT[crypto]>=2.8",
   "psutil>=6.0",
   "python-dotenv>=1.0"
 ]
