@@ -48,8 +48,8 @@ $hifExe = Join-Path (Split-Path -Parent $venvPython) "hif.exe"
 Write-Host ""
 Write-Host "HIF runtime installed in $repoRoot\.venv"
 Write-Host "Configure .env, then test with:"
-Write-Host $hifExe
-Write-Host "  usage"
+Write-Host ("  " + $hifExe + " --help")
+Write-Host ("  " + $hifExe + " usage")
 Write-Host ""
 Write-Host "Register HIF globally for Claude Code (all projects for this Windows user):"
 Write-Host ('claude mcp add --scope user --transport stdio hif -- "' + $mcpExe + '"' )
