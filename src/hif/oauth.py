@@ -31,7 +31,7 @@ class OIDCJWTVerifier(TokenVerifier):
     ) -> None:
         if not algorithms or any(alg.lower() == "none" for alg in algorithms):
             raise ValueError("OIDC JWT algorithms must be explicit and cannot include none.")
-        self.issuer_url = issuer_url.rstrip("/")
+        self.issuer_url = issuer_url
         self.jwks_url = jwks_url
         self.audience = audience
         self.resource_url = resource_url
