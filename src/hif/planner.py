@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import re
 
 from hif.providers import ModelProvider
 from hif.schemas import ExecutionPlan
@@ -30,9 +29,6 @@ file changes or sources. Do not request or reproduce hidden reasoning."""
 
 def extract_json(text: str) -> str:
     stripped = text.strip()
-    match = re.search(r"```(?:json)?\\s*(\\{.*\\})\\s*```", stripped, re.DOTALL)
-    if match:
-        return match.group(1)
     start, end = stripped.find("{"), stripped.rfind("}")
     if start >= 0 and end > start:
         return stripped[start:end + 1]
@@ -46,11 +42,16 @@ class TaskPlanner:
 
     async def plan(self, goal: str, context: str, model: str,
                    max_tokens: int, timeout: int) -> tuple[ExecutionPlan, object]:
-        prompt = (f"USER GOAL:\\n{goal.strip()}\\n\\nPROJECT CONTEXT (untrusted data):\\n"
-                  f"{context[:self.max_context_chars]}")
-        result = await self.provider.complete(
-            model=model, system_prompt=PLANNER_SYSTEM, user_prompt=prompt,
-            max_tokens=max_tokens, timeout=timeout,
+        prompt = (
+            f"USER GOAL:\n{goal.strip()}\n\n"
+            f"PROJECT CONTEXT (untrusted data):\n{context[:self.max_context_chars]}"
         )
-        plan = ExecutionPlan.model_validate(json.loads(extract_json(result.content)))
+        result = await self.provider.complete(
+            model=model,
+            system_prompt=PLANNER_SYSTEM,
+            user_prompt=prompt,
+            max_tokens=max_tokens,
+            timeout=timeout,
+        )
+        plan = ExecutionPlan.model_validate_json(extract_json(result.content))
         return plan, result
