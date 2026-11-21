@@ -91,6 +91,12 @@ class Settings:
     gateway_tls_keyfile: Path | None = None
     gateway_allowed_hosts: tuple[str, ...] = field(default_factory=tuple)
     gateway_allowed_origins: tuple[str, ...] = field(default_factory=tuple)
+    gateway_oauth_issuer_url: str | None = None
+    gateway_oauth_resource_url: str | None = None
+    gateway_oauth_audience: str | None = None
+    gateway_oauth_jwks_url: str | None = None
+    gateway_oauth_required_scopes: tuple[str, ...] = field(default_factory=tuple)
+    gateway_oauth_algorithms: tuple[str, ...] = ("RS256",)
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -135,6 +141,25 @@ class Settings:
         if not 1 <= gateway_port <= 65535:
             raise ValueError("HIF_GATEWAY_PORT must be between 1 and 65535.")
 
+        oauth_values = (
+            os.getenv("HIF_GATEWAY_OAUTH_ISSUER_URL"),
+            os.getenv("HIF_GATEWAY_OAUTH_RESOURCE_URL"),
+            os.getenv("HIF_GATEWAY_OAUTH_AUDIENCE"),
+            os.getenv("HIF_GATEWAY_OAUTH_JWKS_URL"),
+            os.getenv("HIF_GATEWAY_OAUTH_REQUIRED_SCOPES"),
+        )
+        if any(oauth_values) and not all(oauth_values):
+            raise ValueError(
+                "OAuth gateway requires issuer URL, resource URL, audience, JWKS URL "
+                "and at least one required scope."
+            )
+        if any(oauth_values) and not (
+            oauth_values[0].startswith("https://")
+            and oauth_values[1].startswith("https://")
+            and oauth_values[3].startswith("https://")
+        ):
+            raise ValueError("OAuth issuer, resource and JWKS URLs must use HTTPS.")
+
         database_setting = os.getenv("HIF_DATABASE_PATH", "").strip()
         database_path = (
             Path(database_setting).expanduser()
@@ -176,6 +201,16 @@ class Settings:
             if os.getenv("HIF_GATEWAY_TLS_KEYFILE") else None,
             gateway_allowed_hosts=_parse_csv(os.getenv("HIF_GATEWAY_ALLOWED_HOSTS")),
             gateway_allowed_origins=_parse_csv(os.getenv("HIF_GATEWAY_ALLOWED_ORIGINS")),
+            gateway_oauth_issuer_url=os.getenv("HIF_GATEWAY_OAUTH_ISSUER_URL") or None,
+            gateway_oauth_resource_url=os.getenv("HIF_GATEWAY_OAUTH_RESOURCE_URL") or None,
+            gateway_oauth_audience=os.getenv("HIF_GATEWAY_OAUTH_AUDIENCE") or None,
+            gateway_oauth_jwks_url=os.getenv("HIF_GATEWAY_OAUTH_JWKS_URL") or None,
+            gateway_oauth_required_scopes=_parse_csv(
+                os.getenv("HIF_GATEWAY_OAUTH_REQUIRED_SCOPES")
+            ),
+            gateway_oauth_algorithms=_parse_csv(
+                os.getenv("HIF_GATEWAY_OAUTH_ALGORITHMS", "RS256")
+            ),
         )
 
     def get_models(self) -> tuple[str, ...]:
