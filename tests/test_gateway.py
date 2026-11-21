@@ -130,3 +130,30 @@ def test_gateway_publishes_oauth_resource_metadata_when_oidc_is_configured(
     app = create_app()
     paths = [getattr(route, "path", "") for route in app.routes]
     assert any(path.startswith("/.well-known/oauth-protected-resource") for path in paths)
+
+
+def test_oauth_mcp_path_bypasses_operator_key_but_keeps_rate_limit() -> None:
+    app = Starlette(routes=[Route("/mcp", protected, methods=["GET"])])
+    app.add_middleware(
+        GatewaySecurityMiddleware,
+        api_key="x" * 48,
+        requests_per_minute=1,
+        max_request_bytes=1024,
+        oauth_enabled=True,
+    )
+    client = TestClient(app)
+
+    assert client.get("/mcp").status_code == 200
+    assert client.get("/mcp").status_code == 429
+
+
+def test_mcp_path_requires_operator_key_when_oidc_is_disabled() -> None:
+    app = Starlette(routes=[Route("/mcp", protected, methods=["GET"])])
+    app.add_middleware(
+        GatewaySecurityMiddleware,
+        api_key="x" * 48,
+        requests_per_minute=10,
+        max_request_bytes=1024,
+        oauth_enabled=False,
+    )
+    assert TestClient(app).get("/mcp").status_code == 401
