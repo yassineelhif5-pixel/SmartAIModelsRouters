@@ -1,33 +1,37 @@
 ---
 name: hif
-description: Orchestrate substantial tasks across configured AI providers. Use when the user invokes /hif, asks for multi-provider routing, token or cost optimization, parallel specialist work, or a consolidated result from multiple models.
+description: Use the HIF multi-provider orchestrator for substantial tasks, cost-aware model routing, specialist delegation, shared session memory, or consolidated results.
 ---
 
 # HIF — Hybrid Intelligent Flow
 
-Use HIF as the central orchestrator when the task benefits from specialist delegation, provider routing, or controlled parallel execution.
+HIF is a task orchestrator. It is not a silent replacement for the host assistant's native model or conversation.
 
-## Workflow
-1. Understand the outcome, constraints, project context and definition of done.
-2. Do not send the entire conversation or repository by default. Build a compact context brief with only relevant facts, paths, excerpts and decisions.
-3. Use the configured HIF MCP tool or CLI to submit the goal and context.
-4. Let HIF create a dependency-aware task plan, route each task to an eligible configured provider/model, execute independent tasks concurrently, preserve outputs in shared session memory and synthesize one result.
-5. Report which tasks actually ran, which provider/model was selected, measured usage, elapsed time, fallbacks and any limitations.
-6. Do not claim orchestration happened when the HIF MCP server or CLI is unavailable. State the exact missing prerequisite.
+## Invocation
 
-## Efficiency policy
-- Do not create agents for trivial tasks.
-- Parallelize independent read-only work; serialize dependent work.
-- Use task-specific model selection: inexpensive/fast models for simple classification, extraction and summaries; stronger models for complex reasoning, coding and verification.
-- Minimize repeated context with shared artifacts, compact summaries and provenance.
-- Respect provider limits, rate limits, per-task budgets and the global spending ceiling.
-- Prefer another eligible provider when a trustworthy usage metric reaches the configured threshold (default 80%). Label estimates as estimates.
+When the user invokes /hif or explicitly asks to orchestrate a substantial task:
 
-## Safety
-- The current HIF repository may still be in development. Check implementation status before claiming tools are available.
-- A different provider does not inherit the native conversation state of the previous provider. HIF shares only explicit task briefs, approved session facts, role definitions and artifacts.
-- API access is normally billed separately from consumer chat subscriptions.
-- Never bypass service limits, rotate accounts to evade restrictions or invent quota percentages.
-- Do not send secrets or confidential context to an external provider without permission.
-- Do not request or transfer hidden chain-of-thought.
-- Obtain approval before destructive or externally visible actions.
+1. Identify the desired outcome, constraints and definition of done.
+2. Build a concise context brief. Include only relevant facts, file excerpts, project paths, decisions and requirements. Do not send the full conversation or entire repository by default.
+3. Call the MCP tool hif_run with the goal and context. If the user explicitly requests parallel specialist nodes, use hifnode_run instead.
+4. Report the returned session ID, node roles, selected models, measured token usage, elapsed time, fallbacks and final synthesis.
+5. If the MCP tool is unavailable, do not pretend routing happened. Explain that the HIF runtime/MCP server is not installed or connected.
+6. Avoid orchestration for trivial requests where a direct response is faster and cheaper.
+
+## Routing and efficiency
+
+- Use task-specific models: fast/low-cost models for classification, extraction and summaries; capable models for complex analysis, coding and verification.
+- Execute independent work concurrently only through hifnode_run; respect dependencies.
+- Retrieve only role definitions, session facts and artifact references relevant to each task.
+- Prefer HIF-shared session memory and prior results over repeating work.
+- Use the configured 80% HIF-measured token-budget threshold for pre-emptive fallback. Provider subscription quota percentages are unknown unless the provider exposes an authoritative measurement.
+- Respect provider limits, API billing, privacy policies and configured spending budgets.
+
+## Safety and limitations
+
+- HIF tasks are text-only in the current MVP. They do not edit project files, run shell commands, browse the web or deploy code.
+- A provider switch does not transfer the host's native conversation state. HIF passes explicit task briefs, approved memory and outputs.
+- API access can be billed separately from consumer chat subscriptions.
+- Never rotate accounts to evade quotas or provider restrictions.
+- Do not send secrets or confidential context to external providers without permission.
+- Never request or transfer hidden chain-of-thought.
