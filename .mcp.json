@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "hif": {
+      "command": "hif-mcp",
+      "args": [],
+      "env": {
+        "HIF_LOG_LEVEL": "INFO"
+      }
+    }
+  }
+}
