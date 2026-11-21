@@ -110,24 +110,29 @@ class GatewaySecurityMiddleware:
         client = scope.get("client")
         client_host = str(client[0]) if client else "unknown"
         now = int(time.monotonic() // 60)
+        limited = False
+        retry_after = "60"
         with self._lock:
             window, count = self._buckets.get(client_host, (now, 0))
             if window != now:
                 window, count = now, 0
             if count >= self.requests_per_minute:
+                limited = True
                 retry_after = str(60 - int(time.monotonic() % 60))
-                await reject(
-                    429,
-                    {"error": "rate_limit_exceeded"},
-                    {"Retry-After": retry_after},
-                )
-                return
-            self._buckets[client_host] = (window, count + 1)
+            else:
+                self._buckets[client_host] = (window, count + 1)
             if len(self._buckets) > 4096:
                 self._buckets = {
                     key: value for key, value in self._buckets.items()
                     if value[0] >= now - 1
                 }
+        if limited:
+            await reject(
+                429,
+                {"error": "rate_limit_exceeded"},
+                {"Retry-After": retry_after},
+            )
+            return
 
         received_bytes = 0
         rejected = False
