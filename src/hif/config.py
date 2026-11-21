@@ -12,6 +12,17 @@ from dotenv import load_dotenv
 load_dotenv(override=False)
 
 
+def default_database_path() -> Path:
+    """Return a per-user path shared by every project on this machine."""
+    if os.getenv("LOCALAPPDATA"):
+        root = Path(os.environ["LOCALAPPDATA"])
+    elif os.getenv("XDG_DATA_HOME"):
+        root = Path(os.environ["XDG_DATA_HOME"])
+    else:
+        root = Path.home() / ".local" / "share"
+    return root / "HIF" / "hif.sqlite3"
+
+
 def _parse_csv(value: str | None) -> tuple[str, ...]:
     return tuple(part.strip() for part in (value or "").split(",") if part.strip())
 
@@ -54,7 +65,7 @@ def _parse_json_model_map(value: str | None) -> dict[str, tuple[str, ...]]:
 
 @dataclass(frozen=True)
 class Settings:
-    database_path: Path = Path(".hif/hif.sqlite3")
+    database_path: Path = field(default_factory=default_database_path)
     model_pool: tuple[str, ...] = field(default_factory=tuple)
     planner_model: str | None = None
     task_model_preferences: dict[str, tuple[str, ...]] = field(default_factory=dict)
@@ -106,7 +117,7 @@ class Settings:
             raise ValueError("HIF_USAGE_FALLBACK_THRESHOLD must be between 0.10 and 1.0.")
 
         return cls(
-            database_path=Path(os.getenv("HIF_DATABASE_PATH", ".hif/hif.sqlite3")),
+            database_path=Path(os.getenv("HIF_DATABASE_PATH", str(default_database_path()))).expanduser(),
             model_pool=_parse_csv(os.getenv("HIF_MODEL_POOL")),
             planner_model=os.getenv("HIF_PLANNER_MODEL") or None,
             task_model_preferences=_parse_json_model_map(
