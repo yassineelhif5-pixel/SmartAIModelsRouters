@@ -99,31 +99,6 @@ class GatewaySecurityMiddleware:
             for key, value in scope.get("headers", [])
         }
 
-        # OIDC MCP requests are verified by the MCP SDK; REST and private API-key
-        # mode continue to use the HIF operator bearer key.
-        if not oauth_mcp_path:
-            auth = headers.get("authorization", "")
-            scheme, _, supplied = auth.partition(" ")
-            if scheme.lower() != "bearer" or not supplied or not hmac.compare_digest(
-                supplied.encode("utf-8"), self.api_key.encode("utf-8")
-            ):
-                await reject(
-                    401,
-                    {"error": "unauthorized", "message": "A valid bearer token is required."},
-                    {"WWW-Authenticate": "Bearer"},
-                )
-                return
-
-        length = headers.get("content-length")
-        if length:
-            try:
-                if int(length) > self.max_request_bytes:
-                    await reject(413, {"error": "request_too_large"})
-                    return
-            except ValueError:
-                await reject(400, {"error": "invalid_content_length"})
-                return
-
         client = scope.get("client")
         client_host = str(client[0]) if client else "unknown"
         now = int(time.monotonic() // 60)
@@ -150,6 +125,31 @@ class GatewaySecurityMiddleware:
                 {"Retry-After": retry_after},
             )
             return
+
+        # OIDC MCP requests are verified by the MCP SDK; REST and private API-key
+        # mode continue to use the HIF operator bearer key.
+        if not oauth_mcp_path:
+            auth = headers.get("authorization", "")
+            scheme, _, supplied = auth.partition(" ")
+            if scheme.lower() != "bearer" or not supplied or not hmac.compare_digest(
+                supplied.encode("utf-8"), self.api_key.encode("utf-8")
+            ):
+                await reject(
+                    401,
+                    {"error": "unauthorized", "message": "A valid bearer token is required."},
+                    {"WWW-Authenticate": "Bearer"},
+                )
+                return
+
+        length = headers.get("content-length")
+        if length:
+            try:
+                if int(length) > self.max_request_bytes:
+                    await reject(413, {"error": "request_too_large"})
+                    return
+            except ValueError:
+                await reject(400, {"error": "invalid_content_length"})
+                return
 
         received_bytes = 0
         rejected = False
