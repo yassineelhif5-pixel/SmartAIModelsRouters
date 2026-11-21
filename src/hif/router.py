@@ -8,12 +8,14 @@ from datetime import timedelta
 from hif.config import Settings
 from hif.model_manager import AIModelManager
 from hif.storage import HIFStore, utc_now
+from hif.model_manager import AIModelManager
 
 
 class ModelRouter:
     def __init__(self, settings: Settings, store: HIFStore):
         self.settings = settings
         self.store = store
+        self.model_manager = AIModelManager(settings)
         self.model_manager = AIModelManager(settings)
         self._cooldown_until: dict[str, float] = {}
 
