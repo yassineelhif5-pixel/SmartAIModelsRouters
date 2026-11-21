@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 
 from hif.providers import ModelProvider
 from hif.schemas import ExecutionPlan
