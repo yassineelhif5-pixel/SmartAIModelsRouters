@@ -52,6 +52,6 @@ Write-Host $hifExe
 Write-Host "  usage"
 Write-Host ""
 Write-Host "Register HIF globally for Claude Code (all projects for this Windows user):"
-Write-Host ("claude mcp add --scope user --transport stdio hif -- " + $mcpExe)
+Write-Host ('claude mcp add --scope user --transport stdio hif -- "' + $mcpExe + '"' )
 Write-Host "claude mcp list"
 Write-Warning "The installer does not create a Windows Service or expose a remote HTTP gateway."
