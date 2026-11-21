@@ -11,12 +11,10 @@ import logging
 import os
 import threading
 import time
-from collections.abc import Callable
 from typing import Any
 
 import uvicorn
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
-from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
@@ -36,8 +34,8 @@ class RunRequest(BaseModel):
     session_id: str | None = Field(default=None, max_length=128)
 
 
-class GatewaySecurityMiddleware(BaseHTTPMiddleware):
-    """Enforce bearer auth, request size and a per-client fixed-window limit."""
+class GatewaySecurityMiddleware:
+    """Pure ASGI auth and limits middleware; preserves MCP streaming responses."""
 
     def __init__(
         self,
@@ -47,55 +45,83 @@ class GatewaySecurityMiddleware(BaseHTTPMiddleware):
         requests_per_minute: int,
         max_request_bytes: int,
     ) -> None:
-        super().__init__(app)
+        self.app = app
         self.api_key = api_key
         self.requests_per_minute = requests_per_minute
         self.max_request_bytes = max_request_bytes
         self._lock = threading.Lock()
         self._buckets: dict[str, tuple[int, int]] = {}
 
-    async def dispatch(self, request: Request, call_next: Callable[..., Any]) -> Response:
-        if request.url.path == "/healthz":
-            return await call_next(request)
+    async def __call__(self, scope: dict[str, Any], receive: Any, send: Any) -> None:
+        if scope.get("type") != "http":
+            await self.app(scope, receive, send)
+            return
 
-        auth = request.headers.get("authorization", "")
+        async def secure_send(message: dict[str, Any]) -> None:
+            if message["type"] == "http.response.start":
+                headers = list(message.get("headers", []))
+                existing = {key.lower() for key, _ in headers}
+                if b"cache-control" not in existing:
+                    headers.append((b"cache-control", b"no-store"))
+                if b"x-content-type-options" not in existing:
+                    headers.append((b"x-content-type-options", b"nosniff"))
+                message = {**message, "headers": headers}
+            await send(message)
+
+        async def reject(
+            status: int,
+            body: dict[str, Any],
+            headers: dict[str, str] | None = None,
+        ) -> None:
+            await JSONResponse(body, status_code=status, headers=headers)(
+                scope, receive, secure_send
+            )
+
+        if scope.get("path") == "/healthz":
+            await self.app(scope, receive, secure_send)
+            return
+
+        headers = {
+            key.decode("latin-1").lower(): value.decode("latin-1")
+            for key, value in scope.get("headers", [])
+        }
+        auth = headers.get("authorization", "")
         scheme, _, supplied = auth.partition(" ")
         if scheme.lower() != "bearer" or not supplied or not hmac.compare_digest(
             supplied, self.api_key
         ):
-            return JSONResponse(
+            await reject(
+                401,
                 {"error": "unauthorized", "message": "A valid bearer token is required."},
-                status_code=401,
-                headers={"WWW-Authenticate": "Bearer"},
+                {"WWW-Authenticate": "Bearer"},
             )
+            return
 
-        length = request.headers.get("content-length")
+        length = headers.get("content-length")
         if length:
             try:
                 if int(length) > self.max_request_bytes:
-                    return JSONResponse(
-                        {"error": "request_too_large"}, status_code=413
-                    )
+                    await reject(413, {"error": "request_too_large"})
+                    return
             except ValueError:
-                return JSONResponse({"error": "invalid_content_length"}, status_code=400)
-        elif request.method in {"POST", "PUT", "PATCH"}:
-            # Also enforce the cap for chunked requests without Content-Length.
-            body = await request.body()
-            if len(body) > self.max_request_bytes:
-                return JSONResponse({"error": "request_too_large"}, status_code=413)
+                await reject(400, {"error": "invalid_content_length"})
+                return
 
-        client_host = request.client.host if request.client else "unknown"
+        client = scope.get("client")
+        client_host = str(client[0]) if client else "unknown"
         now = int(time.monotonic() // 60)
         with self._lock:
             window, count = self._buckets.get(client_host, (now, 0))
             if window != now:
                 window, count = now, 0
             if count >= self.requests_per_minute:
-                return JSONResponse(
+                retry_after = str(60 - int(time.monotonic() % 60))
+                await reject(
+                    429,
                     {"error": "rate_limit_exceeded"},
-                    status_code=429,
-                    headers={"Retry-After": str(60 - int(time.monotonic() % 60))},
+                    {"Retry-After": retry_after},
                 )
+                return
             self._buckets[client_host] = (window, count + 1)
             if len(self._buckets) > 4096:
                 self._buckets = {
@@ -103,10 +129,27 @@ class GatewaySecurityMiddleware(BaseHTTPMiddleware):
                     if value[0] >= now - 1
                 }
 
-        response = await call_next(request)
-        response.headers["Cache-Control"] = "no-store"
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        return response
+        received_bytes = 0
+        rejected = False
+
+        async def limited_receive() -> dict[str, Any]:
+            nonlocal received_bytes, rejected
+            if rejected:
+                return {"type": "http.disconnect"}
+            message = await receive()
+            if message["type"] == "http.request":
+                received_bytes += len(message.get("body", b""))
+                if received_bytes > self.max_request_bytes:
+                    rejected = True
+                    await reject(413, {"error": "request_too_large"})
+                    return {"type": "http.disconnect"}
+            return message
+
+        async def guarded_send(message: dict[str, Any]) -> None:
+            if not rejected:
+                await secure_send(message)
+
+        await self.app(scope, limited_receive, guarded_send)
 
 
 def _engine() -> HIFEngine:
