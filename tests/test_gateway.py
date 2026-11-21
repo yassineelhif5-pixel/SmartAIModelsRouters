@@ -66,3 +66,22 @@ def test_gateway_rejects_oversized_content_length() -> None:
         content=b'{"goal":"' + b"a" * 100 + b'"}',
     )
     assert response.status_code == 413
+
+
+def test_gateway_application_mounts_health_rest_and_mcp_routes(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("HIF_GATEWAY_API_KEY", "z" * 48)
+    monkeypatch.setenv("HIF_DATABASE_PATH", str(tmp_path / "gateway.sqlite3"))
+    monkeypatch.setenv("HIF_GATEWAY_HOST", "127.0.0.1")
+
+    from hif.gateway import create_app
+
+    app = create_app()
+    with TestClient(app) as client:
+        assert client.get("/healthz").status_code == 200
+        assert client.get("/v1/usage").status_code == 401
+        usage = client.get(
+            "/v1/usage", headers={"Authorization": "Bearer " + "z" * 48}
+        )
+        assert usage.status_code == 200
+        assert usage.json()["source"] == "hif_measured_tokens"
+        assert any(getattr(route, "path", None) == "/mcp" for route in app.routes)
