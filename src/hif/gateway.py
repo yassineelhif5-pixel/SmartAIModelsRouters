@@ -222,8 +222,28 @@ def create_app():
     if settings.gateway_tls_keyfile and not settings.gateway_tls_keyfile.is_file():
         raise RuntimeError("HIF gateway TLS key file does not exist.")
 
-    # FastMCP's streamable HTTP app owns its ASGI lifespan and /mcp endpoint.
-    app = mcp.streamable_http_app()
+    local_hosts = {"127.0.0.1", "localhost", "::1"}
+    transport_security = None
+    if settings.gateway_allowed_hosts or settings.gateway_allowed_origins:
+        if not settings.gateway_allowed_hosts:
+            raise RuntimeError("HIF_GATEWAY_ALLOWED_HOSTS is required when origins are configured.")
+        transport_security = TransportSecuritySettings(
+            enable_dns_rebinding_protection=True,
+            allowed_hosts=list(settings.gateway_allowed_hosts),
+            allowed_origins=list(settings.gateway_allowed_origins),
+        )
+    elif settings.gateway_host not in local_hosts:
+        raise RuntimeError(
+            "For a non-loopback MCP gateway, configure HIF_GATEWAY_ALLOWED_HOSTS "
+            "with the exact public hostname (and wildcard-port form if required)."
+        )
+
+    # FastMCP owns the MCP lifespan and applies Host/Origin DNS-rebinding protection.
+    app = mcp.streamable_http_app(
+        host=settings.gateway_host,
+        max_request_body_size=settings.gateway_max_request_bytes,
+        transport_security=transport_security,
+    )
     app.routes.extend(
         [
             Route("/healthz", _health, methods=["GET"]),
