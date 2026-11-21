@@ -87,7 +87,7 @@ A server deployment is intended to centralize the HIF gateway so remote assistan
 
 ### Remote host integrations
 
-ChatGPT web, Gemini web and Microsoft 365 Copilot cannot reach a private local stdio process. They require an HTTPS-accessible HIF MCP endpoint or another supported cloud connector. The production remote gateway is not complete yet.
+ChatGPT web, Gemini web and Microsoft 365 Copilot cannot reach a private local stdio process. They require an HTTPS-accessible HIF MCP endpoint or another supported cloud connector. The local authenticated REST + Streamable HTTP MCP gateway is now implemented for a single-tenant private pilot. Follow docs/GATEWAY.md to configure it. A production multi-tenant SaaS gateway, OAuth/OIDC, Windows Service and Linux systemd packaging are still future work.
 
 ## F. Provider setup and costs
 
@@ -168,3 +168,26 @@ Set HIF_DATABASE_PATH to an absolute path to override it. Use the same database 
 ### Current runtime boundaries
 
 The current HIF runtime performs text-only model calls, creates DAG nodes, shares explicit session memory, records provider-reported token usage and runs independent nodes concurrently. It does not yet edit project files, invoke arbitrary tools, expose an authenticated remote HTTP MCP endpoint, install a Windows Service, or install Linux systemd units. ChatGPT web, Gemini web and Microsoft 365 Copilot therefore still need the later remote gateway before they can dispatch real tasks through HIF.
+
+## I. Run the authenticated HTTP/MCP gateway
+
+HIF 0.3.0 includes a local REST API and MCP Streamable HTTP endpoint.
+
+1. Install the runtime and configure provider credentials.
+2. Generate a random secret and set HIF_GATEWAY_API_KEY in .env (minimum 32 characters).
+3. Keep HIF_GATEWAY_HOST=127.0.0.1 for local use.
+4. Run:
+
+       hif gateway
+
+5. Verify:
+
+       curl http://127.0.0.1:8765/healthz
+
+The remote MCP endpoint is http://127.0.0.1:8765/mcp. It requires the bearer secret in the Authorization header. REST endpoints are documented in docs/GATEWAY.md.
+
+For remote access, put the process behind a trusted TLS reverse proxy, restrict inbound access and redact Authorization headers from proxy logs. Do not expose plain HTTP to the internet. Direct TLS binding is also supported by HIF_GATEWAY_TLS_CERTFILE and HIF_GATEWAY_TLS_KEYFILE.
+
+The first gateway is a **single-tenant private pilot**: one shared bearer token, one service identity, one HIF memory database and one provider credential set. It is not suitable for mutually untrusted users or public SaaS use. OAuth/OIDC, tenant isolation, per-user permissions, distributed rate limits and audit exports remain future work.
+
+The gateway does not yet enable file edits, arbitrary shell execution, browsing, deployments or automatic tool execution on behalf of remote assistants.
