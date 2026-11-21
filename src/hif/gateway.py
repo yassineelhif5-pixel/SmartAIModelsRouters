@@ -78,6 +78,11 @@ class GatewaySecurityMiddleware(BaseHTTPMiddleware):
                     )
             except ValueError:
                 return JSONResponse({"error": "invalid_content_length"}, status_code=400)
+        elif request.method in {"POST", "PUT", "PATCH"}:
+            # Also enforce the cap for chunked requests without Content-Length.
+            body = await request.body()
+            if len(body) > self.max_request_bytes:
+                return JSONResponse({"error": "request_too_large"}, status_code=413)
 
         client_host = request.client.host if request.client else "unknown"
         now = int(time.monotonic() // 60)
@@ -210,6 +215,12 @@ def create_app():
         raise RuntimeError(
             "Set HIF_GATEWAY_API_KEY to a random secret of at least 32 characters."
         )
+    if bool(settings.gateway_tls_certfile) != bool(settings.gateway_tls_keyfile):
+        raise RuntimeError("Configure both gateway TLS certificate and key, or neither.")
+    if settings.gateway_tls_certfile and not settings.gateway_tls_certfile.is_file():
+        raise RuntimeError("HIF gateway TLS certificate file does not exist.")
+    if settings.gateway_tls_keyfile and not settings.gateway_tls_keyfile.is_file():
+        raise RuntimeError("HIF gateway TLS key file does not exist.")
 
     # FastMCP's streamable HTTP app owns its ASGI lifespan and /mcp endpoint.
     app = mcp.streamable_http_app()
