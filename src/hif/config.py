@@ -97,6 +97,7 @@ class Settings:
     gateway_oauth_jwks_url: str | None = None
     gateway_oauth_required_scopes: tuple[str, ...] = field(default_factory=tuple)
     gateway_oauth_algorithms: tuple[str, ...] = ("RS256",)
+    gateway_oauth_allowed_client_ids: tuple[str, ...] = field(default_factory=tuple)
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -209,6 +210,9 @@ class Settings:
             gateway_oauth_required_scopes=oauth_scopes,
             gateway_oauth_algorithms=_parse_csv(
                 os.getenv("HIF_GATEWAY_OAUTH_ALGORITHMS", "RS256")
+            ),
+            gateway_oauth_allowed_client_ids=_parse_csv(
+                os.getenv("HIF_GATEWAY_OAUTH_ALLOWED_CLIENT_IDS")
             ),
         )
 
