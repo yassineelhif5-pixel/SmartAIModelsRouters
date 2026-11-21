@@ -314,6 +314,7 @@ def create_app():
             resource_url=settings.gateway_oauth_resource_url or "",
             required_scopes=settings.gateway_oauth_required_scopes,
             algorithms=settings.gateway_oauth_algorithms,
+            allowed_client_ids=settings.gateway_oauth_allowed_client_ids,
         )
         token_verifier = verifier
         auth_settings = AuthSettings(
