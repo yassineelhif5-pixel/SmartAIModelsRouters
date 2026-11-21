@@ -148,7 +148,7 @@ class GatewaySecurityMiddleware:
                 if received_bytes > self.max_request_bytes:
                     rejected = True
                     await reject(413, {"error": "request_too_large"})
-                    return {"type": "http.disconnect"}
+                    return {"type": "http.request", "body": b"", "more_body": False}
             return message
 
         async def guarded_send(message: dict[str, Any]) -> None:
