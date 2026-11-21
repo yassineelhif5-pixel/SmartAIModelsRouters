@@ -303,3 +303,7 @@ class HIFEngine:
 
     def usage(self) -> list[dict[str, Any]]:
         return self.store.usage_summary(self.settings.usage_window_hours)
+
+    def model_configuration(self) -> dict[str, Any]:
+        """Return safe model routing configuration without exposing API secrets."""
+        return self.router.model_manager.status()
