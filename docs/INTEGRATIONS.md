@@ -46,7 +46,7 @@ On Linux/macOS:
 
 The skill directories are installed under ~/.claude/skills/hif and ~/.claude/skills/hifnode. Start a new Claude Code session and run /hif or /hifnode.
 
-The local HIF stdio MCP server is implemented. After installing the runtime and registering hif-mcp at user scope, Claude Code can call hif_run and hifnode_run for real text-only provider dispatch. The remote HTTP gateway for browser-based clients is not implemented yet.
+The local HIF stdio MCP server and the HIF 0.3 authenticated HTTP + Streamable HTTP MCP gateway are implemented. After installing the runtime, Claude Code can use stdio locally; remote clients can use a deployed HTTPS gateway. Both paths currently dispatch text-only tasks.
 
 ## 3. ChatGPT
 
