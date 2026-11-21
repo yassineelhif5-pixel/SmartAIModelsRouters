@@ -142,18 +142,19 @@ class Settings:
             raise ValueError("HIF_GATEWAY_PORT must be between 1 and 65535.")
 
         oauth_values = (
-            os.getenv("HIF_GATEWAY_OAUTH_ISSUER_URL"),
-            os.getenv("HIF_GATEWAY_OAUTH_RESOURCE_URL"),
-            os.getenv("HIF_GATEWAY_OAUTH_AUDIENCE"),
-            os.getenv("HIF_GATEWAY_OAUTH_JWKS_URL"),
-            os.getenv("HIF_GATEWAY_OAUTH_REQUIRED_SCOPES"),
+            os.getenv("HIF_GATEWAY_OAUTH_ISSUER_URL", "").strip(),
+            os.getenv("HIF_GATEWAY_OAUTH_RESOURCE_URL", "").strip(),
+            os.getenv("HIF_GATEWAY_OAUTH_AUDIENCE", "").strip(),
+            os.getenv("HIF_GATEWAY_OAUTH_JWKS_URL", "").strip(),
         )
-        if any(oauth_values) and not all(oauth_values):
+        oauth_scopes = _parse_csv(os.getenv("HIF_GATEWAY_OAUTH_REQUIRED_SCOPES"))
+        oauth_enabled = any(oauth_values) or bool(oauth_scopes)
+        if oauth_enabled and (not all(oauth_values) or not oauth_scopes):
             raise ValueError(
                 "OAuth gateway requires issuer URL, resource URL, audience, JWKS URL "
                 "and at least one required scope."
             )
-        if any(oauth_values) and not (
+        if oauth_enabled and not (
             oauth_values[0].startswith("https://")
             and oauth_values[1].startswith("https://")
             and oauth_values[3].startswith("https://")
@@ -205,9 +206,7 @@ class Settings:
             gateway_oauth_resource_url=os.getenv("HIF_GATEWAY_OAUTH_RESOURCE_URL") or None,
             gateway_oauth_audience=os.getenv("HIF_GATEWAY_OAUTH_AUDIENCE") or None,
             gateway_oauth_jwks_url=os.getenv("HIF_GATEWAY_OAUTH_JWKS_URL") or None,
-            gateway_oauth_required_scopes=_parse_csv(
-                os.getenv("HIF_GATEWAY_OAUTH_REQUIRED_SCOPES")
-            ),
+            gateway_oauth_required_scopes=oauth_scopes,
             gateway_oauth_algorithms=_parse_csv(
                 os.getenv("HIF_GATEWAY_OAUTH_ALGORITHMS", "RS256")
             ),
