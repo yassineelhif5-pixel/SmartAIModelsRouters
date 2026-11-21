@@ -68,3 +68,11 @@ async def test_oidc_verifier_rejects_expired_token_and_wrong_issuer(verifier) ->
     instance, secret = verifier
     assert await instance.verify_token(make_token(secret, exp=int(time.time()) - 120)) is None
     assert await instance.verify_token(make_token(secret, iss="https://attacker.example")) is None
+
+
+@pytest.mark.asyncio
+async def test_oidc_verifier_enforces_optional_client_allowlist(verifier) -> None:
+    instance, secret = verifier
+    instance.allowed_client_ids = {"trusted-client"}
+    assert await instance.verify_token(make_token(secret, azp="client-123")) is None
+    assert await instance.verify_token(make_token(secret, azp="trusted-client")) is not None
