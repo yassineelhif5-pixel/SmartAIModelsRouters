@@ -82,6 +82,13 @@ class Settings:
     memory_pressure_threshold: float = 88.0
     min_free_memory_mb: int = 1536
     resource_aware_scheduling: bool = True
+    gateway_api_key: str | None = None
+    gateway_host: str = "127.0.0.1"
+    gateway_port: int = 8765
+    gateway_rate_limit_per_minute: int = 60
+    gateway_max_request_bytes: int = 65536
+    gateway_tls_certfile: Path | None = None
+    gateway_tls_keyfile: Path | None = None
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -97,6 +104,9 @@ class Settings:
             cpu_threshold = float(os.getenv("HIF_CPU_PRESSURE_THRESHOLD", "85"))
             memory_threshold = float(os.getenv("HIF_MEMORY_PRESSURE_THRESHOLD", "88"))
             min_free = int(os.getenv("HIF_MIN_FREE_MEMORY_MB", "1536"))
+            gateway_port = int(os.getenv("HIF_GATEWAY_PORT", "8765"))
+            gateway_rate_limit = int(os.getenv("HIF_GATEWAY_RATE_LIMIT_PER_MINUTE", "60"))
+            gateway_max_bytes = int(os.getenv("HIF_GATEWAY_MAX_REQUEST_BYTES", "65536"))
         except ValueError as exc:
             raise ValueError("Invalid numeric HIF setting.") from exc
 
@@ -109,6 +119,9 @@ class Settings:
             "HIF_REQUEST_TIMEOUT_SECONDS": timeout,
             "HIF_MAX_CONTEXT_CHARS": max_context,
             "HIF_MIN_FREE_MEMORY_MB": min_free,
+            "HIF_GATEWAY_PORT": gateway_port,
+            "HIF_GATEWAY_RATE_LIMIT_PER_MINUTE": gateway_rate_limit,
+            "HIF_GATEWAY_MAX_REQUEST_BYTES": gateway_max_bytes,
         }
         for name, value in positive.items():
             if value < 1:
@@ -146,6 +159,15 @@ class Settings:
             min_free_memory_mb=min_free,
             resource_aware_scheduling=os.getenv("HIF_RESOURCE_AWARE", "true").lower()
             not in {"0", "false", "no"},
+            gateway_api_key=os.getenv("HIF_GATEWAY_API_KEY") or None,
+            gateway_host=os.getenv("HIF_GATEWAY_HOST", "127.0.0.1"),
+            gateway_port=gateway_port,
+            gateway_rate_limit_per_minute=gateway_rate_limit,
+            gateway_max_request_bytes=gateway_max_bytes,
+            gateway_tls_certfile=Path(os.environ["HIF_GATEWAY_TLS_CERTFILE"]).expanduser()
+            if os.getenv("HIF_GATEWAY_TLS_CERTFILE") else None,
+            gateway_tls_keyfile=Path(os.environ["HIF_GATEWAY_TLS_KEYFILE"]).expanduser()
+            if os.getenv("HIF_GATEWAY_TLS_KEYFILE") else None,
         )
 
     def get_models(self) -> tuple[str, ...]:
