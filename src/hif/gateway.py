@@ -325,11 +325,14 @@ def create_app():
         )
 
     # FastMCP owns the MCP lifespan and publishes RFC 9728 metadata when OAuth is enabled.
-    gateway_mcp = create_mcp_server(auth=auth_settings, token_verifier=token_verifier)
-    app = gateway_mcp.streamable_http_app(
-        max_request_body_size=settings.gateway_max_request_bytes,
+    gateway_mcp = create_mcp_server(
+        auth=auth_settings,
+        token_verifier=token_verifier,
+        host=settings.gateway_host,
         transport_security=transport_security,
     )
+    # The outer pure-ASGI gateway middleware enforces the configured request-body cap.
+    app = gateway_mcp.streamable_http_app()
     app.routes.extend(
         [
             Route("/healthz", _health, methods=["GET"]),
