@@ -88,7 +88,7 @@ class GatewaySecurityMiddleware:
         auth = headers.get("authorization", "")
         scheme, _, supplied = auth.partition(" ")
         if scheme.lower() != "bearer" or not supplied or not hmac.compare_digest(
-            supplied, self.api_key
+            supplied.encode("utf-8"), self.api_key.encode("utf-8")
         ):
             await reject(
                 401,
@@ -259,9 +259,9 @@ def create_app():
     """Build the authenticated Streamable HTTP MCP + REST ASGI application."""
     settings = Settings.from_env()
     api_key = settings.gateway_api_key or ""
-    if len(api_key) < 32:
+    if len(api_key) < 32 or not api_key.isascii():
         raise RuntimeError(
-            "Set HIF_GATEWAY_API_KEY to a random secret of at least 32 characters."
+            "Set HIF_GATEWAY_API_KEY to an ASCII random secret of at least 32 characters."
         )
     if bool(settings.gateway_tls_certfile) != bool(settings.gateway_tls_keyfile):
         raise RuntimeError("Configure both gateway TLS certificate and key, or neither.")
