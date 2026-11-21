@@ -110,3 +110,61 @@ Imported ChatGPT Skills are currently documented for eligible Business, Enterpri
 Official details:
 - https://help.openai.com/fr-fr/articles/20001066-skills-in-chatgpt
 - https://help.openai.com/fr-fr/articles/12584461-connecting-custom-mcp-servers-in-chatgpt
+
+## H. Install the HIF runtime (local Windows / Linux)
+
+The skill-only installer copies instructions. To execute tasks against real providers, also install the Python runtime.
+
+### Windows 10/11 or Windows Server
+
+From the repository root in PowerShell:
+
+    .\scripts\install-hif-runtime.ps1
+
+The script creates a Python 3.12 virtual environment, installs the CLI, LiteLLM, MCP and resource-monitoring dependencies, then creates .env from .env.example when needed.
+
+Open .env and configure at least:
+
+- HIF_MODEL_POOL: comma-separated LiteLLM model IDs in preference order.
+- The corresponding provider API keys (ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY, etc.).
+- Optional HIF_TASK_MODEL_PREFERENCES and per-model token budgets.
+
+Use model IDs accepted by the provider and current LiteLLM adapter. Do not copy example IDs without verifying availability for your account.
+
+Test the CLI:
+
+    .\.venv\Scripts\hif.exe --help
+    .\.venv\Scripts\hif.exe usage
+
+Register MCP at user scope so Claude Code can use HIF across the user's projects. The runtime installer prints the exact executable path; run the displayed command:
+
+    claude mcp add --scope user --transport stdio hif -- "C:\full\path\to\.venv\Scripts\hif-mcp.exe"
+    claude mcp list
+
+Start a new Claude Code session and invoke /hif or /hifnode.
+
+### Linux
+
+    bash scripts/install-hif-runtime.sh
+
+Configure .env, then test:
+
+    .venv/bin/hif --help
+    .venv/bin/hif usage
+
+Register the local MCP server globally for Claude Code:
+
+    claude mcp add --scope user --transport stdio hif -- "$PWD/.venv/bin/hif-mcp"
+    claude mcp list
+
+### Shared memory location
+
+By default, HIF stores SQLite state in a per-user data directory shared across projects:
+- Windows: %LOCALAPPDATA%\HIF\hif.sqlite3
+- Linux: $XDG_DATA_HOME/HIF/hif.sqlite3, or ~/.local/share/HIF/hif.sqlite3
+
+Set HIF_DATABASE_PATH to an absolute path to override it. Use the same database path only for processes running under the same trusted user/service boundary. Do not put the database on an untrusted network share.
+
+### Current runtime boundaries
+
+The current HIF runtime performs text-only model calls, creates DAG nodes, shares explicit session memory, records provider-reported token usage and runs independent nodes concurrently. It does not yet edit project files, invoke arbitrary tools, expose an authenticated remote HTTP MCP endpoint, install a Windows Service, or install Linux systemd units. ChatGPT web, Gemini web and Microsoft 365 Copilot therefore still need the later remote gateway before they can dispatch real tasks through HIF.
