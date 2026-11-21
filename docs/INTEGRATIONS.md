@@ -58,7 +58,7 @@ ChatGPT supports importable Skills for eligible Business, Enterprise, Healthcare
 4. Upload dist/hif.zip and dist/hifnode.zip.
 5. Use the HIF skill from the Skills area or ask ChatGPT to apply it to a task.
 
-For actual multi-provider tool execution, HIF needs a custom MCP app/plugin connected to a deployed HTTPS MCP endpoint. HIF 0.3.0 now includes the authenticated REST + Streamable HTTP MCP gateway; it can run as a single-tenant private pilot behind a trusted TLS reverse proxy. A local stdio process on a developer PC is not reachable by ChatGPT web. OAuth/OIDC, tenant isolation and production SaaS hardening are still future work.
+For actual multi-provider tool execution, HIF needs a custom MCP app/plugin connected to a deployed HTTPS MCP endpoint. HIF 0.3.0 now includes the authenticated REST + Streamable HTTP MCP gateway; it can run as a single-tenant private pilot behind a trusted TLS reverse proxy. A local stdio process on a developer PC is not reachable by ChatGPT web. The gateway can validate OAuth 2.1 access tokens from an external OIDC provider (including an Entra ID setup); the provider must perform authorization-code + PKCE and issue the JWT. Tenant isolation and production SaaS hardening are still future work.
 
 Official documentation:
 - https://help.openai.com/fr-fr/articles/20001066-skills-in-chatgpt
