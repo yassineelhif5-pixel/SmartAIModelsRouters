@@ -15,7 +15,8 @@ from typing import Any
 
 import uvicorn
 from mcp.server.transport_security import TransportSecuritySettings
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, ValidationError
+from mcp.server.auth.settings import AuthSettings
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
@@ -23,7 +24,8 @@ from starlette.routing import Route
 from hif import __version__
 from hif.config import Settings
 from hif.engine import HIFEngine
-from hif.mcp_server import mcp
+from hif.mcp_server import create_mcp_server
+from hif.oauth import OIDCJWTVerifier
 
 logger = logging.getLogger("hif.gateway")
 
@@ -45,11 +47,13 @@ class GatewaySecurityMiddleware:
         api_key: str,
         requests_per_minute: int,
         max_request_bytes: int,
+        oauth_enabled: bool = False,
     ) -> None:
         self.app = app
         self.api_key = api_key
         self.requests_per_minute = requests_per_minute
         self.max_request_bytes = max_request_bytes
+        self.oauth_enabled = oauth_enabled
         self._lock = threading.Lock()
         self._buckets: dict[str, tuple[int, int]] = {}
 
@@ -78,7 +82,16 @@ class GatewaySecurityMiddleware:
                 scope, receive, secure_send
             )
 
-        if scope.get("path") == "/healthz":
+        path = scope.get("path", "")
+        oauth_mcp_path = (
+            self.oauth_enabled
+            and (
+                path == "/mcp"
+                or path.startswith("/.well-known/oauth-protected-resource")
+            )
+        )
+        if path == "/healthz" or oauth_mcp_path:
+            # The MCP SDK owns OAuth verification and RFC 9728 discovery on these paths.
             await self.app(scope, receive, secure_send)
             return
 
@@ -287,8 +300,30 @@ def create_app():
             "with the exact public hostname (and wildcard-port form if required)."
         )
 
-    # FastMCP owns the MCP lifespan and applies Host/Origin DNS-rebinding protection.
-    app = mcp.streamable_http_app(
+    oauth_enabled = bool(settings.gateway_oauth_issuer_url)
+    auth_settings = None
+    token_verifier = None
+    if oauth_enabled:
+        verifier = OIDCJWTVerifier(
+            issuer_url=settings.gateway_oauth_issuer_url or "",
+            jwks_url=settings.gateway_oauth_jwks_url or "",
+            audience=settings.gateway_oauth_audience or "",
+            resource_url=settings.gateway_oauth_resource_url or "",
+            required_scopes=settings.gateway_oauth_required_scopes,
+            algorithms=settings.gateway_oauth_algorithms,
+        )
+        token_verifier = verifier
+        auth_settings = AuthSettings(
+            issuer_url=AnyHttpUrl(settings.gateway_oauth_issuer_url),
+            resource_server_url=AnyHttpUrl(settings.gateway_oauth_resource_url),
+            required_scopes=list(settings.gateway_oauth_required_scopes),
+            # The verifier checks the provider-specific audience claim directly.
+            validate_token_resource=False,
+        )
+
+    # FastMCP owns the MCP lifespan and publishes RFC 9728 metadata when OAuth is enabled.
+    gateway_mcp = create_mcp_server(auth=auth_settings, token_verifier=token_verifier)
+    app = gateway_mcp.streamable_http_app(
         host=settings.gateway_host,
         max_request_body_size=settings.gateway_max_request_bytes,
         transport_security=transport_security,
@@ -307,6 +342,7 @@ def create_app():
         api_key=api_key,
         requests_per_minute=settings.gateway_rate_limit_per_minute,
         max_request_bytes=settings.gateway_max_request_bytes,
+        oauth_enabled=oauth_enabled,
     )
     return app
 
