@@ -13,7 +13,6 @@ dependencies = [
   "pydantic>=2.8",
   "typer>=0.12",
   "rich>=13.7",
-  "litellm>=1.60",
   "mcp>=1.27.2,<2",
   "uvicorn>=0.30",
   "PyJWT[crypto]>=2.8",
@@ -22,6 +21,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+providers = ["litellm>=1.60"]
 dev = ["pytest>=8.3", "pytest-asyncio>=0.24", "ruff>=0.6", "mypy>=1.11"]
 
 [project.scripts]
