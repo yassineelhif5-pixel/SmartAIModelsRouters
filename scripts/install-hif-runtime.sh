@@ -40,4 +40,13 @@ echo "  .venv/bin/hif mcp"
 echo
 echo "For user-wide Claude Code MCP registration:"
 echo "  claude mcp add --scope user --transport stdio hif -- $REPO_ROOT/.venv/bin/hif-mcp"
+echo "  claude mcp list"
+echo
+echo "Gemini CLI user-scope MCP registration:"
+echo "  gemini mcp add --scope user hif $REPO_ROOT/.venv/bin/hif-mcp"
+echo "  gemini mcp list"
+echo
+echo "OpenAI Codex MCP registration:"
+echo "  codex mcp add hif -- $REPO_ROOT/.venv/bin/hif-mcp"
+echo "  codex mcp list"
 echo "NOTE: This does not install a Windows Service or expose a remote HTTP gateway."
