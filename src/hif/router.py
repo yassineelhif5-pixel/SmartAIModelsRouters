@@ -6,6 +6,7 @@ import time
 from datetime import timedelta
 
 from hif.config import Settings
+from hif.model_manager import AIModelManager
 from hif.storage import HIFStore, utc_now
 
 
@@ -13,11 +14,11 @@ class ModelRouter:
     def __init__(self, settings: Settings, store: HIFStore):
         self.settings = settings
         self.store = store
+        self.model_manager = AIModelManager(settings)
         self._cooldown_until: dict[str, float] = {}
 
     def candidates(self, preferred: tuple[str, ...] = ()) -> tuple[str, ...]:
-        pool = self.settings.get_models()
-        ordered = tuple(dict.fromkeys((*preferred, *pool)))
+        ordered = self.model_manager.candidates(preferred)
         eligible: list[str] = []
         now = time.monotonic()
         since = utc_now() - timedelta(hours=self.settings.usage_window_hours)
@@ -32,6 +33,9 @@ class ModelRouter:
                 continue
             eligible.append(model)
         return tuple(eligible)
+
+    def status(self) -> dict[str, object]:
+        return self.model_manager.status()
 
     def mark_unavailable(self, model: str, retry_after: float | None = None) -> None:
         try:
