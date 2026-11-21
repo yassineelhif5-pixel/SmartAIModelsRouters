@@ -7,7 +7,7 @@ HIF is built around two workflows:
 - **/hif** — plan and route a goal across suitable providers, then return one consolidated result.
 - **/hifnode** — split a complex goal into specialist nodes (architect, researcher, implementer, tester, reviewer, writer), run independent nodes concurrently and share one HIF session ID and approved memory.
 
-> **Project status:** HIF 0.3.0 adds an authenticated REST + Streamable HTTP MCP gateway for a single-tenant private pilot. The local text-only engine, DAG nodes, shared SQLite session memory, measured-token fallback budgets, retry handling and CPU/RAM-aware bounded concurrency remain available. OAuth/OIDC, tenant isolation, file-editing agents, Windows Service/systemd packaging and full end-to-end host integrations remain future work.
+> **Project status:** HIF 0.3.0 adds an authenticated REST + Streamable HTTP MCP gateway for a single-tenant private pilot, including an external OIDC/JWT resource-server verifier for OAuth 2.1 clients. The local text-only engine, DAG nodes, shared SQLite session memory, measured-token fallback budgets, retry handling and CPU/RAM-aware bounded concurrency remain available. multi-tenant identity isolation, fine-grained tool scopes, file-editing agents, Windows Service/systemd packaging and full end-to-end host integrations remain future work.
 
 ## Implemented in HIF 0.3.0
 
@@ -20,7 +20,7 @@ HIF is built around two workflows:
 7. **Resource management:** bound concurrency using CPU/RAM telemetry and configured per-provider semaphores.
 8. **Local integration:** provide a CLI and stdio MCP server with hif_run and hifnode_run tools.
 9. **Local integration:** CLI and stdio MCP server with hif_run and hifnode_run tools.
-10. **Remote gateway:** authenticated REST and Streamable HTTP MCP, public minimal health check, bearer auth, request-size caps, per-IP rate limiting and TLS guard.
+10. **Remote gateway:** authenticated REST and Streamable HTTP MCP, public minimal health check, bearer auth for private REST mode, optional OIDC/JWT authentication for MCP, request-size caps, per-IP rate limiting, Host/Origin allowlists and TLS guard.
 11. **Testing:** mock-provider tests plus gateway security tests; CI runs without paid API keys.
 
 ## Planned optimization capabilities
