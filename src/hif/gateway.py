@@ -83,6 +83,10 @@ class GatewaySecurityMiddleware:
             )
 
         path = scope.get("path", "")
+        if path == "/healthz":
+            await self.app(scope, receive, secure_send)
+            return
+
         oauth_mcp_path = (
             self.oauth_enabled
             and (
@@ -90,26 +94,25 @@ class GatewaySecurityMiddleware:
                 or path.startswith("/.well-known/oauth-protected-resource")
             )
         )
-        if path == "/healthz" or oauth_mcp_path:
-            # The MCP SDK owns OAuth verification and RFC 9728 discovery on these paths.
-            await self.app(scope, receive, secure_send)
-            return
-
         headers = {
             key.decode("latin-1").lower(): value.decode("latin-1")
             for key, value in scope.get("headers", [])
         }
-        auth = headers.get("authorization", "")
-        scheme, _, supplied = auth.partition(" ")
-        if scheme.lower() != "bearer" or not supplied or not hmac.compare_digest(
-            supplied.encode("utf-8"), self.api_key.encode("utf-8")
-        ):
-            await reject(
-                401,
-                {"error": "unauthorized", "message": "A valid bearer token is required."},
-                {"WWW-Authenticate": "Bearer"},
-            )
-            return
+
+        # OIDC MCP requests are verified by the MCP SDK; REST and private API-key
+        # mode continue to use the HIF operator bearer key.
+        if not oauth_mcp_path:
+            auth = headers.get("authorization", "")
+            scheme, _, supplied = auth.partition(" ")
+            if scheme.lower() != "bearer" or not supplied or not hmac.compare_digest(
+                supplied.encode("utf-8"), self.api_key.encode("utf-8")
+            ):
+                await reject(
+                    401,
+                    {"error": "unauthorized", "message": "A valid bearer token is required."},
+                    {"WWW-Authenticate": "Bearer"},
+                )
+                return
 
         length = headers.get("content-length")
         if length:
