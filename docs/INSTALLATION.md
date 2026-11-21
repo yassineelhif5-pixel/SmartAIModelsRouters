@@ -87,7 +87,7 @@ A server deployment is intended to centralize the HIF gateway so remote assistan
 
 ### Remote host integrations
 
-ChatGPT web, Gemini web and Microsoft 365 Copilot cannot reach a private local stdio process. They require an HTTPS-accessible HIF MCP endpoint or another supported cloud connector. The local authenticated REST + Streamable HTTP MCP gateway is now implemented for a single-tenant private pilot. Follow docs/GATEWAY.md to configure it. A production multi-tenant SaaS gateway, OAuth/OIDC, Windows Service and Linux systemd packaging are still future work.
+ChatGPT web, Gemini web and Microsoft 365 Copilot cannot reach a private local stdio process. They require an HTTPS-accessible HIF MCP endpoint or another supported cloud connector. The local authenticated REST + Streamable HTTP MCP gateway is now implemented for a single-tenant private pilot. Follow docs/GATEWAY.md to configure it. External OIDC/JWT token validation is supported for MCP when an identity provider is configured; HIF does not issue OAuth tokens. Multi-tenant SaaS controls, fine-grained permissions, Windows Service and Linux systemd packaging are still future work.
 
 ## F. Provider setup and costs
 
