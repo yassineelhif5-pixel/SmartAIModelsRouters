@@ -157,6 +157,9 @@ Set these HIF values in .env (replace placeholders with the actual Entra values)
     HIF_GATEWAY_OAUTH_ALGORITHMS=RS256
     HIF_GATEWAY_OAUTH_ALLOWED_CLIENT_IDS=<chatgpt-client-app-id>
 
+
+**Entra compatibility note:** Microsoft Entra v2 is scope-centric and its token endpoint may accept but ignore the RFC 8707 resource parameter; the requested API scope determines the access-token audience. HIF therefore validates the configured Entra API audience (the resource app ID) rather than assuming the aud claim equals the MCP URL. If your ChatGPT connection or identity-provider policy requires the exact MCP resource URL to be echoed into aud, choose an authorization server with full RFC 8707 resource-indicator support instead. See the [Microsoft identity platform notes on Entra resource indicators](https://microsoft.github.io/identity-spiffe/platform-learnings/agent-id-blueprints-and-users/) and [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html).
+
 The audience must exactly match the aud claim in the access token issued for the HIF resource application. The scope value must match the scp claim. Set HIF_GATEWAY_OAUTH_ALLOWED_CLIENT_IDS to the client application IDs you trust (for example, the ChatGPT OAuth client registration); leaving it empty allows any client in the tenant that can obtain the required delegated scope. HIF also requires a user sub claim. If your identity provider emits a different audience or claim layout, configure those values accordingly; do not weaken signature, issuer, audience or expiry validation.
 
 ### Register ChatGPT as an OAuth client
@@ -165,7 +168,7 @@ The audience must exactly match the aud claim in the access token issued for the
 2. Configure it as a web/public client according to the OAuth client credentials supported by your ChatGPT connector setup. Use authorization code + PKCE (S256), not client credentials.
 3. Add the exact redirect URI displayed by ChatGPT's custom MCP connection setup to the Entra app registration.
 4. Add delegated permission to the HIF resource app's hif.access scope and grant consent as required by your tenant.
-5. In ChatGPT, open Plugins, choose Add custom MCP server, set the HTTPS server URL to https://hif.example.com/mcp, choose OAuth and enter the Entra authorization endpoint, token endpoint, client ID, client secret if the connector flow requests one, and hif.access scope.
+5. In ChatGPT, open Plugins, choose Add custom MCP server, set the HTTPS server URL to https://hif.example.com/mcp, choose OAuth and configure a predefined OAuth client with the Entra authorization endpoint, token endpoint, client ID, client secret and the hif.access scope. Use the token endpoint authentication method advertised by Entra and accepted by the ChatGPT connection setup (commonly client_secret_post for a confidential client).
 6. Complete the user sign-in/consent flow and test the HIF tools.
 
 Typical Entra endpoints:
