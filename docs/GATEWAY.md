@@ -180,7 +180,7 @@ For any remote client that supports OAuth 2.1 authorization-code + PKCE, configu
 
 ### Security boundary
 
-OIDC is enabled only when all HIF_GATEWAY_OAUTH_* settings are configured. If not enabled, /mcp uses the shared HIF bearer key like the REST endpoints. With OIDC enabled, the static HIF key does not bypass OAuth on /mcp; it remains for REST operator endpoints only. Keep both credentials in a secret store and rotate them according to your policy.
+OIDC is enabled only when issuer, resource URL, audience, JWKS URL and at least one required scope are configured. If not enabled, /mcp uses the shared HIF bearer key like the REST endpoints. With OIDC enabled, the static HIF key does not bypass OAuth on /mcp; it remains for REST operator endpoints only. Keep both credentials in a secret store and rotate them according to your policy.
 
 ## 6. TLS and reverse proxy
 
