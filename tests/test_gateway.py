@@ -105,3 +105,28 @@ def test_remote_gateway_requires_explicit_mcp_host_allowlist(tmp_path, monkeypat
     )
     app = create_app()
     assert any(getattr(route, "path", None) == "/mcp" for route in app.routes)
+
+
+def test_gateway_publishes_oauth_resource_metadata_when_oidc_is_configured(
+    tmp_path, monkeypatch
+) -> None:
+    monkeypatch.setenv("HIF_GATEWAY_API_KEY", "o" * 48)
+    monkeypatch.setenv("HIF_DATABASE_PATH", str(tmp_path / "oauth-gateway.sqlite3"))
+    monkeypatch.setenv("HIF_GATEWAY_HOST", "127.0.0.1")
+    monkeypatch.setenv(
+        "HIF_GATEWAY_OAUTH_ISSUER_URL", "https://login.example.com/tenant/v2.0"
+    )
+    monkeypatch.setenv(
+        "HIF_GATEWAY_OAUTH_RESOURCE_URL", "https://hif.example.com/mcp"
+    )
+    monkeypatch.setenv("HIF_GATEWAY_OAUTH_AUDIENCE", "hif-api-client-id")
+    monkeypatch.setenv(
+        "HIF_GATEWAY_OAUTH_JWKS_URL", "https://login.example.com/tenant/keys"
+    )
+    monkeypatch.setenv("HIF_GATEWAY_OAUTH_REQUIRED_SCOPES", "hif.access")
+
+    from hif.gateway import create_app
+
+    app = create_app()
+    paths = [getattr(route, "path", "") for route in app.routes]
+    assert any(path.startswith("/.well-known/oauth-protected-resource") for path in paths)
