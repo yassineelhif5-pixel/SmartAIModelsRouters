@@ -19,6 +19,8 @@ Install HIF runtime as described in QUICKSTART.md, then configure .env:
     HIF_GATEWAY_PORT=8765
     HIF_GATEWAY_RATE_LIMIT_PER_MINUTE=60
     HIF_GATEWAY_MAX_REQUEST_BYTES=65536
+    HIF_GATEWAY_ALLOWED_HOSTS=hif.example.com,hif.example.com:*
+    HIF_GATEWAY_ALLOWED_ORIGINS=
 
 Generate a strong secret (do not commit it):
 
@@ -36,7 +38,7 @@ Store the key in a secret manager or a protected environment file readable only 
 
     hif gateway
 
-The default listener is 127.0.0.1:8765. Health check:
+The default listener is 127.0.0.1:8765. For local-only access, leave HIF_GATEWAY_ALLOWED_HOSTS empty; the MCP SDK keeps its localhost DNS-rebinding protection enabled. For a remote hostname, explicitly configure HIF_GATEWAY_ALLOWED_HOSTS with both the bare hostname and wildcard-port form (for example hif.example.com,hif.example.com:*). Set HIF_GATEWAY_ALLOWED_ORIGINS only for browser clients that send an Origin header. The MCP SDK validates Host/Origin separately from the gateway bearer token. Health check:
 
     curl http://127.0.0.1:8765/healthz
 
@@ -133,7 +135,7 @@ Preferred deployment:
 5. Configure proxy request-body limits, timeouts and access logs with Authorization headers redacted.
 6. Do not forward untrusted client identity headers to HIF. Current rate limiting uses the TCP peer address visible to the app; behind a reverse proxy this is normally the proxy address, so enforce rate limiting at the proxy too.
 
-Direct TLS binding is also supported by setting both:
+Direct TLS binding is also supported by setting both (and configuring the exact public Host allowlist):
 
     HIF_GATEWAY_HOST=0.0.0.0
     HIF_GATEWAY_PORT=8765
@@ -148,7 +150,8 @@ The private key must be readable only by the service identity. For Windows, use 
 - Authentication uses constant-time comparison.
 - /healthz is public; it reveals no session, usage or provider information.
 - Other routes require authentication.
-- Request bodies are capped by HIF_GATEWAY_MAX_REQUEST_BYTES.
+- REST and MCP request bodies are capped by HIF_GATEWAY_MAX_REQUEST_BYTES.
+- MCP DNS-rebinding protection is enabled: remote Host values must be explicitly allowlisted with HIF_GATEWAY_ALLOWED_HOSTS; browser Origin values must be explicitly allowlisted with HIF_GATEWAY_ALLOWED_ORIGINS when present.
 - Rate limiting is a per-process, per-source-IP fixed window; it is not distributed and may be shared across clients behind a proxy.
 - One gateway key currently authorizes all exposed tools. There are no separate read/run/admin scopes.
 - All clients share the service account's HIF database and provider credentials. Do not use this deployment for mutually untrusted users.
