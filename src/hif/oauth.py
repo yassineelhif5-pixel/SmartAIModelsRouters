@@ -28,6 +28,7 @@ class OIDCJWTVerifier(TokenVerifier):
         resource_url: str,
         required_scopes: tuple[str, ...],
         algorithms: tuple[str, ...] = ("RS256",),
+        allowed_client_ids: tuple[str, ...] = (),
     ) -> None:
         if not algorithms or any(alg.lower() == "none" for alg in algorithms):
             raise ValueError("OIDC JWT algorithms must be explicit and cannot include none.")
@@ -37,6 +38,7 @@ class OIDCJWTVerifier(TokenVerifier):
         self.resource_url = resource_url
         self.required_scopes = set(required_scopes)
         self.algorithms = list(algorithms)
+        self.allowed_client_ids = set(allowed_client_ids)
         self._jwks = jwt.PyJWKClient(
             jwks_url,
             cache_jwk_set=True,
@@ -74,15 +76,20 @@ class OIDCJWTVerifier(TokenVerifier):
                 claims.get("azp")
                 or claims.get("appid")
                 or claims.get("client_id")
-                or "unknown-client"
+                or ""
             )
+            subject = claims.get("sub")
+            if not client_id or not subject:
+                return None
+            if self.allowed_client_ids and client_id not in self.allowed_client_ids:
+                return None
             return AccessToken(
                 token=token,
                 client_id=str(client_id),
                 scopes=scopes,
                 expires_at=int(claims["exp"]),
                 resource=self.resource_url,
-                subject=str(claims["sub"]) if claims.get("sub") else None,
+                subject=str(subject),
                 claims=claims,
             )
         except (jwt.PyJWTError, KeyError, TypeError, ValueError) as exc:
