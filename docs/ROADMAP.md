@@ -84,7 +84,8 @@
 - [x] Single-tenant bearer-authenticated REST and Streamable HTTP MCP endpoints.
 - [x] Health endpoint, request-size limit, per-IP rate limit and no-store/security headers.
 - [x] Refuse non-loopback plain-HTTP binds unless direct TLS is configured.
-- [ ] OAuth 2.1 / OIDC with user identity and token rotation.
+- [x] OAuth 2.1 resource-server integration: external OIDC JWT verification (issuer, JWKS signature, audience, expiry and required scopes) with RFC 9728 discovery.
+- [ ] Full user/tenant lifecycle, token revocation/rotation events and fine-grained per-tool authorization.
 - [ ] Per-tool permissions, tenant isolation and distributed rate limits.
 - [ ] Proxy deployment templates for Caddy, Nginx and IIS ARR.
 - [ ] Load, soak, security and failure-injection tests.
