@@ -1,5 +1,7 @@
 # HIF Architecture
 
+> **Implementation status (0.2.0):** the local MVP currently implements SQLite sessions/memory, typed DAG planning, bounded parallel text execution, a LiteLLM provider adapter, ordered model pools, task-type preferences, HIF-measured 80% token-budget filtering, retryable-error cooldown/fallback, per-provider semaphores and CPU/RAM-aware concurrency. Dynamic cost/latency/quality scoring, official provider quota APIs, durable artifact hashing, cancellation, remote HTTP MCP, file/tool execution and cross-host remote memory are still planned. This document describes the target architecture where those capabilities are not yet shipped.
+
 ## 1. Purpose
 
 HIF (Hybrid Intelligent Flow) orchestrates a user's work across multiple AI providers. It is not intended to proxy every token in every native assistant conversation. Its central value is task-level delegation: one outcome becomes a graph of small, independently executable tasks.
