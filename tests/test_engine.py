@@ -186,3 +186,13 @@ async def test_hif_falls_back_after_retryable_provider_error(tmp_path) -> None:
     assert result.nodes
     assert provider.calls[0] == "broken/model"
     assert "healthy/model" in provider.calls
+
+
+def test_empty_database_path_uses_shared_user_directory(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "localappdata"))
+    monkeypatch.setenv("HIF_DATABASE_PATH", "")
+    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
+
+    settings = Settings.from_env()
+
+    assert settings.database_path == tmp_path / "localappdata" / "HIF" / "hif.sqlite3"
