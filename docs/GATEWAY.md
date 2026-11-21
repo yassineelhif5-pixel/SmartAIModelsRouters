@@ -99,7 +99,7 @@ The Streamable HTTP MCP endpoint is:
 
     http://127.0.0.1:8765/mcp
 
-Remote clients must send the same bearer token in the HTTP Authorization header. Configure their MCP client using its documented Streamable HTTP transport and secret/header mechanism. Example generic shape (client configuration formats differ):
+When OIDC is configured, remote MCP clients must obtain an OAuth access token from the configured identity provider and send it in the Authorization header. When OIDC is not configured, compatible private clients can use the shared HIF bearer key. ChatGPT custom MCP requires OAuth 2.1 authorization-code + PKCE for authenticated connections; the static HIF key is not a substitute. Example generic shape for a non-OIDC private client (client configuration formats differ):
 
     {
       "mcpServers": {
@@ -113,7 +113,7 @@ Remote clients must send the same bearer token in the HTTP Authorization header.
       }
     }
 
-Never commit a real token in this file. Some clients do not support custom authorization headers for remote MCP; check the client's current documentation. Do not work around that limitation by putting secrets in query parameters.
+Never commit a real token in this file. Some clients do not support static custom authorization headers for remote MCP; use their OAuth flow where available. Do not work around that limitation by putting secrets in query parameters.
 
 Available tools:
 - hif_run
