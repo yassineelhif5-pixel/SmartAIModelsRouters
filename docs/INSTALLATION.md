@@ -167,7 +167,7 @@ Set HIF_DATABASE_PATH to an absolute path to override it. Use the same database 
 
 ### Current runtime boundaries
 
-The current HIF runtime performs text-only model calls, creates DAG nodes, shares explicit session memory, records provider-reported token usage and runs independent nodes concurrently. It does not yet edit project files, invoke arbitrary tools, expose an authenticated remote HTTP MCP endpoint, install a Windows Service, or install Linux systemd units. ChatGPT web, Gemini web and Microsoft 365 Copilot therefore still need the later remote gateway before they can dispatch real tasks through HIF.
+The current HIF runtime performs text-only model calls, creates DAG nodes, shares explicit session memory, records provider-reported token usage and runs independent nodes concurrently. The authenticated REST + Streamable HTTP MCP gateway is implemented for a single-tenant private pilot. File edits, arbitrary shell/tool execution, browsing, deployment, Windows Service and Linux systemd units are not implemented. Remote assistants can connect only after the gateway is deployed on HTTPS and their host supports remote MCP.
 
 ## I. Run the authenticated HTTP/MCP gateway
 
