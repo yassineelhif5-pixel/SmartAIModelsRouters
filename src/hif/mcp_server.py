@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from functools import lru_cache
 
 from mcp.server.fastmcp import FastMCP
 
@@ -13,7 +14,9 @@ from hif.storage import HIFStore
 mcp = FastMCP("HIF Smart AI Models Router")
 
 
+@lru_cache(maxsize=1)
 def _engine() -> HIFEngine:
+    # Keep one router, SQLite store and provider semaphore set per MCP process.
     return HIFEngine()
 
 
