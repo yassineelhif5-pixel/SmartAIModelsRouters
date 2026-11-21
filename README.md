@@ -68,6 +68,7 @@ Creates dist/hif.zip and dist/hifnode.zip. Upload instructions for Claude, ChatG
 ## Core documentation
 
 - Architecture: docs/ARCHITECTURE.md
+- Quickstart: docs/QUICKSTART.md
 - Installation: docs/INSTALLATION.md
 - Integrations: docs/INTEGRATIONS.md
 - Node orchestration: docs/NODE-ORCHESTRATION.md
