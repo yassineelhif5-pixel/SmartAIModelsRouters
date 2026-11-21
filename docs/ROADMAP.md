@@ -35,20 +35,24 @@
 - [ ] Add secret redaction, structured logs and budget enforcement.
 
 ## Phase 3 — Host integrations
-- [ ] Claude Code skill/plugin + MCP tools.
+- [x] Claude Code local stdio MCP tools (hif_run and hifnode_run).
+- [ ] Remote HTTPS MCP host-specific setup and end-to-end validation for Claude Code.
 - [ ] Claude web skill ZIP package validation.
 - [ ] ChatGPT skill ZIP package and custom MCP app.
 - [ ] Gemini web skill package validation.
-- [ ] Gemini CLI extension and MCP setup.
+- [x] Gemini CLI local stdio MCP setup documented.
+- [ ] Validate Gemini web custom remote MCP availability and permissions.
 - [ ] GitHub Copilot skill/MCP integration.
-- [ ] Codex skill/MCP integration.
+- [x] Codex local stdio MCP setup documented.
+- [ ] Validate Codex remote MCP connection where supported.
 - [ ] Cross-host session continuity through explicit HIF memory.
 
 ## Phase 4 — Deployment and operations
 - [ ] Windows client installer with reversible user-level setup.
 - [ ] Windows Server service wrapper, health checks and service recovery.
 - [ ] Linux systemd unit, hardening and log rotation.
-- [ ] Authenticated remote MCP gateway with TLS and tenant isolation.
+- [x] Authenticated REST + Streamable HTTP MCP gateway for a single-tenant private pilot (bearer auth, body caps, per-IP rate limit and TLS guard).
+- [ ] OAuth/OIDC, tenant isolation, per-user permissions and distributed rate limiting for production multi-tenant use.
 - [ ] Docker/Podman image running as non-root.
 - [ ] Resource telemetry dashboard and usage reports.
 - [ ] Backup, restore and memory-retention controls.
@@ -74,3 +78,14 @@
 - Cancellation stops pending work and signals running tasks.
 - Host skills fail clearly when the backend/MCP service is missing.
 - CI can run without real provider credentials.
+
+
+## Phase 4.1 — Remote gateway hardening
+- [x] Single-tenant bearer-authenticated REST and Streamable HTTP MCP endpoints.
+- [x] Health endpoint, request-size limit, per-IP rate limit and no-store/security headers.
+- [x] Refuse non-loopback plain-HTTP binds unless direct TLS is configured.
+- [ ] OAuth 2.1 / OIDC with user identity and token rotation.
+- [ ] Per-tool permissions, tenant isolation and distributed rate limits.
+- [ ] Proxy deployment templates for Caddy, Nginx and IIS ARR.
+- [ ] Load, soak, security and failure-injection tests.
+- [ ] Production audit events with secret and context redaction.
