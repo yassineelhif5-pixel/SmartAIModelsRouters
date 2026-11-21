@@ -89,6 +89,8 @@ class Settings:
     gateway_max_request_bytes: int = 65536
     gateway_tls_certfile: Path | None = None
     gateway_tls_keyfile: Path | None = None
+    gateway_allowed_hosts: tuple[str, ...] = field(default_factory=tuple)
+    gateway_allowed_origins: tuple[str, ...] = field(default_factory=tuple)
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -172,6 +174,8 @@ class Settings:
             if os.getenv("HIF_GATEWAY_TLS_CERTFILE") else None,
             gateway_tls_keyfile=Path(os.environ["HIF_GATEWAY_TLS_KEYFILE"]).expanduser()
             if os.getenv("HIF_GATEWAY_TLS_KEYFILE") else None,
+            gateway_allowed_hosts=_parse_csv(os.getenv("HIF_GATEWAY_ALLOWED_HOSTS")),
+            gateway_allowed_origins=_parse_csv(os.getenv("HIF_GATEWAY_ALLOWED_ORIGINS")),
         )
 
     def get_models(self) -> tuple[str, ...]:
