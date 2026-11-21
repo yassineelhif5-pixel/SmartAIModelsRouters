@@ -33,7 +33,7 @@ if (-not (Test-Path -LiteralPath $venvPython)) {
 & $venvPython -m pip install --upgrade pip
 if ($LASTEXITCODE -ne 0) { throw "pip upgrade failed." }
 
-& $venvPython -m pip install -e ".[dev]"
+& $venvPython -m pip install -e ".[providers]"
 if ($LASTEXITCODE -ne 0) { throw "HIF package installation failed." }
 
 $envFile = Join-Path $repoRoot ".env"
