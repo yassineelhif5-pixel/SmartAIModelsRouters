@@ -111,6 +111,11 @@ class HIFStore:
         source_node: str | None = None,
     ) -> None:
         with self._connect() as db:
+            # Keep the latest value for a memory key instead of accumulating stale duplicates.
+            db.execute(
+                "DELETE FROM memory WHERE session_id=? AND memory_key=?",
+                (session_id, memory_key),
+            )
             db.execute(
                 "INSERT INTO memory(memory_id, session_id, memory_key, role, content, "
                 "source_node, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
