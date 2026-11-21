@@ -4,9 +4,9 @@ The HIF Gateway is the remote transport layer for a central HIF runtime. It expo
 
 ## Status and intended use
 
-- Implemented: REST endpoints, Streamable HTTP MCP endpoint, bearer-token authentication, constant-time token comparison, request-size checks, per-source-IP fixed-window rate limiting, no-store/security headers, health endpoint and non-loopback TLS guard.
-- Current security model: **single tenant / one shared bearer secret**. This is a private pilot gateway, not a multi-tenant SaaS control plane.
-- Not yet implemented: OAuth/OIDC, per-user identities, tenant isolation, per-tool scopes, admin UI, distributed rate limiting, audit export, HA deployment or production operations.
+- Implemented: REST endpoints, Streamable HTTP MCP endpoint, static bearer authentication for private REST/API-key mode, optional external OIDC/JWT verification for MCP, RFC 9728 protected-resource discovery, request-size checks, per-source-IP fixed-window rate limiting, no-store/security headers, health endpoint, Host/Origin allowlists and non-loopback TLS guard.
+- Current security model: **single tenant**. REST operator endpoints use one shared bearer secret; MCP can use an external OIDC provider and required-scope validation. This is a private pilot gateway, not a multi-tenant SaaS control plane.
+- Not yet implemented: HIF-hosted authorization server, per-user tenant isolation, fine-grained per-tool scopes, admin UI, distributed rate limiting, audit export, HA deployment or production operations.
 - The gateway does not grant file-system or shell access. It dispatches the same text-only HIF tasks as the local MVP.
 
 ## 1. Install and configure
@@ -42,7 +42,7 @@ The default listener is 127.0.0.1:8765. For local-only access, leave HIF_GATEWAY
 
     curl http://127.0.0.1:8765/healthz
 
-The health endpoint is intentionally public and returns only service/version information. Every other route, including /mcp, requires Authorization: Bearer <HIF_GATEWAY_API_KEY>.
+The health endpoint is intentionally public and returns only service/version information. REST operator routes require Authorization: Bearer <HIF_GATEWAY_API_KEY>. The /mcp and OAuth protected-resource metadata routes use the configured external OIDC flow when HIF_GATEWAY_OAUTH_* is enabled; otherwise /mcp uses the static HIF bearer key.
 
 ## 3. REST endpoints
 
@@ -208,7 +208,7 @@ The private key must be readable only by the service identity. For Windows, use 
 - Bearer secret must contain at least 32 characters.
 - Authentication uses constant-time comparison.
 - /healthz is public; it reveals no session, usage or provider information.
-- Other routes require authentication.
+- REST operator routes require the static operator key. MCP requires the static key in private mode or an OIDC access token when OAuth is configured; the protected-resource metadata route is public for OAuth discovery.
 - REST and MCP request bodies are capped by HIF_GATEWAY_MAX_REQUEST_BYTES.
 - MCP DNS-rebinding protection is enabled: remote Host values must be explicitly allowlisted with HIF_GATEWAY_ALLOWED_HOSTS; browser Origin values must be explicitly allowlisted with HIF_GATEWAY_ALLOWED_ORIGINS when present.
 - Rate limiting is a per-process, per-source-IP fixed window; it is not distributed and may be shared across clients behind a proxy.
