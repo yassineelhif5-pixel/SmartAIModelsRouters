@@ -130,5 +130,5 @@ CI executes these checks on Ubuntu and Windows. Test providers are mocks; these 
 - Parallel work is dependency-aware but bounded by HIF settings and local CPU/RAM telemetry.
 - Provider routing currently uses configured order, task preferences, HIF-measured token budgets and temporary cooldowns. Dynamic price/latency/quality scoring is planned.
 - The 80% threshold filters models using the HIF token budget meter. Provider-native subscription quota percentages are used only if a future official integration can obtain them.
-- SQLite memory is per OS user by default and shared across projects on that machine. Remote multi-device memory needs the authenticated remote gateway, which is not implemented yet.
+- SQLite memory is shared by processes using the same configured database path. A remote gateway process uses its own configured database; remote clients share that gateway session store, not their local machine databases.
 - ChatGPT web, Gemini web and Microsoft 365 Copilot can target the new remote MCP endpoint once it is deployed behind HTTPS and configured in the host. Their plan, tenant and remote-MCP permissions still apply.
