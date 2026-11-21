@@ -8,7 +8,7 @@ def test_model_manager_exposes_primary_and_ordered_fallbacks(tmp_path) -> None:
     settings = Settings(
         database_path=tmp_path / "models.sqlite3",
         model_pool=(
-            "openai/gpt-6-astra",
+            "openai/gpt-6.2-astra",
             "anthropic/claude-sonnet-5-5",
         ),
     )
@@ -17,7 +17,7 @@ def test_model_manager_exposes_primary_and_ordered_fallbacks(tmp_path) -> None:
     status = manager.status()
 
     assert status["strategy"] == "ordered_fallback"
-    assert status["primary"] == "openai/gpt-6-astra"
+    assert status["primary"] == "openai/gpt-6.2-astra"
     assert status["fallbacks"] == ["anthropic/claude-sonnet-5-5"]
     assert [item["role"] for item in status["models"]] == ["primary", "fallback"]
 
@@ -30,7 +30,7 @@ def test_model_manager_reports_credential_presence_without_exposing_values(
     settings = Settings(
         database_path=tmp_path / "models.sqlite3",
         model_pool=(
-            "openai/gpt-6-astra",
+            "openai/gpt-6.2-astra",
             "anthropic/claude-sonnet-5-5",
         ),
     )
