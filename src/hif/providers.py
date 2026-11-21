@@ -70,7 +70,8 @@ class LiteLLMProvider:
         usage = getattr(response, "usage", None)
         input_tokens = int(getattr(usage, "prompt_tokens", 0) or 0)
         output_tokens = int(getattr(usage, "completion_tokens", 0) or 0)
-        cost = getattr(response, "_hidden_params", {}).get("response_cost")
+        hidden_params = getattr(response, "_hidden_params", None) or {}
+        cost = hidden_params.get("response_cost")
         return ModelResponse(
             model=model, content=str(content), input_tokens=input_tokens,
             output_tokens=output_tokens, duration_ms=elapsed,
