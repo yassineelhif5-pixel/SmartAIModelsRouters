@@ -5,7 +5,7 @@
 HIF uses one ordered model chain. The first entry is the primary model; subsequent
 entries are fallback targets. The initial deployment profile is:
 
-1. Primary: `openai/gpt-6-astra` (GPT-6 Astra API model ID).
+1. Primary: `openai/gpt-6.2-astra` (GPT-6.2 Astra API model ID).
 2. Fallback: `anthropic/claude-sonnet-5-5`.
 3. Strategy: ordered fallback after a retryable provider availability failure.
 
@@ -17,8 +17,8 @@ provider's model catalog and the LiteLLM integration before changing them.
 Set these values in the private `.env` file:
 
 ```dotenv
-HIF_MODEL_POOL=openai/gpt-6-astra,anthropic/claude-sonnet-5-5
-HIF_PLANNER_MODEL=openai/gpt-6-astra
+HIF_MODEL_POOL=openai/gpt-6.2-astra,anthropic/claude-sonnet-5-5
+HIF_PLANNER_MODEL=openai/gpt-6.2-astra
 OPENAI_API_KEY=...
 ANTHROPIC_API_KEY=...
 ```
