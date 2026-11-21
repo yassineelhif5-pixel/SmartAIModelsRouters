@@ -8,11 +8,11 @@ HIF has one provider-neutral engine and host-specific entry points. The portable
 |---|---|---|---|
 | Claude web/Desktop | Upload ZIP in Customize > Skills | Select or ask Claude to use HIF | Only when the skill's required tools/service are available |
 | Claude Code | Copy to ~/.claude/skills or use project .claude/skills | /hif, /hifnode | Yes — local stdio MCP is implemented; register the venv hif-mcp executable with user scope |
-| ChatGPT | Import ZIP under Plugins > Skills (eligible plans) | Select/ask for HIF skill | Via a custom MCP app/plugin when remote HIF MCP gateway is deployed |
+| ChatGPT | Import ZIP under Plugins > Skills (eligible plans) | Select/ask for HIF skill | Via a custom MCP app connected to a deployed HIF HTTPS MCP endpoint; plan/workspace permissions apply |
 | Gemini web app | Upload the skill in Gemini Skills | Select or ask Gemini to use HIF | Skill instructions alone do not connect to HIF; a supported tool integration is also required |
 | Gemini CLI | User-level Agent Skills or Gemini extension | Skill activation or extension command | Yes — add the local hif-mcp executable as a user-scope stdio MCP server |
 | GitHub Copilot | Agent Skills in supported Copilot harnesses | Skill picker / slash menu depending on host | Yes — configure local stdio MCP in the supported Copilot host (for VS Code, user MCP config or .vscode/mcp.json) |
-| Microsoft 365 Copilot | Copilot Studio agent with custom engine/MCP tool | Agent conversation in Microsoft 365 Copilot | Via remote HIF MCP after gateway/authentication is implemented |
+| Microsoft 365 Copilot | Copilot Studio agent with custom engine/MCP tool | Agent conversation in Microsoft 365 Copilot | Via deployed HIF HTTPS MCP endpoint and tenant-approved authentication |
 | Microsoft Copilot consumer app | No generic HIF skill installer is documented here | Not currently supported as a direct installation target | Not without a supported agent/connector extension path |
 | OpenAI Codex | ~/.agents/skills (user) or project .agents/skills | Skill activation in Codex | Yes — add the local hif-mcp executable with codex mcp add |
 
@@ -58,7 +58,7 @@ ChatGPT supports importable Skills for eligible Business, Enterprise, Healthcare
 4. Upload dist/hif.zip and dist/hifnode.zip.
 5. Use the HIF skill from the Skills area or ask ChatGPT to apply it to a task.
 
-For actual multi-provider tool execution, HIF also needs a custom MCP app/plugin connected to a remote HTTPS MCP endpoint. A local stdio process on a developer PC is not reachable by ChatGPT web. The remote gateway, authentication and MCP tools are not production-ready in this repository yet.
+For actual multi-provider tool execution, HIF needs a custom MCP app/plugin connected to a deployed HTTPS MCP endpoint. HIF 0.3.0 now includes the authenticated REST + Streamable HTTP MCP gateway; it can run as a single-tenant private pilot behind a trusted TLS reverse proxy. A local stdio process on a developer PC is not reachable by ChatGPT web. OAuth/OIDC, tenant isolation and production SaaS hardening are still future work.
 
 Official documentation:
 - https://help.openai.com/fr-fr/articles/20001066-skills-in-chatgpt
@@ -75,7 +75,7 @@ Gemini Apps support custom Skills imported from SKILL.md on supported web and ma
 4. Repeat for skills/hifnode/SKILL.md.
 5. Ask Gemini to use the HIF skill for a task.
 
-This makes workflow instructions available in Gemini. It does not by itself connect Gemini web to a HIF backend or authorize cross-provider API calls.
+This makes workflow instructions available in Gemini. To connect Gemini web to the HIF runtime, configure a supported remote MCP integration pointing to a deployed HTTPS /mcp endpoint and authorize its bearer token. Skill import alone does not grant that access.
 
 Official documentation:
 - https://support.google.com/gemini/answer/17094296
@@ -103,7 +103,7 @@ Linux/macOS:
     gemini mcp add --scope user hif "$HOME/path/to/SmartAIModelsRouters/.venv/bin/hif-mcp"
     gemini mcp list
 
-This stdio registration is local to the machine/user. The Gemini web app needs a remote gateway, which is not available yet.
+This stdio registration is local to the machine/user. Gemini web needs the remote gateway deployed on a reachable HTTPS address; see docs/GATEWAY.md.
 
 Official documentation:
 - https://geminicli.com/docs/cli/skills/
@@ -140,7 +140,7 @@ Official documentation:
 
 For Microsoft 365 Copilot, the target integration is a Copilot Studio agent that connects to the HIF remote MCP endpoint as a tool. This is not the same mechanism as installing a GitHub Copilot Agent Skill.
 
-High-level steps after the HIF remote MCP service is released:
+High-level steps after the HIF remote MCP service has been deployed behind HTTPS:
 1. Create or open the Copilot Studio agent in the appropriate environment.
 2. Open Tools > Add a tool > Model Context Protocol.
 3. Add the HIF HTTPS MCP endpoint and configure its required authentication.
@@ -187,8 +187,8 @@ This does not merge native chat histories across Claude, ChatGPT, Gemini and Cop
 - ZIP packaging and user-level copy installers are provided as source scripts.
 - ChatGPT and Gemini web have upload instructions in this guide.
 - Microsoft 365 Copilot has a documented Copilot Studio/MCP integration target.
-- Local text-only provider execution, shared SQLite session memory, DAG node parallelism, HIF-measured 80% fallback and local stdio MCP tools are implemented.
-- The remote authenticated HTTP MCP gateway needed by ChatGPT web, Gemini web and Microsoft 365 Copilot remains implementation work.
+- Local text-only provider execution, shared SQLite session memory, DAG node parallelism, HIF-measured 80% fallback, local stdio MCP and authenticated remote HTTP MCP tools are implemented.
+- HIF 0.3.0 includes an authenticated REST + Streamable HTTP MCP gateway for a single-tenant private pilot; deploy it behind HTTPS before connecting remote clients.
 - File editing, shell execution, browsing, deployment and fully tested cross-host tool workflows remain out of scope for the local MVP.
 
 
@@ -207,3 +207,8 @@ Therefore, a ChatGPT Go user should not assume the native ChatGPT Skill or custo
 Official plan and permission details:
 - https://help.openai.com/fr-fr/articles/20001066-skills-in-chatgpt
 - https://help.openai.com/fr-fr/articles/12584461-connecting-custom-mcp-servers-in-chatgpt
+
+
+## HIF remote gateway
+
+HIF 0.3.0 provides a Streamable HTTP MCP endpoint at /mcp and REST endpoints for runs, status and measured usage. See docs/GATEWAY.md for authentication, request limits, TLS termination, client configuration examples and the current single-tenant security boundary. A remote gateway must be deployed on an HTTPS-reachable host; this repository does not provision cloud infrastructure automatically.
