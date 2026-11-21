@@ -39,15 +39,19 @@ if ($LASTEXITCODE -ne 0) { throw "HIF package installation failed." }
 $envFile = Join-Path $repoRoot ".env"
 if (-not (Test-Path -LiteralPath $envFile)) {
     Copy-Item (Join-Path $repoRoot ".env.example") $envFile
-    Write-Host "Created .env from .env.example. Add your authorized provider model IDs and API keys."
+    Write-Host "Created .env from .env.example. Add authorized provider model IDs and API keys."
 }
+
+$mcpExe = Join-Path (Split-Path -Parent $venvPython) "hif-mcp.exe"
+$hifExe = Join-Path (Split-Path -Parent $venvPython) "hif.exe"
 
 Write-Host ""
 Write-Host "HIF runtime installed in $repoRoot\.venv"
 Write-Host "Configure .env, then test with:"
-Write-Host "  .\.venv\Scripts\hif.exe --help"
-Write-Host "  .\.venv\Scripts\hif.exe mcp"
+Write-Host $hifExe
+Write-Host "  usage"
 Write-Host ""
-Write-Host "For user-wide Claude Code MCP registration:"
-Write-Host '  claude mcp add --scope user --transport stdio hif -- "' + $venvPython + '\..\hif-mcp.exe"'
+Write-Host "Register HIF globally for Claude Code (all projects for this Windows user):"
+Write-Host ("claude mcp add --scope user --transport stdio hif -- " + $mcpExe)
+Write-Host "claude mcp list"
 Write-Warning "The installer does not create a Windows Service or expose a remote HTTP gateway."
