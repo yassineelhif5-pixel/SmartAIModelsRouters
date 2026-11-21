@@ -23,12 +23,16 @@ def create_mcp_server(
     *,
     auth: Any | None = None,
     token_verifier: Any | None = None,
+    host: str = "127.0.0.1",
+    transport_security: Any | None = None,
 ) -> FastMCP:
     """Create an MCP server with optional OAuth resource-server authentication."""
     server = FastMCP(
         "HIF Smart AI Models Router",
         auth=auth,
         token_verifier=token_verifier,
+        host=host,
+        transport_security=transport_security,
     )
 
     @server.tool()
