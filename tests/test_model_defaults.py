@@ -68,3 +68,19 @@ def test_explicit_task_preferences_override_defaults(monkeypatch) -> None:
         "architecture": ("gemini/custom-model",),
         "coding": ("openai/custom-model",),
     }
+
+
+def test_architecture_and_infrastructure_are_valid_pipeline_types() -> None:
+    from hif.schemas import PlannedNode
+
+    architecture = PlannedNode(
+        id="architecture", title="Architecture review", role="assistant_architect",
+        instructions="Review the target architecture.", task_type="architecture",
+    )
+    infrastructure = PlannedNode(
+        id="infrastructure", title="Infrastructure review", role="infrastructure_architect",
+        instructions="Review the hosting and network design.", task_type="infrastructure",
+    )
+
+    assert architecture.task_type == "architecture"
+    assert infrastructure.task_type == "infrastructure"
