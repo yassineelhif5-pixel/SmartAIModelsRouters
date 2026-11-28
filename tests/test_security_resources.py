@@ -104,3 +104,14 @@ def test_adaptive_concurrency_recovers_gradually_after_pressure() -> None:
     assert scheduler.effective_limit()[0] == 4
     assert scheduler.effective_limit()[0] == 4
     assert scheduler.effective_limit()[0] == 5
+
+
+def test_security_scan_redacts_inline_private_key_material(tmp_path) -> None:
+    secret = "-----BEGIN PRIVATE KEY-----VERY_SECRET_PRIVATE_KEY_PAYLOAD"
+    (tmp_path / "settings.py").write_text(f'PRIVATE_KEY = "{secret}"\\n', encoding="utf-8")
+
+    report = scan_project(tmp_path)
+
+    assert any(item.rule_id == "SEC001" for item in report.findings)
+    assert secret not in str(report.to_dict())
+    assert "line contents redacted" in str(report.to_dict())
