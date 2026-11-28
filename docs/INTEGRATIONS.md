@@ -163,3 +163,10 @@ The skill adds specialized instructions and task logic to the host assistant. In
 - HIF 0.3.0 includes local stdio MCP and an authenticated remote HTTP/Streamable HTTP MCP gateway intended for a single-tenant private pilot.
 - Existing orchestration is text-task oriented; do not claim full host-native multi-agent UX, project file editing, NotebookLM control or universal consumer-subscription access.
 - Host plan eligibility, UI labels and connector availability change over time. Recheck official host documentation before publishing end-user installation instructions.
+
+
+## 12. Pipeline and architecture advisory roles
+
+All HIF Skills use the common staged pipeline. See [Pipeline Engine and Multi-Model Routing](PIPELINE-AND-MODEL-ROUTING.md) for the lifecycle, default provider catalog, configuration, installation and Skill-only versus connected execution behavior.
+
+The root orchestrator is also the architecture owner. It may assign an Assistant Architect for independent design critique and an Infrastructure Architect for deployment, network, identity, capacity, resilience, observability, backup/recovery and cost recommendations. See docs/HIF-1.0-MODES-SPEC.md section 26 for the normative contract.
