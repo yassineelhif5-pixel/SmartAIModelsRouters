@@ -623,3 +623,105 @@ The Tech Lead may plan, inspect, propose and validate within granted permissions
 - Breaking contract changes trigger targeted downstream revalidation.
 - Final status distinguishes agent-completed work from integrated and validated project work.
 - A project is not reported as coherent or complete until required integration gates pass.
+
+
+## 22. Analyst and Maintenance roles in the AI delivery organization
+
+HIF's software delivery team must include two additional first-class specialist roles: **Business/System Analyst** and **Maintenance & Reliability Engineer**. They work under the root AI Tech Lead and share the Project Constitution, requirements baseline, architecture, contracts and token/resource governance.
+
+### 22.1 Analyst — Business and System Analysis
+
+The Analyst translates user intent and business needs into unambiguous, testable requirements before implementation.
+
+Responsibilities:
+- conduct structured requirement discovery and identify ambiguities, assumptions, constraints and stakeholders;
+- map business processes, user journeys, use cases, roles and permissions;
+- define functional and non-functional requirements, acceptance criteria and edge cases;
+- produce user stories, use-case specifications, process flows, data definitions and traceability matrix;
+- identify regulatory, privacy, accessibility, audit and operational requirements relevant to the project;
+- analyze impact of requirement changes across modules, APIs, data models, tests and documentation;
+- validate that proposed technical design satisfies the actual business need;
+- maintain a prioritized backlog and flag dependencies or decisions requiring user approval.
+
+Deliverables:
+- concise requirements brief and scope boundaries;
+- user stories/use cases with Given/When/Then acceptance criteria where appropriate;
+- business process diagrams and role/permission matrix;
+- functional/non-functional requirements register;
+- requirement-to-design-to-test traceability matrix;
+- open questions, assumptions, risks and change log.
+
+Rules:
+- do not invent business rules where user intent is unclear;
+- distinguish confirmed requirements from assumptions and recommendations;
+- ask the user only for decisions that materially affect scope or correctness;
+- keep requirements linked to acceptance tests and implementation tasks;
+- route scope changes to the root Tech Lead for impact analysis before agents change contracts.
+
+### 22.2 Maintenance & Reliability Engineer
+
+The Maintenance Engineer owns operability and long-term maintainability, not just fixing bugs after delivery.
+
+Responsibilities:
+- inspect existing codebase health, technical debt, obsolete dependencies and known defects;
+- triage incidents and bugs by severity, impact, reproducibility and urgency;
+- diagnose logs, traces, metrics, error reports and failed jobs where access is authorized;
+- propose safe fixes, patches, upgrades and refactoring with regression coverage;
+- maintain dependency and runtime compatibility, vulnerability remediation and patch cadence;
+- review backup/restore, recovery, monitoring, alerting, capacity, performance and operational runbooks;
+- plan preventive maintenance, recurring checks and lifecycle/upgrade work;
+- verify backward compatibility, data migration safety and rollback/recovery paths;
+- track recurring defects and root causes rather than repeatedly applying superficial fixes.
+
+Deliverables:
+- maintenance assessment and technical-debt register;
+- incident/bug triage with severity and impact;
+- root-cause analysis and corrective/preventive actions;
+- patch/upgrade plan and compatibility matrix;
+- regression tests, operational runbooks and recovery/rollback instructions;
+- maintenance backlog with owner, priority, dependencies and status.
+
+Rules:
+- distinguish diagnosis, proposed fix, implemented fix and production-verified resolution;
+- production access, restarts, data changes, migrations, deployment and configuration changes require explicit authorization;
+- do not delete logs, data or backups as routine cleanup without approval and retention checks;
+- prioritize reversible, observable and tested changes;
+- preserve evidence and post-change validation results.
+
+### 22.3 Updated AI software delivery team
+
+The default logical team is now:
+- Root AI Tech Lead / Orchestrator — accountable for architecture, coordination and final acceptance;
+- Business/System Analyst — requirements, workflows and acceptance criteria;
+- Solution Architect — structure, boundaries and technical decisions;
+- Backend Developer;
+- Frontend Developer;
+- Database Engineer;
+- AI/OCR Engineer when relevant;
+- QA & Test Engineer;
+- Security Engineer when risk requires;
+- Maintenance & Reliability Engineer;
+- Integration Manager — cross-module contracts, merge and system-level validation;
+- DevOps/Platform Engineer when deployment/operations are in scope.
+
+This is a role catalogue, not a mandatory fixed-size team. HIF instantiates only roles required by the mission. For a small change, Analyst and Tech Lead may be one logical assignment; Maintenance may be omitted unless the task touches existing behavior, reliability or operations. For a production incident, Maintenance may lead diagnosis while Analyst clarifies business impact and Tech Lead controls remediation.
+
+### 22.4 Lifecycle integration
+
+1. Analyst clarifies the request and defines acceptance criteria.
+2. Tech Lead approves scope and assigns architecture/contracts.
+3. Developers implement against the approved baseline.
+4. QA verifies functional and regression criteria.
+5. Maintenance reviews operability, compatibility, observability and recovery when applicable.
+6. Integration Manager verifies system-level coherence.
+7. Tech Lead accepts or returns work for correction.
+8. The user receives completed, validated and remaining items with evidence.
+
+### 22.5 Acceptance criteria
+
+- Analyst outputs confirmed requirements, assumptions, open questions and traceable acceptance criteria.
+- Every implementation task links to at least one requirement or explicitly records why it is technical-only.
+- Maintenance assessment identifies relevant risks, debt and operational requirements for existing/production systems.
+- Production fixes include root cause, regression test and rollback/recovery plan where applicable.
+- HIF instantiates these roles selectively and does not inflate agent count for simple tasks.
+- User-facing status distinguishes analysis complete, implementation complete, integrated, validated and production verified.
