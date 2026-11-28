@@ -109,3 +109,26 @@ def test_kimi_qwen_and_additional_providers_activate_only_with_credentials(monke
         for models in settings.task_model_preferences.values()
         for model in models
     )
+
+
+def test_browser_profile_scales_down_parallelism_and_context(monkeypatch) -> None:
+    clear_provider_keys(monkeypatch)
+    for name in (
+        "HIF_MAX_PARALLEL_TASKS", "HIF_MAX_PROVIDER_PARALLEL",
+        "HIF_MAX_LOCAL_THREADS", "HIF_MAX_LOCAL_PROCESSES",
+        "HIF_LOCAL_TASK_MEMORY_MB", "HIF_MAX_OUTPUT_TOKENS_PER_TASK",
+        "HIF_REQUEST_TIMEOUT_SECONDS", "HIF_MAX_CONTEXT_CHARS",
+        "HIF_MIN_FREE_MEMORY_MB", "HIF_MODEL_POOL",
+        "HIF_TASK_MODEL_PREFERENCES",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("HIF_EXECUTION_PROFILE", "browser")
+
+    settings = Settings.from_env()
+
+    assert settings.execution_profile == "browser"
+    assert settings.max_parallel_tasks == 1
+    assert settings.max_provider_parallel == 1
+    assert settings.max_local_threads == 1
+    assert settings.max_context_chars == 6000
+    assert settings.max_output_tokens_per_task == 900
