@@ -11,7 +11,7 @@ HIF is designed as a Python-based, provider-neutral orchestration service and CL
 | Linux (Ubuntu/Debian/RHEL-compatible) | Workstation/server | Python virtual environment and systemd |
 | Docker/Podman | Cross-platform deployment | Containerized HIF gateway |
 
-Core business logic must remain OS-agnostic. Service management, system telemetry, installers and credential storage belong in platform-specific adapters.
+Supported Agent Skills hosts include Claude Code, OpenAI Codex, Gemini CLI, GitHub Copilot, Cursor, Kimi Code CLI and Qwen Code. Their skill directories are host-specific; the repository ships native mirrors where the host supports them.\n\nThe runtime model-provider catalog includes OpenAI, Anthropic, Google Gemini, DeepSeek, Moonshot/Kimi, Alibaba DashScope/Qwen, xAI, Z.AI and MiniMax. Mistral, Groq and OpenRouter can be configured with explicit LiteLLM model IDs. Cursor is a host, not a model provider.\n\nCore business logic must remain OS-agnostic. Service management, system telemetry, installers and credential storage belong in platform-specific adapters.
 
 ## Windows client
 
