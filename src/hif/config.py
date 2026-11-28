@@ -17,8 +17,8 @@ load_dotenv(override=False)
 # only providers with configured credentials are activated automatically.
 DEFAULT_MODEL_POOL: tuple[str, ...] = (
     "openai/gpt-6-luna",
-    "openai/gpt-6.2-sol",
-    "openai/gpt-6.2-astra",
+    "openai/gpt-6.1-sol",
+    "openai/gpt-6-astra",
     "anthropic/claude-haiku-4-5-20251001",
     "anthropic/claude-sonnet-5",
     "anthropic/claude-opus-5",
@@ -35,11 +35,11 @@ DEFAULT_TASK_MODEL_PREFERENCES: dict[str, tuple[str, ...]] = {
         "deepseek/deepseek-flash", "anthropic/claude-haiku-4-5-20251001",
     ),
     "research": (
-        "gemini/gemini-3.8-flash", "openai/gpt-6.2-sol",
+        "gemini/gemini-3.8-flash", "openai/gpt-6.1-sol",
         "anthropic/claude-sonnet-5", "deepseek/deepseek-v4-pro",
     ),
     "coding": (
-        "openai/gpt-6.2-sol", "anthropic/claude-sonnet-5",
+        "openai/gpt-6.1-sol", "anthropic/claude-sonnet-5",
         "deepseek/deepseek-v4-pro", "gemini/gemini-3.8-flash",
     ),
     "testing": (
@@ -47,7 +47,7 @@ DEFAULT_TASK_MODEL_PREFERENCES: dict[str, tuple[str, ...]] = {
         "anthropic/claude-haiku-4-5-20251001",
     ),
     "review": (
-        "openai/gpt-6.2-astra", "anthropic/claude-opus-5",
+        "openai/gpt-6-astra", "anthropic/claude-opus-5",
         "gemini/gemini-3.1-pro-preview", "deepseek/deepseek-v4-pro",
     ),
     "documentation": (
@@ -55,11 +55,11 @@ DEFAULT_TASK_MODEL_PREFERENCES: dict[str, tuple[str, ...]] = {
         "gemini/gemini-3.8-flash",
     ),
     "architecture": (
-        "openai/gpt-6.2-astra", "anthropic/claude-opus-5",
+        "openai/gpt-6-astra", "anthropic/claude-opus-5",
         "gemini/gemini-3.1-pro-preview",
     ),
     "infrastructure": (
-        "openai/gpt-6.2-sol", "anthropic/claude-sonnet-5",
+        "openai/gpt-6.1-sol", "anthropic/claude-sonnet-5",
         "gemini/gemini-3.8-flash",
     ),
     "general": (
