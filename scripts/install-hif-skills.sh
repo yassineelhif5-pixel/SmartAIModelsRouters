@@ -20,7 +20,7 @@ for raw_host in "${HOST_LIST[@]}"; do
     claude) DEST_ROOT="$HOME/.claude/skills" ;;
     codex) DEST_ROOT="$HOME/.agents/skills" ;;
     gemini) DEST_ROOT="$HOME/.gemini/skills" ;;
-    copilot) DEST_ROOT="$HOME/.copilot/skills" ;;
+    copilot) DEST_ROOT="$REPO_ROOT/.github/skills" ;;
     *) echo "Unsupported host: $host" >&2; exit 2 ;;
   esac
   mkdir -p "$DEST_ROOT"
@@ -43,4 +43,5 @@ done
 echo
 echo "HIF skills installed for: $HOSTS"
 echo "Start a new assistant session to load them."
+echo "GitHub Copilot skills were installed in the repository-level .github/skills directory."
 echo "NOTE: Skills are instructions only; runtime/MCP and provider API permissions are separate."
