@@ -191,15 +191,56 @@ class HIFEngine:
             raise
 
     async def evaluate_project(self, goal: str, context: str = "", max_reviewers: int = 4):
-        """Obtain independent reviews from distinct configured model providers."""
+        """Obtain independent reviews using budget-eligible configured providers."""
         from hif.evaluation import MultiModelEvaluator
+
         if not 2 <= max_reviewers <= 6:
             raise ValueError("max_reviewers must be between 2 and 6.")
+        configured = self.settings.get_models()
+        eligible = self.router.candidates(configured)
+        from hif.providers import ProviderError
+        from hif.storage import utc_now
+        from datetime import timedelta
+
+        since = utc_now() - timedelta(hours=self.settings.usage_window_hours)
+        # Require cross-provider diversity after applying HIF's local usage budgets/cooldowns.
+        if len({model.split("/", 1)[0].lower() for model in eligible}) < 2:
+            raise RuntimeError(
+                "Multi-model evaluation requires at least two distinct budget-eligible providers."
+            )
         session_id = self.store.create_session(goal)
-        evaluator = MultiModelEvaluator(self.provider, max_parallel=min(self.settings.max_provider_parallel, max_reviewers), timeout=self.settings.request_timeout_seconds)
-        result = await evaluator.evaluate(goal, context[:self.settings.max_context_chars], self.settings.get_models(), max_reviewers=max_reviewers, min_reviewers=2)
+        engine = self
+
+        class RecordingProvider:
+            async def complete(self, *, model, system_prompt, user_prompt, max_tokens, timeout):
+                try:
+                    response = await engine.provider.complete(
+                        model=model, system_prompt=system_prompt, user_prompt=user_prompt,
+                        max_tokens=max_tokens, timeout=timeout,
+                    )
+                except ProviderError as exc:
+                    engine.router.mark_unavailable(model, exc.retry_after)
+                    raise
+                engine._record_usage(session_id, response)
+                return response
+
+        evaluator = MultiModelEvaluator(
+            RecordingProvider(),
+            max_parallel=min(self.settings.max_provider_parallel, max_reviewers),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        result = await evaluator.evaluate(
+            goal,
+            context[:self.settings.max_context_chars],
+            eligible,
+            max_reviewers=max_reviewers,
+            min_reviewers=2,
+        )
         result = result.model_copy(update={"session_id": session_id})
-        self.store.add_memory(session_id, f"evaluation:{result.evaluation_id}", "multi_model_evaluator", result.model_dump_json())
+        self.store.add_memory(
+            session_id, f"evaluation:{result.evaluation_id}",
+            "multi_model_evaluator", result.model_dump_json(),
+        )
         self.store.set_session_status(session_id, "completed")
         return result
 
