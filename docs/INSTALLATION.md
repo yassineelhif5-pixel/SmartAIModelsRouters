@@ -281,3 +281,35 @@ Every HIF Skill follows the same logical pipeline: intake, complexity/urgency cl
 - If only one model is available, HIF still follows the structured stages with that model; it does not fabricate a multi-model execution report.
 
 The Root Orchestrator is also the architect. It may assign an Assistant Architect for independent design critique and an Infrastructure Architect for deployment, networking, identity, capacity, resilience, observability, backup/recovery and cost recommendations. These advisory roles are activated only when relevant.
+
+
+## L. Adaptive resource usage on workstations and servers
+
+By default, HIF derives the initial task concurrency from the machine's logical CPU count and available RAM, with a conservative maximum of eight. Runtime sampling is non-blocking. Remote provider requests use async I/O and provider-specific semaphores. Local blocking I/O uses a lazy bounded thread pool; explicitly submitted CPU-heavy helper functions use a lazy bounded process pool.
+
+In .env, leave HIF_MAX_PARALLEL_TASKS unset/commented to use auto sizing. Optional overrides:
+
+```dotenv
+HIF_MAX_PROVIDER_PARALLEL=3
+HIF_MAX_LOCAL_THREADS=2
+HIF_MAX_LOCAL_PROCESSES=1
+HIF_LOCAL_TASK_MEMORY_MB=512
+HIF_CPU_PRESSURE_THRESHOLD=85
+HIF_MEMORY_PRESSURE_THRESHOLD=88
+HIF_MIN_FREE_MEMORY_MB=1536
+```
+
+For a shared server, benchmark under representative load and set a conservative explicit HIF_MAX_PARALLEL_TASKS. Run HIF under a dedicated least-privilege OS account and apply external OS/container resource limits. In-process adaptive concurrency is cooperative; it is not a hard memory/CPU isolation boundary. A Skills-only installation creates no local runtime, threads, services or background workers.
+
+## M. Vibe-coded application security pre-audit
+
+After installing the HIF runtime and provider extra, run the local read-only scanner against the project:
+
+```bash
+hif security scan .
+hif security scan . --json
+```
+
+It checks common source/configuration patterns, reports evidence and severity, and produces a prioritized remediation plan. It does not execute application code, does not open .env contents and does not modify files. It is a lightweight heuristic pre-audit, not full SAST/DAST or a security certification.
+
+Use the full [Security Review for Vibe-Coded Software](SECURITY-VIBE-CODING.md) guide for dependency scanning, threat modeling, authentication/authorization checks, tenant isolation, regression tests and release recommendations.
