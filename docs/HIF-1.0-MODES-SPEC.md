@@ -435,3 +435,58 @@ This document defines the target contract. It does not claim the five modes, rec
 The conversation is HIF's primary user interface. The normative requirements for the run header, real-time orchestrator/agent activity, event-driven progress, hierarchical token accounting, actual-versus-estimated usage, fast project intake with bounded block readers, progressive validation and the user-facing remaining-work checklist are defined in [HIF 1.0 — Conversation UX, Token Governance and Progressive Delivery](HIF-1.0-CONVERSATION-UX-TOKEN-MANAGEMENT.md).
 
 These requirements are release-critical: large-scale multi-agent fan-out must not ship before atomic hierarchical budget reservation, per-call usage accounting, truthful progress state and budget-exhaustion behavior are tested.
+
+
+## 20. Multi-host skills and subscription-aware adapters
+
+HIF 1.0 must be consumable both as a standalone local/remote orchestrator and as a portable workflow skill inside supported AI hosts.
+
+### 20.1 Two execution modes
+
+- Native subscription mode: the host assistant uses its currently selected model and only its own native tools/sub-agents. HIF instructions guide task decomposition, compact context, validation and checklists. Host-native model selection, token accounting, quota and billing remain controlled by the host.
+- Connected HIF mode: the host invokes HIF through an explicitly configured MCP/tool connection. HIF controls its own run/session, configured provider adapters, budget, agents, memory and telemetry.
+
+The skill must detect which mode is actually available. It must not pretend connected HIF execution occurred when MCP tools are missing.
+
+### 20.2 Subscription and authentication boundary
+
+A ChatGPT, Claude, Gemini, NotebookLM or Copilot consumer subscription is not automatically a provider API credential. A native skill can guide the current host model under the host's subscription. Independent HIF calls to other providers require a provider-authorized API/OAuth/connector path and may incur separate charges.
+
+Do not scrape browser cookies, automate consumer chat pages to evade API billing, reuse hidden sessions, rotate accounts to bypass quotas or claim access to private subscription limits. Respect host feature availability, organization policies, official authentication and provider terms.
+
+### 20.3 Host adapter contract
+
+Each host adapter should declare:
+- host/product and supported versions;
+- skill format and installation path;
+- available native delegation, tools and MCP transport;
+- authentication mechanism and permission scopes;
+- whether local runtime or remote HTTPS gateway is required;
+- which token/usage metrics the host exposes;
+- supported progress streaming or polling behavior;
+- known plan, workspace and admin restrictions.
+
+The adapter maps host commands to the common HIF request contract. It must not duplicate planner, token manager or agent orchestration logic.
+
+### 20.4 Target host support
+
+- ChatGPT: portable skill where Skills import is available; connected mode via supported custom MCP app and deployed HTTPS gateway where plan/workspace controls allow.
+- Claude: portable custom skill where enabled; Claude Code local skill plus stdio MCP; web/Desktop connected tools only where officially supported.
+- Gemini: portable skill where available; Gemini CLI local skills plus stdio MCP; Gemini web requires an explicitly supported remote tool path.
+- GitHub Copilot: Agent Skills and MCP configuration in supported IDE/agent harnesses, subject to product and organization policy.
+- Microsoft 365 Copilot: Copilot Studio agent/tool integration with authenticated remote HIF gateway and tenant governance; do not conflate with GitHub Copilot or consumer Microsoft Copilot.
+- NotebookLM: provide a companion research workflow and source-pack format. Do not call it a native HIF skill, general agent host or MCP client unless Google exposes and HIF implements an official integration.
+- Codex: portable Agent Skill and local/remote MCP configuration in the supported host.
+
+### 20.5 User experience
+
+The same /hif, /hifDev, /hifBD, /hifArc, /hifStrong, /hifAgent and /hifnode intent aliases should map to the common request schema where the host supports custom skill instructions. Aliases are not guaranteed native slash commands. The UI should state whether execution is Native subscription or Connected HIF, and distinguish host-reported usage from HIF/provider-reported usage.
+
+### 20.6 Acceptance criteria
+
+- Skill installation works without HIF runtime installation and clearly describes the reduced native mode.
+- Connected mode is used only when MCP/tool connectivity is verified.
+- The skill never claims a host's subscription gives HIF independent API access.
+- Host adapters expose their actual available delegation and usage capabilities.
+- NotebookLM workflow is documented as a manual source-grounded handoff until an official integration exists.
+- Cross-host session memory contains only information explicitly stored in HIF and approved by the user.
