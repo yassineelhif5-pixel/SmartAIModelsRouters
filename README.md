@@ -169,3 +169,17 @@ See:
 - `docs/SECURITY.md` — release-signing and update security requirements.
 
 **Implementation status:** these are HIF 1.0 specifications and release requirements. A production ZirconAI signing key, signed release pipeline, atomic updater and adaptive persistent pipeline scheduler must be implemented and tested before claiming these capabilities are available to end users.
+
+
+## Lightweight local execution and application security
+
+HIF adapts its default concurrency to the host's logical CPU count and available RAM. Resource samples are non-blocking; remote provider calls remain asynchronous and per-provider bounded. Local blocking I/O uses a lazy bounded thread pool, while explicitly submitted CPU-heavy helper functions use a bounded process pool. Skills-only installation starts no runtime service, worker or background monitor.
+
+For a quick read-only security pre-audit of AI-generated/vibe-coded applications:
+
+```bash
+hif security scan .
+hif security scan . --json
+```
+
+The scanner never executes project code and does not read .env contents. It reports heuristic findings, evidence, severity and a prioritized remediation plan. It is not a full SAST/DAST or security certification. See [Security Review for Vibe-Coded Software](docs/SECURITY-VIBE-CODING.md) and [Resource Management](docs/RESOURCE-MANAGEMENT.md).
