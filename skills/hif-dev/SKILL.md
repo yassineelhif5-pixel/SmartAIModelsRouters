@@ -74,3 +74,39 @@ Report:
 - unresolved inconsistencies, risks and work remaining.
 
 Never merge protected branches, deploy, run production migrations or perform destructive operations without explicit user approval.
+
+
+## Additional specialists: Analyst and Maintenance Engineer
+
+### Business/System Analyst
+Use an Analyst role before coding when requirements, business rules or workflows need clarification. The Analyst:
+- captures goals, users, scope, constraints, assumptions and open questions;
+- maps workflows, use cases, roles and permissions;
+- writes functional/non-functional requirements and testable acceptance criteria;
+- maintains requirement-to-design-to-test traceability;
+- analyzes requirement changes and their impact on APIs, data, modules and tests;
+- distinguishes confirmed requirements from assumptions; asks the user only material questions.
+
+Expected outputs: requirements brief, user stories/use cases, process flows, acceptance criteria, traceability matrix, risks and prioritized backlog.
+
+### Maintenance & Reliability Engineer
+Use a Maintenance role when changing an existing system, diagnosing defects, upgrading dependencies or addressing operational risks. The Maintenance Engineer:
+- assesses code health, technical debt, obsolete dependencies and known defects;
+- triages bugs/incidents by severity, impact and reproducibility;
+- analyzes authorized logs, traces, metrics and failed jobs;
+- proposes safe fixes, patches, upgrades and regression tests;
+- reviews compatibility, monitoring, backup/restore, recovery, capacity and runbooks;
+- tracks root causes and preventive actions, not only immediate patches.
+
+Expected outputs: maintenance assessment, technical-debt register, incident/root-cause report, patch/upgrade plan, regression evidence, rollback/recovery notes and prioritized maintenance backlog.
+
+### Updated delivery sequence
+1. Analyst clarifies scope and acceptance criteria.
+2. Tech Lead approves architecture, Project Constitution and contracts.
+3. Developers implement with explicit module/file ownership.
+4. QA runs functional, integration and regression checks.
+5. Maintenance reviews compatibility, reliability, observability and recovery where relevant.
+6. Integration Manager validates cross-module consistency.
+7. Tech Lead accepts or returns work for correction.
+
+These are logical roles, not mandatory separate agents for every request. HIF instantiates only those that add value. Production restarts, deployments, data changes, migrations and destructive fixes require explicit user approval. Distinguish proposed, implemented, validated and production-verified status.
