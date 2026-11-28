@@ -8,8 +8,8 @@
 - [x] Document CPU/RAM/GPU-aware scheduling and 80% pre-emptive failover policy.
 - [x] Add portable \`hif\` and \`hifnode\` skill instructions for Claude, ChatGPT, Gemini, Copilot and Codex targets.
 - [x] Add cross-platform skill installation and ZIP packaging scripts.
-- [ ] Choose and add an explicit open-source license.
-- [ ] Add code-of-conduct policy.
+- [x] Choose and add an explicit open-source license (Apache-2.0, open core: see COMMERCIAL.md).
+- [x] Add code-of-conduct policy.
 
 ## Phase 1 — Local core MVP
 - [x] Python CLI with run, node, status, usage and MCP commands.
@@ -29,13 +29,14 @@
 - [x] Deterministic tests and CI that require no paid API credentials.
 
 ## Phase 2 — Provider integrations
-- [ ] Anthropic API adapter.
-- [ ] OpenAI API adapter.
-- [ ] Gemini API adapter.
-- [ ] OpenRouter and DeepSeek adapters.
+- [x] Anthropic API adapter (native Messages API).
+- [x] OpenAI API adapter (Chat Completions).
+- [x] Gemini API adapter (native generateContent).
+- [x] OpenRouter, DeepSeek and 25 other provider adapters (docs/PROVIDERS.md).
 - [ ] Normalize usage, retry headers, quota errors and reset windows.
 - [ ] Implement anticipatory fallback at configurable 80% usage where measurable.
-- [ ] Add secret redaction, structured logs and budget enforcement.
+- [x] Per-session budget enforcement and loop detection (spend guard).
+- [ ] Add secret redaction and structured logs.
 
 ## Phase 3 — Host integrations
 - [x] Claude Code local stdio MCP tools (hif_run and hifnode_run).
@@ -66,8 +67,8 @@
 - [ ] Conflict detection and artifact merge stages.
 - [ ] Context cache with hash-based invalidation and privacy controls.
 - [ ] Prompt/task deduplication.
-- [ ] Quality/speed/cost evaluation suite.
-- [ ] Optional local inference through Ollama.
+- [x] Quality/speed/cost evaluation suite (`hif bench`, 30 deterministic tasks).
+- [x] Optional local inference through Ollama, LM Studio, vLLM and llama.cpp.
 
 ## MVP acceptance criteria
 - One user goal creates a validated task graph with stable task IDs.

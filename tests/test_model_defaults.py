@@ -102,8 +102,8 @@ def test_kimi_qwen_and_additional_providers_activate_only_with_credentials(monke
 
     providers = {model.split("/", 1)[0] for model in settings.model_pool}
     assert providers == {"moonshot", "dashscope", "xai", "zai", "minimax"}
-    assert "moonshot/kimi-latest" in settings.model_pool
-    assert "dashscope/qwen-max-latest" in settings.model_pool
+    assert "moonshot/kimi-k3.1-pro" in settings.model_pool
+    assert "dashscope/qwen4-max" in settings.model_pool
     assert all(
         model in settings.model_pool
         for models in settings.task_model_preferences.values()

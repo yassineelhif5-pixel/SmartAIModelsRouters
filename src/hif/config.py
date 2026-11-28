@@ -9,78 +9,66 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from hif.provider_catalog import credential_env_map
 from hif.resources import recommended_parallelism
 
 load_dotenv(override=False)
 
 
 
-# Multi-provider starter catalog. Model IDs are refreshed against provider documentation;
-# only providers with configured credentials are activated automatically.
+# Multi-provider starter catalog, checked against public model listings on 2026-11-28.
+# Pinned IDs are preferred over moving aliases so runs stay reproducible; review this list
+# whenever a provider ships a new generation. Only providers with configured credentials
+# are activated automatically.
 DEFAULT_MODEL_POOL: tuple[str, ...] = (
-    "openai/gpt-luna-latest",
-    "openai/gpt-sol-latest",
-    "openai/gpt-astra-latest",
-    "anthropic/claude-haiku-latest",
-    "anthropic/claude-sonnet-latest",
-    "anthropic/claude-opus-latest",
+    "openai/gpt-6-luna",
+    "openai/gpt-6.2-sol",
+    "openai/gpt-6.2-astra",
+    "anthropic/claude-haiku-5-5",
+    "anthropic/claude-sonnet-5-5",
+    "anthropic/claude-opus-5-5",
+    "gemini/gemini-3.5-flash-lite",
     "gemini/gemini-3.8-flash",
     "gemini/gemini-4-hydrogen",
     "gemini/gemini-4-neon",
     "gemini/gemini-4-carbon",
     "gemini/gemini-4-argon",
-    "deepseek/deepseek-flash-latest",
-    "deepseek/deepseek-pro-latest",
-    "moonshot/kimi-latest",
-    "dashscope/qwen-max-latest",
-    "dashscope/qwen-flash-latest",
-    "xai/grok-latest",
-    "zai/glm-latest",
-    "minimax/minimax-latest",
+    "mistral/mistral-small-latest",
+    "mistral/mistral-large-latest",
+    "deepseek/deepseek-flash",
+    "deepseek/deepseek-v4-pro",
+    "moonshot/kimi-k3.1-pro",
+    "dashscope/qwen4-max",
+    "dashscope/qwen3.8-flash",
+    "xai/grok-4.7",
+    "zai/glm-5.3",
+    "minimax/MiniMax-M3.1-Flash",
 )
 
+_LIGHT = ("openai/gpt-6-luna", "gemini/gemini-3.5-flash-lite", "mistral/mistral-small-latest",
+          "deepseek/deepseek-flash", "anthropic/claude-haiku-5-5", "dashscope/qwen3.8-flash",
+          "minimax/MiniMax-M3.1-Flash")
+_CODING = ("openai/gpt-6.2-sol", "anthropic/claude-sonnet-5-5", "deepseek/deepseek-v4-pro",
+           "gemini/gemini-3.8-flash", "dashscope/qwen4-max", "moonshot/kimi-k3.1-pro",
+           "zai/glm-5.3")
+_STRONG = ("openai/gpt-6.2-astra", "anthropic/claude-opus-5-5", "gemini/gemini-4-hydrogen",
+           "mistral/mistral-large-latest", "deepseek/deepseek-v4-pro")
+
 DEFAULT_TASK_MODEL_PREFERENCES: dict[str, tuple[str, ...]] = {
-    "analysis": (
-        "openai/gpt-luna-latest", "gemini/gemini-3.5-flash-lite",
-        "deepseek/deepseek-flash-latest", "anthropic/claude-haiku-latest", "moonshot/kimi-latest", "dashscope/qwen-flash-latest",
-    ),
-    "research": (
-        "gemini/gemini-3.8-flash", "openai/gpt-sol-latest",
-        "anthropic/claude-sonnet-latest", "deepseek/deepseek-pro-latest", "dashscope/qwen-max-latest", "moonshot/kimi-latest",
-    ),
-    "coding": (
-        "openai/gpt-sol-latest", "anthropic/claude-sonnet-latest",
-        "deepseek/deepseek-pro-latest", "gemini/gemini-3.8-flash",
-        "dashscope/qwen-max-latest", "moonshot/kimi-latest",
-    ),
-    "testing": (
-        "openai/gpt-luna-latest", "deepseek/deepseek-flash-latest",
-        "anthropic/claude-haiku-latest", "dashscope/qwen-flash-latest",
-    ),
-    "review": (
-        "openai/gpt-astra-latest", "anthropic/claude-opus-latest",
-        "gemini/gemini-4-hydrogen", "deepseek/deepseek-pro-latest",
-    ),
-    "documentation": (
-        "openai/gpt-luna-latest", "anthropic/claude-sonnet-latest",
-        "gemini/gemini-3.8-flash", "dashscope/qwen-flash-latest",
-    ),
-    "architecture": (
-        "openai/gpt-astra-latest", "anthropic/claude-opus-latest",
-        "gemini/gemini-4-hydrogen",
-    ),
-    "infrastructure": (
-        "openai/gpt-sol-latest", "anthropic/claude-sonnet-latest",
-        "gemini/gemini-3.8-flash",
-    ),
-    "security": (
-        "openai/gpt-astra-latest", "anthropic/claude-opus-latest",
-        "deepseek/deepseek-pro-latest",
-    ),
-    "general": (
-        "openai/gpt-luna-latest", "gemini/gemini-3.5-flash-lite",
-        "deepseek/deepseek-flash-latest",
-    ),
+    "analysis": _LIGHT,
+    "research": ("gemini/gemini-3.8-flash", "openai/gpt-6.2-sol", "anthropic/claude-sonnet-5-5",
+                 "deepseek/deepseek-v4-pro", "dashscope/qwen4-max", "moonshot/kimi-k3.1-pro",
+                 "xai/grok-4.7"),
+    "coding": _CODING,
+    "testing": _LIGHT,
+    "review": _STRONG,
+    "documentation": ("openai/gpt-6-luna", "anthropic/claude-sonnet-5-5",
+                      "mistral/mistral-small-latest", "gemini/gemini-3.8-flash"),
+    "architecture": _STRONG,
+    "infrastructure": ("openai/gpt-6.2-sol", "anthropic/claude-sonnet-5-5",
+                       "gemini/gemini-3.8-flash"),
+    "security": _STRONG,
+    "general": _LIGHT,
 }
 
 _PROVIDER_CREDENTIALS: dict[str, tuple[str, ...]] = {
@@ -97,6 +85,9 @@ _PROVIDER_CREDENTIALS: dict[str, tuple[str, ...]] = {
     "groq": ("GROQ_API_KEY",),
     "openrouter": ("OPENROUTER_API_KEY",),
 }
+# Every single-key provider of the catalog can be auto-activated as well.
+for _provider_id, _env_names in credential_env_map().items():
+    _PROVIDER_CREDENTIALS.setdefault(_provider_id, _env_names)
 
 
 def _default_models_for_configured_providers() -> tuple[str, ...]:
@@ -193,6 +184,10 @@ class Settings:
     max_output_tokens_per_task: int = 1800
     request_timeout_seconds: int = 120
     max_context_chars: int = 16_000
+    session_max_tokens: int = 500_000
+    session_max_calls: int = 100
+    session_max_cost_usd: float | None = None
+    session_loop_repeat_limit: int = 3
     cpu_pressure_threshold: float = 85.0
     memory_pressure_threshold: float = 88.0
     min_free_memory_mb: int = 1536
@@ -238,6 +233,11 @@ class Settings:
             max_output = int(os.getenv("HIF_MAX_OUTPUT_TOKENS_PER_TASK", str(defaults["output"])))
             timeout = int(os.getenv("HIF_REQUEST_TIMEOUT_SECONDS", str(defaults["timeout"])))
             max_context = int(os.getenv("HIF_MAX_CONTEXT_CHARS", str(defaults["context"])))
+            session_tokens = int(os.getenv("HIF_SESSION_MAX_TOKENS", "500000"))
+            session_calls = int(os.getenv("HIF_SESSION_MAX_CALLS", "100"))
+            session_loops = int(os.getenv("HIF_SESSION_LOOP_REPEAT_LIMIT", "3"))
+            raw_cost = os.getenv("HIF_SESSION_MAX_COST_USD", "").strip()
+            session_cost = float(raw_cost) if raw_cost else None
             cpu_threshold = float(os.getenv("HIF_CPU_PRESSURE_THRESHOLD", "85"))
             memory_threshold = float(os.getenv("HIF_MEMORY_PRESSURE_THRESHOLD", "88"))
             min_free = int(os.getenv("HIF_MIN_FREE_MEMORY_MB", str(defaults["reserve_mb"])))
@@ -258,6 +258,9 @@ class Settings:
             "HIF_MAX_OUTPUT_TOKENS_PER_TASK": max_output,
             "HIF_REQUEST_TIMEOUT_SECONDS": timeout,
             "HIF_MAX_CONTEXT_CHARS": max_context,
+            "HIF_SESSION_MAX_TOKENS": session_tokens,
+            "HIF_SESSION_MAX_CALLS": session_calls,
+            "HIF_SESSION_LOOP_REPEAT_LIMIT": session_loops,
             "HIF_MIN_FREE_MEMORY_MB": min_free,
             "HIF_GATEWAY_PORT": gateway_port,
             "HIF_GATEWAY_RATE_LIMIT_PER_MINUTE": gateway_rate_limit,
@@ -333,6 +336,10 @@ class Settings:
             max_output_tokens_per_task=max_output,
             request_timeout_seconds=timeout,
             max_context_chars=max_context,
+            session_max_tokens=session_tokens,
+            session_max_calls=session_calls,
+            session_max_cost_usd=session_cost,
+            session_loop_repeat_limit=session_loops,
             cpu_pressure_threshold=cpu_threshold,
             memory_pressure_threshold=memory_threshold,
             min_free_memory_mb=min_free,

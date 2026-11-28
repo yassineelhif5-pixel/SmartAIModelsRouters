@@ -8,10 +8,12 @@ from typing import Any
 
 from hif.config import Settings
 from hif.planner import PLANNER_SYSTEM, SYNTHESIS_SYSTEM, TASK_SYSTEM, extract_json
-from hif.providers import LiteLLMProvider, ModelProvider, ProviderError
+from hif.native_providers import AutoProvider
+from hif.providers import ModelProvider, ProviderError
 from hif.resources import AdaptiveConcurrency, LocalExecutionPool
 from hif.router import ModelRouter
 from hif.schemas import HIFRunResult, NodeResult, PlannedNode
+from hif.spend_guard import SpendGuard, SpendLimitExceeded, SpendLimits
 from hif.storage import HIFStore
 
 
@@ -23,7 +25,7 @@ class HIFEngine:
         store: HIFStore | None = None,
     ):
         self.settings = settings or Settings.from_env()
-        self.provider = provider or LiteLLMProvider()
+        self.provider = provider or AutoProvider()
         self.store = store or HIFStore(self.settings.database_path)
         self.router = ModelRouter(self.settings, self.store)
         self.resources = AdaptiveConcurrency(
@@ -38,6 +40,12 @@ class HIFEngine:
             self.settings.max_local_processes,
         )
         self._provider_semaphores: dict[str, asyncio.Semaphore] = {}
+        self.spend_guard = SpendGuard(SpendLimits(
+            max_tokens=self.settings.session_max_tokens,
+            max_calls=self.settings.session_max_calls,
+            max_cost_usd=self.settings.session_max_cost_usd,
+            loop_repeat_limit=self.settings.session_loop_repeat_limit,
+        ))
 
     async def run_local_io(self, function, *args):
         """Execute blocking local I/O helpers without blocking the async event loop."""
@@ -91,6 +99,8 @@ class HIFEngine:
             )
         failures: list[str] = []
         for attempt, model in enumerate(candidates):
+            # The spend guard runs before every attempt, fallbacks included.
+            self.spend_guard.before_call(session_id, model, system_prompt, user_prompt)
             try:
                 async with self._semaphore_for(model):
                     response = await self.provider.complete(
@@ -101,6 +111,9 @@ class HIFEngine:
                         timeout=self.settings.request_timeout_seconds,
                     )
                 self._record_usage(session_id, response)
+                self.spend_guard.record(session_id, response.input_tokens,
+                                        response.output_tokens,
+                                        getattr(response, "cost_usd", None))
                 return response, attempt
             except ProviderError as exc:
                 failures.append(f"{model}: {exc}")
@@ -396,6 +409,9 @@ class HIFEngine:
                 ),
                 elapsed_ms=int((time.perf_counter() - started) * 1000),
             )
+        except SpendLimitExceeded:
+            self.store.set_session_status(sid, "stopped_by_spend_guard")
+            raise
         except Exception:
             self.store.set_session_status(sid, "failed")
             raise

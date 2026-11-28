@@ -2,7 +2,7 @@
 
 - Status: Accepted as the implementation baseline
 - Date: 2026-11-28
-- Related specification: HIF 1.0 Five-Mode Architecture (../HIF-1.0-MODES-SPEC.md)
+- Related specification: HIF 1.0 Five-Mode Architecture (../rfc/HIF-1.0-MODES-SPEC.md)
 
 ## Context
 

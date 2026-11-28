@@ -195,6 +195,15 @@ class HIFStore:
             ).fetchall()
         return [dict(row) for row in rows]
 
+    def session_usage(self, session_id: str) -> list[dict[str, Any]]:
+        with self._connect() as db:
+            rows = db.execute(
+                "SELECT model, input_tokens, output_tokens, cost_usd FROM usage "
+                "WHERE session_id=? ORDER BY created_at",
+                (session_id,),
+            ).fetchall()
+        return [dict(row) for row in rows]
+
     def session_nodes(self, session_id: str) -> list[dict[str, Any]]:
         with self._connect() as db:
             rows = db.execute(

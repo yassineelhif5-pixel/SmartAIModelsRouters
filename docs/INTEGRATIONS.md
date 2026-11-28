@@ -200,7 +200,7 @@ The skill adds specialized instructions and task logic to the host assistant. In
 
 All HIF Skills use the common staged pipeline. See [Pipeline Engine and Multi-Model Routing](PIPELINE-AND-MODEL-ROUTING.md) for the lifecycle, default provider catalog, configuration, installation and Skill-only versus connected execution behavior.
 
-The root orchestrator is also the architecture owner. It may assign an Assistant Architect for independent design critique and an Infrastructure Architect for deployment, network, identity, capacity, resilience, observability, backup/recovery and cost recommendations. See docs/HIF-1.0-MODES-SPEC.md section 26 for the normative contract.
+The root orchestrator is also the architecture owner. It may assign an Assistant Architect for independent design critique and an Infrastructure Architect for deployment, network, identity, capacity, resilience, observability, backup/recovery and cost recommendations. See docs/rfc/HIF-1.0-MODES-SPEC.md section 26 for the normative contract.
 
 
 ## 16. Lightweight runtime and application security

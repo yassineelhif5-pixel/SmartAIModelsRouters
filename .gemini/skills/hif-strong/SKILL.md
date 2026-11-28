@@ -73,7 +73,7 @@ HIF Strong applies to every domain, not only software. For research, verify sour
 
 Use independent review only where it materially reduces risk. Do not equate multiple model opinions with truth; prioritize primary evidence, deterministic checks and domain-specific acceptance criteria. Clearly separate draft, reviewed, validated and published states. A publication is not considered complete until an authorized connector confirms it.
 
-See `docs/HIF-UNIVERSAL-ORCHESTRATOR.md`.
+See `docs/rfc/HIF-UNIVERSAL-ORCHESTRATOR.md`.
 
 
 ## HIF portable delivery contract (mandatory)

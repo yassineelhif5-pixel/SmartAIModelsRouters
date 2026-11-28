@@ -47,18 +47,19 @@ HIF ships with a starter catalog spanning multiple providers. It does not assume
 
 | Provider | Starter model IDs | Intended default use |
 |---|---|---|
-| OpenAI | openai/gpt-luna-latest, openai/gpt-sol-latest, openai/gpt-astra-latest | Fast triage, general/coding work, complex review |
-| Anthropic | anthropic/claude-haiku-latest, anthropic/claude-sonnet-latest, anthropic/claude-opus-latest | Fast extraction, engineering, deep review |
-| Google Gemini | gemini/gemini-3.5-flash-lite, gemini/gemini-3.8-flash, gemini/gemini-4-hydrogen, gemini/gemini-4-neon | Low-latency tasks, agentic/research work, advanced reasoning |
-| DeepSeek | deepseek/deepseek-flash-latest, deepseek/deepseek-pro-latest | Cost-sensitive tasks and deeper reasoning |
-| Moonshot AI (Kimi) | moonshot/kimi-latest | Long-context reasoning and research |
-| Alibaba Cloud (Qwen) | dashscope/qwen-max-latest, dashscope/qwen-flash-latest | General reasoning, coding and fast tasks |
-| xAI | xai/grok-latest | Alternative reasoning and research |
-| Z.AI (GLM) | zai/glm-latest, zai/glm-flash-latest | General and fast tasks |
-| MiniMax | minimax/minimax-latest | General-purpose tasks |
-| Mistral, Groq, OpenRouter | User-selected LiteLLM model IDs | Additional hosted models and routing options; explicit model IDs required |
+| OpenAI | openai/gpt-6-luna, openai/gpt-6.2-sol, openai/gpt-6.2-astra | Fast triage, general/coding work, complex review |
+| Anthropic | anthropic/claude-haiku-5-5, anthropic/claude-sonnet-5-5, anthropic/claude-opus-5-5 | Fast extraction, engineering, deep review |
+| Google Gemini | gemini/gemini-3.5-flash-lite, gemini/gemini-3.8-flash, gemini/gemini-4-hydrogen, gemini/gemini-4-neon, gemini/gemini-4-carbon, gemini/gemini-4-argon | Low-latency tasks, agentic/research work, advanced reasoning |
+| Mistral | mistral/mistral-small-latest, mistral/mistral-large-latest | European hosting, general and fast tasks |
+| DeepSeek | deepseek/deepseek-flash, deepseek/deepseek-v4-pro | Cost-sensitive tasks and deeper reasoning |
+| Moonshot AI (Kimi) | moonshot/kimi-k3.1-pro | Long-context reasoning and research |
+| Alibaba Cloud (Qwen) | dashscope/qwen4-max, dashscope/qwen3.8-flash | General reasoning, coding and fast tasks |
+| xAI | xai/grok-4.7 | Alternative reasoning and research |
+| Z.AI (GLM) | zai/glm-5.3 | General and coding tasks |
+| MiniMax | minimax/MiniMax-M3.1-Flash | Low-cost automation |
+| Groq, OpenRouter and the 20 other providers of docs/PROVIDERS.md | User-selected model IDs | Additional hosted models and routing options; explicit model IDs required |
 
-Model aliases and provider routes follow LiteLLM documentation and can change with upstream releases. Verify account/region availability and test the selected model before production rollout. These are API model identifiers, not consumer subscription entitlements. Access, regional availability, account limits, pricing and lifecycle can change. Confirm the exact provider model ID and LiteLLM compatibility before production use. Preview models should be pinned deliberately and reviewed for lifecycle changes.
+Catalog checked against public model listings on 2026-11-28. Model IDs change with upstream releases. Verify account/region availability and test the selected model before production rollout. These are API model identifiers, not consumer subscription entitlements. Access, regional availability, account limits, pricing and lifecycle can change. Confirm the exact provider model ID and LiteLLM compatibility before production use. Preview models should be pinned deliberately and reviewed for lifecycle changes.
 
 Official model references:
 - OpenAI model/API overview: https://platform.openai.com/overview

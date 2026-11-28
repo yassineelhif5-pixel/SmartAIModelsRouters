@@ -177,6 +177,60 @@ def usage() -> None:
 
 
 @app.command()
+def providers(
+    configured_only: bool = typer.Option(False, "--configured", help="Only configured ones."),
+) -> None:
+    """List every AI provider HIF can reach and whether it is configured here."""
+    from hif.provider_catalog import PROVIDERS
+
+    table = Table("Prefix", "Provider", "Protocol", "Region", "Configured", "Credentials")
+    for spec in PROVIDERS:
+        ready = spec.is_configured()
+        if configured_only and not ready:
+            continue
+        creds = ", ".join(spec.env_keys) if spec.env_keys else spec.base_url_env
+        table.add_row(spec.id, spec.name, spec.kind, spec.region,
+                      "[green]yes[/green]" if ready else "no", creds)
+    console.print(table)
+    console.print("[dim]Model ids are written <prefix>/<model>, e.g. mistral/mistral-small-latest. "
+                  "Override any endpoint with HIF_<PREFIX>_BASE_URL.[/dim]")
+
+
+@app.command()
+def bench(
+    baseline: str = typer.Option(..., "--baseline", help="Single model to compare against, "
+                                 "e.g. openai/gpt-6.2-sol."),
+    tasks: Path = typer.Option(Path("bench/tasks.jsonl"), "--tasks", help="JSONL task file."),
+    out: Path = typer.Option(Path("bench-results"), "--out", help="Output directory."),
+    limit: int = typer.Option(0, "--limit", help="Run only the first N tasks (0 = all)."),
+    allow_code_exec: bool = typer.Option(
+        False, "--allow-code-exec",
+        help="Run model-written Python for coding tasks in an isolated interpreter."),
+) -> None:
+    """Benchmark HIF against a single model on deterministic tasks."""
+    from hif.bench import load_tasks, main_sync, write_report
+    from hif.native_providers import AutoProvider
+
+    task_list = load_tasks(tasks)
+    if limit:
+        task_list = task_list[:limit]
+    settings = Settings.from_env()
+    report = main_sync(
+        tasks=task_list, baseline_model=baseline, provider=AutoProvider(),
+        engine_factory=lambda: HIFEngine(settings=settings),
+        allow_code_exec=allow_code_exec, hif_models=list(settings.get_models()),
+    )
+    json_path, md_path = write_report(report, out)
+    summary = report.summary()
+    table = Table("", "Single model", "HIF")
+    for key, label in (("passed", "Passed"), ("input_tokens", "Input tokens"),
+                       ("output_tokens", "Output tokens"), ("cost_usd", "Reported cost USD")):
+        table.add_row(label, str(summary["baseline"][key]), str(summary["hif"][key]))
+    console.print(table)
+    console.print(f"[dim]Report: {md_path} · raw data: {json_path}[/dim]")
+
+
+@app.command()
 def gateway() -> None:
     """Start the authenticated HTTP REST + Streamable HTTP MCP gateway."""
     from hif.gateway import main as gateway_main

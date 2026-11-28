@@ -199,7 +199,7 @@ Treat reporting as a first-class deliverable. Establish audience, objective, sco
 
 When structured runtime events are available, expose a graph/timeline of actual orchestrators, agents, tools, dependencies, handoffs and artifacts. Distinguish proposed tasks from agents actually running. Use stable IDs, parent/run IDs, timestamps and truthful status. Show blockers, approvals and validated artifacts. Never expose secrets or hidden chain-of-thought. In Skill-only mode, provide a Mermaid/text plan only if useful; do not claim a live graph/dashboard.
 
-See `docs/HIF-UNIVERSAL-ORCHESTRATOR.md` for the product contract and implementation sequence.
+See `docs/rfc/HIF-UNIVERSAL-ORCHESTRATOR.md` for the product contract and implementation sequence.
 
 
 ## HIF portable delivery contract (mandatory)
