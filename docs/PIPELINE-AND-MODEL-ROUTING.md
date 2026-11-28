@@ -47,7 +47,7 @@ HIF ships with a starter catalog spanning multiple providers. It does not assume
 
 | Provider | Starter model IDs | Intended default use |
 |---|---|---|
-| OpenAI | openai/gpt-6-luna, openai/gpt-6.1-sol, openai/gpt-6-astra | Fast triage, general/coding work, complex review |
+| OpenAI | openai/gpt-6-luna, openai/gpt-6.1-sol, openai/gpt-6.2-astra | Fast triage, general/coding work, complex review |
 | Anthropic | anthropic/claude-haiku-4-5-20251001, anthropic/claude-sonnet-5, anthropic/claude-opus-5 | Fast extraction, engineering, deep review |
 | Google Gemini | gemini/gemini-3.5-flash-lite, gemini/gemini-3.8-flash, gemini/gemini-3.1-pro-preview | Low-latency tasks, agentic/research work, advanced reasoning |
 | DeepSeek | deepseek/deepseek-flash, deepseek/deepseek-v4-pro | Cost-sensitive tasks and deeper reasoning |
@@ -159,8 +159,8 @@ The starter preferences are deliberately multi-provider and ordered for fallback
 | Research | Gemini 3.8 Flash, GPT-6.1 Sol | Claude Sonnet 5, DeepSeek V4 Pro |
 | Coding | GPT-6.1 Sol, Claude Sonnet 5 | DeepSeek V4 Pro, Gemini 3.8 Flash |
 | Testing | GPT-6 Luna, DeepSeek Flash | Claude Haiku |
-| Review | GPT-6 Astra, Claude Opus 5 | Gemini 3.1 Pro, DeepSeek V4 Pro |
-| Architecture | GPT-6 Astra, Claude Opus 5 | Gemini 3.1 Pro |
+| Review | GPT-6.2 Astra, Claude Opus 5 | Gemini 3.1 Pro, DeepSeek V4 Pro |
+| Architecture | GPT-6.2 Astra, Claude Opus 5 | Gemini 3.1 Pro |
 | Infrastructure | GPT-6.1 Sol, Claude Sonnet 5 | Gemini 3.8 Flash |
 
 This is an initial routing policy, not a universal quality ranking. HIF should adapt it using measured task outcomes, latency, failure rates, cost and user-approved feedback. The actual active model pool filters these preferences to providers with configured credentials.
