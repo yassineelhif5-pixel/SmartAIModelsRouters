@@ -245,20 +245,24 @@ class HIFEngine:
                 if not ready:
                     raise RuntimeError("No runnable nodes remain in the HIF task graph.")
 
-                if self.settings.resource_aware_scheduling:
-                    resource_limit, _snapshot = self.resources.effective_limit()
-                else:
-                    resource_limit = self.settings.max_parallel_tasks
-                batch_limit = min(
-                    resource_limit,
-                    self.settings.max_parallel_tasks,
-                    len(ready),
-                )
-                if not parallel:
-                    batch_limit = 1
+                remaining_ready = list(ready)
+                while remaining_ready:
+                    # Re-sample after every completed batch so rising host pressure
+                    # reduces the next batch instead of waiting for a new DAG wave.
+                    if self.settings.resource_aware_scheduling:
+                        resource_limit, _snapshot = self.resources.effective_limit()
+                    else:
+                        resource_limit = self.settings.max_parallel_tasks
+                    batch_limit = min(
+                        resource_limit,
+                        self.settings.max_parallel_tasks,
+                        len(remaining_ready),
+                    )
+                    if not parallel:
+                        batch_limit = 1
 
-                for offset in range(0, len(ready), max(1, batch_limit)):
-                    group = ready[offset:offset + max(1, batch_limit)]
+                    group = remaining_ready[:max(1, batch_limit)]
+                    remaining_ready = remaining_ready[len(group):]
                     batch = await asyncio.gather(
                         *(
                             self._run_node(
