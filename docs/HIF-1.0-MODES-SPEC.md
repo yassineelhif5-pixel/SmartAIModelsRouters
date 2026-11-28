@@ -1087,3 +1087,33 @@ Task types include architecture and infrastructure. Planner role guidance includ
 - Assistant Architect and Infrastructure Architect provide separate advisory outputs when warranted.
 - Every specialist instruction includes compact context, dependency, output schema and acceptance criteria.
 - The final response separates proposed, implemented, integrated and validated outcomes.
+
+
+## 27. Host-safe execution and vibe-coding security
+
+### 27.1 Resource-aware local runtime
+
+The runtime must size default concurrency from logical CPUs and available RAM, apply non-blocking telemetry, reserve free memory and bound each task's estimated memory. Remote provider requests remain asynchronous and are capped per provider. Local blocking I/O uses a lazy bounded thread pool; explicitly submitted CPU-heavy trusted helpers use a lazy bounded process pool. No unbounded fan-out, process priority changes or CPU affinity changes are allowed by default.
+
+Skill-only installation must remain instruction-only: no daemon, worker pool, persistent resource monitor or background process.
+
+In-process limits are cooperative. Production server deployments must also use a dedicated least-privilege account and OS/container resource limits.
+
+### 27.2 Application security pre-audit
+
+AI-generated/vibe-coded applications should receive a fast deterministic local scan before release. The initial scanner is read-only, bounded by file count/size/time, skips dependency/build folders, does not execute project code and never opens .env contents. It returns rule ID, severity, path/line evidence, recommendation and a verification-oriented action plan.
+
+The security pipeline includes architecture/threat-model review, deterministic pre-audit, dependency/supply-chain review, application-security reviewer, regression verification and a prioritized release recommendation. Critical/high findings are release blockers unless a named authorized security owner records risk acceptance.
+
+The heuristic scanner is not full SAST/DAST, dependency CVE lookup, penetration testing or certification. External tools and human review are required for those activities.
+
+### 27.3 Acceptance criteria
+
+- CPU sampling never sleeps inside the async scheduler.
+- Default parallelism is derived from host CPU/RAM and remains bounded.
+- Local worker pools are lazy and have explicit thread/process ceilings.
+- Provider calls use async I/O and per-provider limits.
+- Skills-only installs do not start runtime workers.
+- Security scan does not execute project code, open .env contents or modify project files.
+- Security findings contain evidence, severity, recommended correction and verification.
+- Documentation clearly states scanner limitations and next-level security tools.
