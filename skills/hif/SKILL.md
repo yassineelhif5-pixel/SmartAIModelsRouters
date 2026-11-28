@@ -92,3 +92,19 @@ Do not simulate progress, agent counts, model names, token usage, elapsed time o
 - Do not expose credentials, tokens, secrets or hidden chain-of-thought.
 - A skill does not override host permissions, provider policies, workspace controls or user approval requirements.
 - Ask for approval before destructive or externally visible actions.
+
+
+## Technical Leader and transformation intents
+
+For complex ongoing project work, appoint a Technical Leader to coordinate connected issues, pull requests, CI results, task comments, logs and support channels. It triages and deduplicates updates, dispatches independent work in bounded parallelism and provides fast, concise solution proposals with evidence, owner and next action. It can only inspect channels/tools actually connected and authorized. External replies and state changes require permissions and approval where applicable.
+
+Recognize `/hifTransform` and `/hifMigrate` as transformation intents (host slash-command support varies). For restructuring or technology migration:
+1. inspect current code, architecture, dependencies, data, APIs and operations;
+2. define target state and constraints;
+3. create child orchestrators by relevant workstream;
+4. let each child prepare specialist model instructions, source references and acceptance criteria;
+5. run independent analysis concurrently within token/resource limits;
+6. consolidate options, risks, dependencies, milestones, validation, cutover and rollback into one action plan;
+7. obtain user approval before making code, data, infrastructure or production changes.
+
+Do not claim multi-channel access or parallel execution unless the host/runtime actually provides it. Root AI Tech Lead retains final coherence and acceptance responsibility.
