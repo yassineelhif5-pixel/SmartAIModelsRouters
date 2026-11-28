@@ -181,4 +181,4 @@ Never execute project code just to scan it. The scanner skips dependency/build f
 
 Every finding must include rule/severity, component and evidence, impact, corrective action, owner role, regression test and retest acceptance criteria. Block release recommendations for unresolved critical/high risks unless a named authorized security owner explicitly accepts the documented risk. Do not auto-fix or deploy security changes without approval. A clean heuristic scan is not a security certification.
 
-See [SECURITY-VIBE-CODING.md](../../docs/SECURITY-VIBE-CODING.md) for the full English review process.
+See `docs/SECURITY-VIBE-CODING.md` for the full English review process.
