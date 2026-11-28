@@ -166,7 +166,7 @@ class MultiModelEvaluator:
         reviews = await asyncio.gather(*(
             self._review(model, goal, context, semaphore) for model in selected
         ))
-        successful = [review for review in reviews if review.error is None]
+        successful = [\n            review for review in reviews\n            if review.error is None and review.verdict != "inconclusive"\n        ]
         failed_count = len(reviews) - len(successful)
         average = (
             round(sum(review.score for review in successful) / len(successful), 1)
@@ -181,7 +181,7 @@ class MultiModelEvaluator:
         elif negative > len(successful) / 2 or (average is not None and average < 40):
             decision = "rejected"
             consensus = "A majority of successful reviewers rejected the proposal, or the mean score is below 40."
-        elif conditional or blockers or (average is not None and average < 75):
+        elif negative or conditional or blockers or (average is not None and average < 75):
             decision = "conditional"
             consensus = "The proposal may be viable, but material conditions or blockers remain."
         else:
