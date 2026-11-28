@@ -87,7 +87,12 @@ def test_shell_installer_copies_all_skills_and_backups_existing_install(tmp_path
         pytest.skip("bash is not installed on this runner")
 
     home = tmp_path / "home"
-    destination = home / ".agents" / "skills"
+    destinations = [
+        home / ".claude" / "skills",
+        home / ".agents" / "skills",
+        home / ".gemini" / "skills",
+    ]
+    destination = destinations[1]
     existing = destination / "hif"
     existing.mkdir(parents=True)
     (existing / "SKILL.md").write_text("user-owned previous skill", encoding="utf-8")
@@ -98,18 +103,19 @@ def test_shell_installer_copies_all_skills_and_backups_existing_install(tmp_path
         bash,
         str(ROOT / "scripts" / "install-hif-skills.sh"),
         "--hosts",
-        "codex",
+        "claude,codex,gemini",
     ]
     first = subprocess.run(command, env=env, capture_output=True, text=True, timeout=20)
     assert first.returncode == 0, first.stderr
 
     expected_names = {path.name for path in _skill_dirs()}
-    installed_names = {
-        path.name for path in destination.iterdir()
-        if path.is_dir() and (path / "SKILL.md").is_file()
-    }
-    assert installed_names == expected_names
-    assert (destination / "hif" / "SKILL.md").read_bytes() == (SKILLS / "hif" / "SKILL.md").read_bytes()
+    for host_destination in destinations:
+        installed_names = {
+            path.name for path in host_destination.iterdir()
+            if path.is_dir() and (path / "SKILL.md").is_file()
+        }
+        assert installed_names == expected_names
+        assert (host_destination / "hif" / "SKILL.md").read_bytes() == (SKILLS / "hif" / "SKILL.md").read_bytes()
     backups = list(destination.glob("hif.backup.*"))
     assert len(backups) == 1
     assert (backups[0] / "SKILL.md").read_text(encoding="utf-8") == "user-owned previous skill"
