@@ -170,3 +170,10 @@ The skill adds specialized instructions and task logic to the host assistant. In
 All HIF Skills use the common staged pipeline. See [Pipeline Engine and Multi-Model Routing](PIPELINE-AND-MODEL-ROUTING.md) for the lifecycle, default provider catalog, configuration, installation and Skill-only versus connected execution behavior.
 
 The root orchestrator is also the architecture owner. It may assign an Assistant Architect for independent design critique and an Infrastructure Architect for deployment, network, identity, capacity, resilience, observability, backup/recovery and cost recommendations. See docs/HIF-1.0-MODES-SPEC.md section 26 for the normative contract.
+
+
+## 13. Lightweight runtime and application security
+
+The runtime adapts concurrency to available CPU and RAM, uses non-blocking telemetry, async provider I/O and lazy bounded local worker pools. Skills-only mode does not start local workers or background services.
+
+Run the built-in read-only security pre-audit with `hif security scan .`. It returns evidence, severity and a remediation plan without executing project code or opening .env contents. See [Resource Management](RESOURCE-MANAGEMENT.md) and [Security Review for Vibe-Coded Software](SECURITY-VIBE-CODING.md).
