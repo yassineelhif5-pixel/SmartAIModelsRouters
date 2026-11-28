@@ -43,4 +43,5 @@ foreach ($hostName in $Hosts) {
 Write-Host ""
 Write-Host "Installed $($skillDirs.Count) HIF skills for: $($Hosts -join ', ')"
 Write-Host "Start a new assistant session to load the skills."
+Write-Host "GitHub Copilot skills are installed in the repository-level .github\\skills directory."
 Write-Warning "This installs skill instructions only. It does not install the HIF runtime/MCP gateway or grant API access."
