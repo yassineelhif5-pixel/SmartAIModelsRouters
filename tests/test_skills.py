@@ -154,12 +154,10 @@ def test_powershell_installer_accepts_new_hosts_in_whatif_mode() -> None:
     pwsh = shutil.which("pwsh")
     if pwsh is None:
         pytest.skip("PowerShell 7 is not installed on this runner")
+    script_path = str(ROOT / "scripts" / "install-hif-skills.ps1").replace("'", "''")
+    command = f"& '{script_path}' -Hosts @('Cursor', 'Kimi', 'Qwen') -WhatIf"
     result = subprocess.run(
-        [
-            pwsh, "-NoProfile", "-File",
-            str(ROOT / "scripts" / "install-hif-skills.ps1"),
-            "-Hosts", "Cursor", "Kimi", "Qwen", "-WhatIf",
-        ],
+        [pwsh, "-NoProfile", "-Command", command],
         capture_output=True,
         text=True,
         timeout=30,
