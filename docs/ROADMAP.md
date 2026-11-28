@@ -23,6 +23,9 @@
 - [ ] Add a durable artifact index and file/content hash references.
 - [x] CPU/RAM telemetry through psutil on supported Windows/Linux/macOS hosts.
 - [x] Adaptive concurrency with global and per-provider request caps.
+- [x] Non-blocking CPU sampling and CPU/RAM-derived default concurrency (capped at eight).
+- [x] Lazy bounded local I/O thread pool and CPU helper process pool.
+- [x] Lightweight read-only application security pre-audit with JSON findings and remediation plan.
 - [x] Deterministic tests and CI that require no paid API credentials.
 
 ## Phase 2 — Provider integrations
@@ -90,3 +93,16 @@
 - [ ] Proxy deployment templates for Caddy, Nginx and IIS ARR.
 - [ ] Load, soak, security and failure-injection tests.
 - [ ] Production audit events with secret and context redaction.
+
+
+## Phase 1.1 — Host responsiveness and application security
+- [x] Avoid blocking the asyncio event loop during CPU telemetry sampling.
+- [x] Derive default task concurrency from available CPU/RAM; preserve explicit operator overrides.
+- [x] Bound local I/O threads and local CPU helper processes; instantiate pools lazily.
+- [x] Add a fast read-only scanner for common vibe-coding security mistakes.
+- [x] Add security CLI output with severity, evidence and prioritized remediation.
+- [ ] Add AST-aware and data-flow SAST for supported languages.
+- [ ] Add optional dependency vulnerability, secret-history, container and IaC scanners.
+- [ ] Add safe test-environment DAST/fuzzing integrations.
+- [ ] Add configurable CI release gates and documented risk acceptance.
+- [ ] Add Windows Job Object and Linux cgroup deployment examples with measured resource caps.
