@@ -59,7 +59,7 @@ For campaign workflows, HIF can research, draft, adapt content to channels, prep
 
 The target HIF interface exposes a live timeline and graph of actual orchestrators, agents, tasks, dependencies, tool handoffs and artifacts, alongside a polished report preview, blockers, approvals and evidence. The graph must be generated from real structured runtime events, not simulated agents. This visual dashboard and the full event API are implementation targets, not yet claims of a shipped UI.
 
-See [HIF Universal Orchestrator](docs/HIF-UNIVERSAL-ORCHESTRATOR.md) for domain coverage, fast-first behavior, research provenance, campaign approvals, report structure, graph/event contracts and the implementation sequence.
+See [HIF Universal Orchestrator](docs/HIF-UNIVERSAL-ORCHESTRATOR.md) for domain coverage, fast-first behavior, research provenance, campaign approvals, report structure, graph/event contracts and the implementation sequence. The portable Skill output, report structure, lifecycle vocabulary, Mermaid fallback and quality gates are standardized in [HIF Skill Delivery Contract](docs/HIF-SKILL-DELIVERY-CONTRACT.md).
 
 ## HIF pipeline and multi-model routing
 
