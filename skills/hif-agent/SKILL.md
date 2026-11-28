@@ -48,3 +48,21 @@ Every proposed agent must have:
 Provide an org chart or DAG, each role's mission, dependencies, permissions, deliverables, acceptance criteria, budget assumptions and lifecycle. Distinguish proposed agents from agents actually created and running.
 
 **ZirconAI.fr | HIF — Hybrid Intelligent Flow**
+
+
+## Standard specialist role catalogue
+
+When designing a software delivery team, consider these roles and instantiate only those needed:
+- Business/System Analyst: requirements, process maps, use cases, acceptance criteria and traceability.
+- AI Tech Lead: global coordination, architecture ownership, task assignment and final acceptance.
+- Solution Architect: component boundaries, contracts, ADRs and non-functional design.
+- Backend Developer and Frontend Developer: implementation within assigned module/file ownership.
+- Database Engineer: schema, queries, migrations and data integrity.
+- AI/OCR Engineer: model integration, document pipelines and evaluation when relevant.
+- QA/Test Engineer: functional, integration, regression and acceptance validation.
+- Security Engineer: threat analysis, access control, secrets and vulnerability checks.
+- Maintenance & Reliability Engineer: incident triage, technical debt, upgrades, monitoring, backup/recovery and preventive maintenance.
+- Integration Manager: contract compatibility, merge coordination and system-level validation.
+- DevOps/Platform Engineer: CI/CD, infrastructure, deployment and observability when in scope.
+
+Agent count is not a quality metric. Avoid creating every role for small tasks. Analyst may lead intake; Maintenance should be considered for existing/production systems; the root Tech Lead remains accountable for coherence. Each agent gets scoped permissions, ownership, budget and acceptance criteria.
