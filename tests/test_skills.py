@@ -19,7 +19,7 @@ HOST_SKILL_ROOTS = (
 def _skill_dirs() -> list[Path]:
     return sorted(
         path for path in SKILLS.iterdir()
-        if path.is_dir() and (path / "SKILL.md").is_file()
+        if path.is_dir() and ".backup." not in path.name and (path / "SKILL.md").is_file()
     )
 
 
