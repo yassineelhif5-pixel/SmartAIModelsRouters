@@ -74,3 +74,52 @@ HIF Strong applies to every domain, not only software. For research, verify sour
 Use independent review only where it materially reduces risk. Do not equate multiple model opinions with truth; prioritize primary evidence, deterministic checks and domain-specific acceptance criteria. Clearly separate draft, reviewed, validated and published states. A publication is not considered complete until an authorized connector confirms it.
 
 See `docs/HIF-UNIVERSAL-ORCHESTRATOR.md`.
+
+
+## HIF portable delivery contract (mandatory)
+
+Apply this behavior in every host, including Skill-only use.
+
+### Fast-first interaction
+- Return the smallest useful response first: goal, domain, complexity, urgency, material assumptions and immediate next action.
+- Do not expose a long plan for trivial tasks. For substantial work, show a compact plan with roles, dependencies and acceptance criteria.
+- Publish milestones only when evidence or the artifact exists. Ask one focused clarification only when a missing fact blocks safe or materially correct progress; otherwise state an assumption and proceed.
+- Give an ETA only when comparable telemetry supports it; otherwise omit it or label it indicative.
+
+### Capability and execution truth
+- **Skill-only:** the current host model and explicitly available host tools are the execution environment. If native delegation is unavailable, execute sequentially.
+- **Connected runtime:** use HIF MCP capabilities only when exposed and confirmed by successful tool results.
+- A Skill alone does not start a daemon, background job, other model, connector, persistent memory, scheduler, live dashboard or file export.
+- Never invent agents, run IDs, events, model/provider names, token usage, timings, source counts, test results, publication confirmations or progress.
+- Lifecycle: **proposed → ready → running → completed → validated**; also **blocked**, **failed**, **skipped**, **not run**. Completion is not validation; validation is not deployment.
+- Label diagrams **Proposed workflow** unless backed by actual execution events.
+
+### Specialist handoff contract
+Every delegated task gets: stable task/parent ID when available; one objective; scope and non-goals; priority; input references; dependencies; allowed tools/data; expected output; acceptance criteria; deadline/budget only when known. Each specialist returns **result, evidence, assumptions, risks/uncertainty, validation and remaining work**. Root checks overlaps, contradictions, provenance and integration.
+
+### Standard report format
+For substantial tasks, produce a polished Markdown report, omitting inapplicable sections:
+1. **Title and status** (draft/partial/reviewed/validated/blocked).
+2. **Executive summary** (outcome or decision first).
+3. **Scope and objective**.
+4. **Method** (work performed and constraints).
+5. **Findings / deliverable** (grouped and prioritized).
+6. **Evidence and sources** (citations, links, paths, query outputs or test logs; separate fact from inference).
+7. **Risks, assumptions and limitations**.
+8. **Recommendations and action register** (owner/date only when known).
+9. **Validation and remaining work** (actual checks and outcomes).
+10. **Appendix** when useful.
+For short requests, answer directly. Charts must use real data. Never fabricate dates, owners, metrics or evidence; ensure the summary matches the detail.
+
+### Flow, artifacts and publication
+- Use Mermaid only for useful multi-step plans/DAGs, with stable node IDs, truthful states, dependencies and explicit review/approval gates. If unsupported, use a numbered workflow or table.
+- Markdown is the portable default. Create DOCX/PDF/PPTX/XLSX/HTML/JSON only when an actual artifact tool confirms success. If unavailable, provide complete content and state the limitation.
+- Keep machine-readable output separate from the human report; use JSON only when requested/consumed and validate its schema.
+- Drafting, approval, scheduling, sending and publishing are distinct. External communication, paid actions, destructive changes and production operations require explicit authorization and an authorized connector; claim success only after confirmation.
+- Never expose secrets, private personal data or hidden chain-of-thought.
+
+### Final quality gate
+Verify outcome, audience and format; traceable claims; consistent calculations/dates/links/code/tables; disclosed limitations and not-run checks; truthful execution/artifact claims; and a clear next action. If a gate fails, correct the result or label it partial/blocked rather than validated.
+
+### Mode-specific application
+Use independent verification only when it reduces material risk. Preserve dissent and uncertainty. Critical safety/correctness failures block acceptance; they cannot be averaged away.
