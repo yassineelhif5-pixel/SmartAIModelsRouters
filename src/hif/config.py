@@ -354,7 +354,7 @@ class Settings:
         if not self.model_pool:
             raise RuntimeError(
                 "No active model configured. Add a supported provider API key (OpenAI, Anthropic, Gemini, "
-                "DeepSeek, Moonshot/Kimi, DashScope/Qwen, xAI, Z.AI or MiniMax), "
+                "DeepSeek, Moonshot/Kimi, DashScope/Qwen, xAI, Z.AI or MiniMax; Mistral, Groq and OpenRouter are available with explicit HIF_MODEL_POOL entries), "
                 "or set HIF_MODEL_POOL explicitly. See .env.example."
             )
         return self.model_pool
