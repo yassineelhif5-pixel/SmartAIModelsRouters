@@ -166,7 +166,10 @@ class MultiModelEvaluator:
         reviews = await asyncio.gather(*(
             self._review(model, goal, context, semaphore) for model in selected
         ))
-        successful = [\n            review for review in reviews\n            if review.error is None and review.verdict != "inconclusive"\n        ]
+        successful = [
+            review for review in reviews
+            if review.error is None and review.verdict != "inconclusive"
+        ]
         failed_count = len(reviews) - len(successful)
         average = (
             round(sum(review.score for review in successful) / len(successful), 1)
