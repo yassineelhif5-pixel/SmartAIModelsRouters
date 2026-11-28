@@ -372,9 +372,10 @@ class Settings:
     def get_models(self) -> tuple[str, ...]:
         if not self.model_pool:
             raise RuntimeError(
-                "No active model configured. Add a supported provider API key (OpenAI, Anthropic, Gemini, "
-                "DeepSeek, Moonshot/Kimi, DashScope/Qwen, xAI, Z.AI or MiniMax; Mistral, Groq and OpenRouter are available with explicit HIF_MODEL_POOL entries), "
-                "or set HIF_MODEL_POOL explicitly. See .env.example."
+                "No active model configured. Set an API key for one of the providers listed by "
+                "`hif providers` (for example MISTRAL_API_KEY or OPENAI_API_KEY), enable a local "
+                "runtime with HIF_ENABLE_OLLAMA=true and HIF_MODEL_POOL=ollama/<model>, or set "
+                "HIF_MODEL_POOL explicitly. See .env.example and docs/PROVIDERS.md."
             )
         return self.model_pool
 

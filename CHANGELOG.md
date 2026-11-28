@@ -7,6 +7,8 @@ All notable changes to HIF are listed here. Dates are in ISO format.
 ### Added
 - Independent multi-provider project evaluation (`hif_evaluate_project`) and approval-gated
   counter-test planning (`hif_countertest_plan`).
+- AI model manager: `hif models`, MCP tool `hif_models` and gateway route `GET /v1/models`
+  show the primary model, the fallback chain and which provider credentials are set.
 - Execution profiles `auto`, `browser`, `small`, `standard`, `server`.
 - Modular root skill (`skills/hif/modules/`) and a portable Agent Plugin under
   `plugins/hif-universal/`.

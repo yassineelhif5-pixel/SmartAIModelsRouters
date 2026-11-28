@@ -45,6 +45,7 @@ No API key? Run a local model: `HIF_ENABLE_OLLAMA=true HIF_MODEL_POOL=ollama/lla
 | Task planning into a validated graph of up to 12 specialist nodes | `hif run`, `hif node` |
 | Parallel execution of independent nodes, bounded by CPU, RAM and per-provider limits | `hif node` |
 | Direct connections to 32 providers, native Anthropic and Gemini adapters | `hif providers`, [docs/PROVIDERS.md](docs/PROVIDERS.md) |
+| Primary model and ordered fallback chain, with credential readiness (no secrets shown) | `hif models`, MCP `hif_models`, `GET /v1/models`, [docs/AI-MODEL-MANAGER.md](docs/AI-MODEL-MANAGER.md) |
 | Model routing by task type, HIF-measured token budgets, fallback on rate limits and outages | [docs/PIPELINE-AND-MODEL-ROUTING.md](docs/PIPELINE-AND-MODEL-ROUTING.md) |
 | **Spend guard**: per-session caps on tokens, calls and cost, plus loop detection | `HIF_SESSION_*` settings |
 | Shared session memory in SQLite | [docs/SHARED-MEMORY.md](docs/SHARED-MEMORY.md) |

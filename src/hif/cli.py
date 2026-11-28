@@ -176,6 +176,17 @@ def usage() -> None:
 
 
 
+
+@app.command()
+def models() -> None:
+    """Display the configured primary AI model and ordered fallback chain."""
+    import json
+    from hif.model_manager import AIModelManager
+
+    status = AIModelManager(Settings.from_env()).status()
+    console.print_json(json.dumps(status, ensure_ascii=False))
+
+
 @app.command()
 def providers(
     configured_only: bool = typer.Option(False, "--configured", help="Only configured ones."),
