@@ -145,3 +145,24 @@ def test_every_skill_implements_the_portable_delivery_contract() -> None:
             assert phrase in content, f"{skill_dir.name} missing {phrase}"
         assert "Proposed workflow" in content
         assert "Markdown is the portable default" in content
+
+
+def test_powershell_installer_accepts_new_hosts_in_whatif_mode() -> None:
+    import shutil
+    import pytest
+
+    pwsh = shutil.which("pwsh")
+    if pwsh is None:
+        pytest.skip("PowerShell 7 is not installed on this runner")
+    result = subprocess.run(
+        [
+            pwsh, "-NoProfile", "-File",
+            str(ROOT / "scripts" / "install-hif-skills.ps1"),
+            "-Hosts", "Cursor", "Kimi", "Qwen", "-WhatIf",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "What if:" in result.stdout
