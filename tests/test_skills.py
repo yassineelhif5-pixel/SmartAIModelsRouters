@@ -13,6 +13,9 @@ HOST_SKILL_ROOTS = (
     ROOT / ".claude" / "skills",
     ROOT / ".gemini" / "skills",
     ROOT / ".github" / "skills",
+    ROOT / ".cursor" / "skills",
+    ROOT / ".kimi-code" / "skills",
+    ROOT / ".qwen" / "skills",
 )
 
 
@@ -91,6 +94,9 @@ def test_shell_installer_copies_all_skills_and_backups_existing_install(tmp_path
         home / ".claude" / "skills",
         home / ".agents" / "skills",
         home / ".gemini" / "skills",
+        home / ".cursor" / "skills",
+        home / ".kimi-code" / "skills",
+        home / ".qwen" / "skills",
     ]
     destination = destinations[1]
     existing = destination / "hif"
@@ -103,7 +109,7 @@ def test_shell_installer_copies_all_skills_and_backups_existing_install(tmp_path
         bash,
         str(ROOT / "scripts" / "install-hif-skills.sh"),
         "--hosts",
-        "claude,codex,gemini",
+        "claude,codex,gemini,cursor,kimi,qwen",
     ]
     first = subprocess.run(command, env=env, capture_output=True, text=True, timeout=20)
     assert first.returncode == 0, first.stderr
