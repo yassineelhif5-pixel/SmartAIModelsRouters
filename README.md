@@ -137,3 +137,19 @@ No open-source license has been selected yet. Until a LICENSE file is added, the
 - **Expanded engineering team:** Business/System Analyst, Maintenance & Reliability Engineer, Integration Manager and specialist developers work under the root AI Tech Lead.
 
 These workflows are documented in `docs/HIF-1.0-MODES-SPEC.md`. Host-specific slash-command availability varies; skills may also be activated via a picker or natural language.
+
+
+### Local-first ZirconAI runtime, signed updates and adaptive pipelines
+
+HIF 1.0's target distribution is a fast per-user install branded **HIF by ZirconAI.fr**, with separate Skills-only, Local Core and Connected modes. The local Core is designed to stay lightweight: no local LLM weights by default, logical agents rather than resident processes, bounded memory and async execution.
+
+The planned release updater verifies a signed ZirconAI.fr manifest and artifact hashes, stages updates, smoke-tests, switches atomically and rolls back on failure. Cryptographic publisher trust requires an actual published signing key/certificate and signed release artifacts; branding alone is not a signature.
+
+The adaptive Pipeline Engine classifies complexity and urgency separately, creates priority-aware dependency DAGs, runs bounded in-memory queues, persists checkpoints in SQLite and adapts to token/provider/CPU/RAM limits. HIF may propose and test self-improvements, but cannot modify its trust roots, security policy or production installation without approval.
+
+See:
+- `docs/HIF-1.0-MODES-SPEC.md` — full local runtime, pipeline, update and controlled self-evolution design.
+- `docs/INSTALLATION.md` — install tiers and update workflow.
+- `docs/SECURITY.md` — release-signing and update security requirements.
+
+**Implementation status:** these are HIF 1.0 specifications and release requirements. A production ZirconAI signing key, signed release pipeline, atomic updater and adaptive persistent pipeline scheduler must be implemented and tested before claiming these capabilities are available to end users.
