@@ -199,10 +199,6 @@ class HIFEngine:
         configured = self.settings.get_models()
         eligible = self.router.candidates(configured)
         from hif.providers import ProviderError
-        from hif.storage import utc_now
-        from datetime import timedelta
-
-        since = utc_now() - timedelta(hours=self.settings.usage_window_hours)
         # Require cross-provider diversity after applying HIF's local usage budgets/cooldowns.
         if len({model.split("/", 1)[0].lower() for model in eligible}) < 2:
             raise RuntimeError(
