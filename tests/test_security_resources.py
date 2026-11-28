@@ -88,3 +88,19 @@ def test_local_io_pool_uses_bounded_worker_thread() -> None:
         pool.close()
 
     assert result.startswith("hif-io")
+
+
+def test_adaptive_concurrency_recovers_gradually_after_pressure() -> None:
+    scheduler = AdaptiveConcurrency(8, cpu_threshold=85, memory_threshold=88)
+    samples = iter([
+        ResourceSnapshot(96, 40, 8192, 8),
+        ResourceSnapshot(20, 40, 8192, 8),
+        ResourceSnapshot(20, 40, 8192, 8),
+        ResourceSnapshot(20, 40, 8192, 8),
+    ])
+    scheduler.monitor.snapshot = lambda: next(samples)
+
+    assert scheduler.effective_limit()[0] == 4
+    assert scheduler.effective_limit()[0] == 4
+    assert scheduler.effective_limit()[0] == 4
+    assert scheduler.effective_limit()[0] == 5
