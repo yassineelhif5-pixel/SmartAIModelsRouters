@@ -27,6 +27,8 @@ DEFAULT_MODEL_POOL: tuple[str, ...] = (
     "gemini/gemini-3.8-flash",
     "gemini/gemini-4-hydrogen",
     "gemini/gemini-4-neon",
+    "gemini/gemini-4-carbon",
+    "gemini/gemini-4-argon",
     "deepseek/deepseek-flash-latest",
     "deepseek/deepseek-pro-latest",
     "moonshot/kimi-latest",
@@ -40,43 +42,44 @@ DEFAULT_MODEL_POOL: tuple[str, ...] = (
 DEFAULT_TASK_MODEL_PREFERENCES: dict[str, tuple[str, ...]] = {
     "analysis": (
         "openai/gpt-luna-latest", "gemini/gemini-3.5-flash-lite",
-        "deepseek/deepseek-flash-latest", "anthropic/claude-haiku-latest",
+        "deepseek/deepseek-flash-latest", "anthropic/claude-haiku-latest", "moonshot/kimi-latest", "dashscope/qwen-flash-latest",
     ),
     "research": (
         "gemini/gemini-3.8-flash", "openai/gpt-sol-latest",
-        "anthropic/claude-sonnet-latest", "deepseek/deepseek-pro-latest",
+        "anthropic/claude-sonnet-latest", "deepseek/deepseek-pro-latest", "dashscope/qwen-max-latest", "moonshot/kimi-latest",
     ),
     "coding": (
-        "openai/gpt-6.1-sol", "anthropic/claude-sonnet-5",
-        "deepseek/deepseek-v4-pro", "gemini/gemini-3.8-flash",
+        "openai/gpt-sol-latest", "anthropic/claude-sonnet-latest",
+        "deepseek/deepseek-pro-latest", "gemini/gemini-3.8-flash",
+        "dashscope/qwen-max-latest", "moonshot/kimi-latest",
     ),
     "testing": (
-        "openai/gpt-6-luna", "deepseek/deepseek-flash",
-        "anthropic/claude-haiku-4-5-20251001",
+        "openai/gpt-luna-latest", "deepseek/deepseek-flash-latest",
+        "anthropic/claude-haiku-latest", "dashscope/qwen-flash-latest",
     ),
     "review": (
         "openai/gpt-astra-latest", "anthropic/claude-opus-latest",
-        "gemini/gemini-3.1-pro-preview", "deepseek/deepseek-v4-pro",
+        "gemini/gemini-4-hydrogen", "deepseek/deepseek-pro-latest",
     ),
     "documentation": (
-        "openai/gpt-6-luna", "anthropic/claude-sonnet-5",
-        "gemini/gemini-3.8-flash",
+        "openai/gpt-luna-latest", "anthropic/claude-sonnet-latest",
+        "gemini/gemini-3.8-flash", "dashscope/qwen-flash-latest",
     ),
     "architecture": (
-        "openai/gpt-6.2-astra", "anthropic/claude-opus-5",
-        "gemini/gemini-3.1-pro-preview",
+        "openai/gpt-astra-latest", "anthropic/claude-opus-latest",
+        "gemini/gemini-4-hydrogen",
     ),
     "infrastructure": (
-        "openai/gpt-6.1-sol", "anthropic/claude-sonnet-5",
+        "openai/gpt-sol-latest", "anthropic/claude-sonnet-latest",
         "gemini/gemini-3.8-flash",
     ),
     "security": (
-        "openai/gpt-6.2-astra", "anthropic/claude-opus-5",
-        "deepseek/deepseek-v4-pro",
+        "openai/gpt-astra-latest", "anthropic/claude-opus-latest",
+        "deepseek/deepseek-pro-latest",
     ),
     "general": (
-        "openai/gpt-6-luna", "gemini/gemini-3.5-flash-lite",
-        "deepseek/deepseek-flash",
+        "openai/gpt-luna-latest", "gemini/gemini-3.5-flash-lite",
+        "deepseek/deepseek-flash-latest",
     ),
 }
 
