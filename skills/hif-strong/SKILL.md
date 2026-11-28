@@ -41,3 +41,12 @@ Use at most the smallest useful set of specialists. Do not call every model for 
 Require approval for destructive or externally visible actions. Do not bypass host permissions or provider policies. Do not reveal hidden chain-of-thought; provide concise rationale and evidence instead.
 
 **ZirconAI.fr | HIF — Hybrid Intelligent Flow**
+
+
+## Project-wide engineering coherence
+
+When Strong handles software or application delivery, designate one root AI Tech Lead as the architecture and integration owner. Before parallel coding, establish a versioned Project Constitution, module/dependency map, API/schema contracts, file ownership and acceptance gates. All agents and model outputs must conform to this shared source of truth.
+
+Treat individual agent completion as provisional until the Integration Manager checks diffs, cross-module contracts, architecture boundaries, builds, tests, security and migrations. Use deterministic tooling first; route precise failures to the responsible owner. Revalidate only impacted dependents after a contract change. Preserve disagreements and unresolved risks.
+
+Never report a project as coherent or complete merely because separate agents succeeded. Report integrated and validated status separately, with actual evidence. Protected merges, deployments, production migrations and destructive actions require approval.
