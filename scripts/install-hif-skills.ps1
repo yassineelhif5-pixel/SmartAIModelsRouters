@@ -1,7 +1,7 @@
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
-    [ValidateSet("Claude", "Codex", "GeminiCLI", "Copilot")]
-    [string[]]$Hosts = @("Claude", "Codex", "GeminiCLI", "Copilot")
+    [ValidateSet("Claude", "Codex", "GeminiCLI", "Copilot", "Cursor", "Kimi", "Qwen")]
+    [string[]]$Hosts = @("Claude", "Codex", "GeminiCLI", "Copilot", "Cursor", "Kimi", "Qwen")
 )
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
