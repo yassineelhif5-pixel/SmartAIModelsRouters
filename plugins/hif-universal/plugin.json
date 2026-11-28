@@ -1,0 +1,29 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "hif-universal",
+  "version": "0.1.0",
+  "description": "Universal multi-domain AI orchestration skill with modular workflows for independent project evaluation, approval-gated counter-testing and adaptive execution.",
+  "author": {
+    "name": "ZirconAI.fr",
+    "url": "https://zirconai.fr"
+  },
+  "homepage": "https://zirconai.fr",
+  "repository": "https://github.com/yassineelhif5-pixel/SmartAIModelsRouters",
+  "keywords": ["agent-skills", "multi-agent", "orchestration", "mcp", "project-validation", "multi-model"],
+  "extensions": {
+    "com.openai": {
+      "onboardingSkill": "./skills/hif/SKILL.md",
+      "interface": {
+        "displayName": "HIF Universal Orchestrator",
+        "shortDescription": "Coordinate AI skills, models and specialist workflows.",
+        "longDescription": "HIF provides a portable orchestration workflow, independent multi-model project assessment, approval-gated counter-tests and adaptive execution profiles. Connect the HIF MCP runtime separately for cross-provider model calls.",
+        "developerName": "ZirconAI.fr",
+        "category": "Productivity",
+        "defaultPrompt": [
+          "Use HIF to evaluate this project independently with multiple configured AI providers.",
+          "Use HIF to plan and coordinate this task with the lightest suitable execution profile."
+        ]
+      }
+    }
+  }
+}
