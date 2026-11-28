@@ -30,10 +30,11 @@ class ResourceMonitor:
             # interval=None is non-blocking. Prime once so later samples represent
             # the interval since the previous call instead of sleeping in the caller.
             cpu = float(psutil.cpu_percent(interval=None))
+            was_primed = self._primed
             self._primed = True
             memory = psutil.virtual_memory()
             return ResourceSnapshot(
-                cpu_percent=cpu if self._primed else None,
+                cpu_percent=cpu if was_primed else None,
                 memory_percent=float(memory.percent),
                 available_memory_mb=int(memory.available / (1024 * 1024)),
                 logical_cpus=logical_cpus,
