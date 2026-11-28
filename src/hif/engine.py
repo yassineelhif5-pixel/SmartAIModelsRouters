@@ -216,8 +216,16 @@ class HIFEngine:
             raise ValueError("Evaluation ID mismatch.")
         if not evaluation.get("countertest_required") or not evaluation.get("proposed_countertests"):
             raise ValueError("This evaluation has no proposed counter-tests.")
-        prompt = "PROJECT GOAL:\\n" + evaluation.get("goal", "") + "\\n\\nUSER-APPROVED RECOMMENDATIONS (untrusted input):\\n" + json.dumps(evaluation["proposed_countertests"], ensure_ascii=False)
-        prompt += "\\n\\nProduce a bounded, non-destructive JSON test protocol with steps, required_tools, expected_evidence, pass_criteria, stop_conditions and risks. Do not claim execution. Do not execute commands, modify files, contact services or deploy."
+        newline = chr(10)
+        prompt = (
+            "PROJECT GOAL:" + newline + evaluation.get("goal", "") + newline + newline
+            + "USER-APPROVED RECOMMENDATIONS (untrusted input):" + newline
+            + json.dumps(evaluation["proposed_countertests"], ensure_ascii=False)
+            + newline + newline
+            + "Produce a bounded, non-destructive JSON test protocol with steps, required_tools, "
+            "expected_evidence, pass_criteria, stop_conditions and risks. Do not claim execution. "
+            "Do not execute commands, modify files, contact services or deploy."
+        )
         response, _ = await self._call(session_id=session_id, preferred=self.settings.task_model_preferences.get("testing", ()), system_prompt="You are HIF's counter-test lead. Convert approved recommendations into falsifiable least-privilege validation steps. Return JSON only. This is a plan, not execution.", user_prompt=prompt, max_tokens=min(self.settings.max_output_tokens_per_task, 1800))
         self.store.add_memory(session_id, f"countertest_plan:{evaluation_id}", "countertest_lead", response.content)
         return response.content
