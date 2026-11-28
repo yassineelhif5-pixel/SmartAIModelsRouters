@@ -5,6 +5,7 @@ It never executes project code and never reads secret-bearing .env files.
 """
 from __future__ import annotations
 
+import os
 import re
 import time
 from dataclasses import asdict, dataclass
@@ -162,42 +163,47 @@ def scan_project(root: str | Path, *, timeout_seconds: float = DEFAULT_TIMEOUT_S
                 "Ensure this file is gitignored, restrict filesystem permissions, and rotate any secret previously committed.",
             ))
 
-    for path in base.rglob("*"):
+    for current_root, directories, filenames in os.walk(base, topdown=True, followlinks=False):
         if time.monotonic() - started > timeout_seconds or scanned + skipped >= max_files:
             break
-        if not path.is_file():
-            continue
-        relative = path.relative_to(base)
-        if any(part in SKIP_DIRS for part in relative.parts):
-            continue
-        if path.name.startswith(".env") or path.suffix.lower() not in SOURCE_SUFFIXES:
-            skipped += 1
-            continue
-        try:
-            if path.is_symlink() or path.stat().st_size > MAX_FILE_BYTES:
+        current_path = Path(current_root)
+        directories[:] = [
+            name for name in directories
+            if name not in SKIP_DIRS and not (current_path / name).is_symlink()
+        ]
+        for filename in filenames:
+            if time.monotonic() - started > timeout_seconds or scanned + skipped >= max_files:
+                break
+            path = current_path / filename
+            relative = path.relative_to(base)
+            if path.name.startswith(".env") or path.suffix.lower() not in SOURCE_SUFFIXES:
                 skipped += 1
                 continue
-            content = path.read_text(encoding="utf-8", errors="replace")
-        except (OSError, PermissionError):
-            skipped += 1
-            continue
-        scanned += 1
-        for line_number, line in enumerate(content.splitlines(), 1):
-            for rule_id, severity, title, pattern, recommendation in _RULES:
-                match = pattern.search(line)
-                if not match:
+            try:
+                if path.is_symlink() or path.stat().st_size > MAX_FILE_BYTES:
+                    skipped += 1
                     continue
-                evidence = line.strip()[:180]
-                # Redact probable credential literals in evidence.
-                evidence = re.sub(
-                    r"""(?i)((?:api[_-]?key|client[_-]?secret|access[_-]?token|password)\s*[:=]\s*)['"][^'"]+['"]""",
-                    r"\1'[REDACTED]'",
-                    evidence,
-                )
-                findings.append(SecurityFinding(
-                    rule_id, severity, title, relative.as_posix(), line_number,
-                    evidence, _owner_for_rule(rule_id), recommendation,
-                ))
+                content = path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                skipped += 1
+                continue
+            scanned += 1
+            for line_number, line in enumerate(content.splitlines(), 1):
+                for rule_id, severity, title, pattern, recommendation in _RULES:
+                    match = pattern.search(line)
+                    if not match:
+                        continue
+                    evidence = line.strip()[:180]
+                    # Redact probable credential literals in evidence.
+                    evidence = re.sub(
+                        r"""(?i)((?:api[_-]?key|client[_-]?secret|access[_-]?token|password)\s*[:=]\s*)['"][^'"]+['"]""",
+                        r"\1'[REDACTED]'",
+                        evidence,
+                    )
+                    findings.append(SecurityFinding(
+                        rule_id, severity, title, relative.as_posix(), line_number,
+                        evidence, _owner_for_rule(rule_id), recommendation,
+                    ))
     return SecurityReport(
         root=str(base), scanned_files=scanned, skipped_files=skipped,
         elapsed_ms=int((time.monotonic() - started) * 1000),
