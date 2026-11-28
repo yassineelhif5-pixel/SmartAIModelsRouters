@@ -17,7 +17,7 @@ $hostPaths = @{
     GeminiCLI = Join-Path $HOME ".gemini\skills"
     Copilot = Join-Path $HOME ".copilot\skills"
 }
-$timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+$timestamp = "$(Get-Date -Format 'yyyyMMdd-HHmmss-fff')-$PID"
 foreach ($hostName in $Hosts) {
     $destinationRoot = $hostPaths[$hostName]
     if (-not (Test-Path -LiteralPath $destinationRoot)) {
