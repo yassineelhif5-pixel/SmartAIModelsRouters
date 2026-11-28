@@ -1,5 +1,7 @@
 # HIF Installation Guide
 
+**ZirconAI.fr distribution:** HIF local runtime, portable Skills and MCP connector. Publisher identity is verified by signed release metadata once the signed-release channel is implemented and published. Until then, source repository branding is not proof of a cryptographic signature.
+
 This guide separates installation of the **skill instructions** from installation of the **HIF orchestration service**. They are not the same thing.
 
 ## A. Install skill instructions on Windows
@@ -45,7 +47,7 @@ Use Python 3.10+:
 
     python scripts/package-skills.py
 
-This creates dist/hif.zip and dist/hifnode.zip. Each ZIP contains the skill directory at its root, for example hif/SKILL.md.
+This creates one ZIP per skill directory discovered under `skills/`, including specialist modes. Each ZIP contains the skill directory at its root.
 
 ### Claude web/Desktop
 
@@ -191,3 +193,38 @@ For remote access, put the process behind a trusted TLS reverse proxy, restrict 
 The first gateway is a **single-tenant private pilot**: one shared bearer token, one service identity, one HIF memory database and one provider credential set. It is not suitable for mutually untrusted users or public SaaS use. OAuth/OIDC, tenant isolation, per-user permissions, distributed rate limits and audit exports remain future work.
 
 The gateway does not yet enable file edits, arbitrary shell execution, browsing, deployments or automatic tool execution on behalf of remote assistants.
+
+
+## I. Fast install and update design (HIF 1.0 target)
+
+The product target is a fast, per-user installation with three selectable levels:
+- **Skills only:** copies portable workflow instructions into supported local assistant hosts.
+- **Local Core:** adds the lightweight Python runtime, SQLite state, CLI and local stdio MCP connector.
+- **Connected:** Local Core plus explicitly configured provider adapters/API credentials or a remote HIF gateway.
+
+The default installation must not download local LLM weights, GPU frameworks or start one process per agent. It should reuse compatible runtime/cache artifacts, install only selected components, and run `hif doctor` plus a local self-test. Provider API keys are not required for skills-only use or deterministic local utilities; they are required for independent remote model calls.
+
+### Signed release verification
+
+The planned ZirconAI.fr release channel will publish a signed manifest containing version, platform, source commit, artifact SHA-256 digests and compatibility metadata. The installer must verify the manifest signature against a trusted public key before running or extracting artifacts, then verify every artifact hash. Windows native binaries should use Authenticode signing when distributed as executables/installers.
+
+**Current limitation:** until a ZirconAI.fr signing key/certificate, public verification key distribution and signed release artifacts are published, do not describe repository downloads as cryptographically signed. The product name/signature in documentation is branding only.
+
+### Dynamic updates
+
+The updater target is staged, verified and rollback-capable:
+1. check the signed manifest on startup or a configurable schedule;
+2. download only changed files/artifacts where safe;
+3. verify signatures and hashes;
+4. stage a side-by-side version and run smoke tests;
+5. switch atomically at a safe restart boundary;
+6. keep the previous known-good version and roll back on health failure;
+7. preserve config, credentials, SQLite state and user project data.
+
+Never overwrite a running Python module in place. Skill files can be updated on disk, but host assistants may cache instructions until a new session/reload. Auto-update must be configurable, with stable/preview channels, version pinning and deferral for enterprise users.
+
+### Adaptive in-memory pipelines
+
+The local Core will maintain bounded in-memory queues for active pipeline scheduling, while persisting checkpoints and critical state in SQLite. Each run receives complexity, urgency, priority, dependency graph, deadlines, token/resource budget and safe-resume metadata. Complexity and urgency are separate dimensions. Priority aging prevents low-priority starvation. No pipeline may bypass provider, concurrency, CPU/RAM, privacy or approval limits.
+
+See the HIF 1.0 specification for pipeline classification, scheduling, controlled self-improvement and release acceptance criteria.
