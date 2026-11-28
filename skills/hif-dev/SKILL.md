@@ -167,3 +167,18 @@ Every non-trivial HIF Dev request uses a pipeline:
 10. Maintenance/reliability assessment and final delivery checklist.
 
 If installed as a Skill without connected HIF runtime, represent stages as a clear plan and use native host agents only when actually available. In connected mode, use the HIF DAG and active model preferences. Never simulate parallel models, token usage or background execution.
+
+## Vibe-coded application security gate
+
+Treat AI-generated code as untrusted until reviewed. Before recommending release, perform a security-oriented pass that covers authentication, server-side authorization, tenant isolation, secrets, injection, SSRF, path traversal, uploads, deserialization, dependency supply chain, TLS, CORS, logging and deployment configuration.
+
+When the connected HIF runtime is available, run the fast local read-only pre-audit:
+```bash
+hif security scan .
+hif security scan . --json
+```
+Never execute project code just to scan it. The scanner skips dependency/build folders, does not read .env contents and returns severity, evidence and a prioritized remediation plan. Supplement it with dependency/SAST/secret/container/IaC tools as appropriate; those external scans are not implied by the built-in scanner.
+
+Every finding must include rule/severity, component and evidence, impact, corrective action, owner role, regression test and retest acceptance criteria. Block release recommendations for unresolved critical/high risks unless a named authorized security owner explicitly accepts the documented risk. Do not auto-fix or deploy security changes without approval. A clean heuristic scan is not a security certification.
+
+See [SECURITY-VIBE-CODING.md](../../docs/SECURITY-VIBE-CODING.md) for the full English review process.
