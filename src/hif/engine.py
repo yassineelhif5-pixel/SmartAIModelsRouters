@@ -9,7 +9,7 @@ from typing import Any
 from hif.config import Settings
 from hif.planner import PLANNER_SYSTEM, SYNTHESIS_SYSTEM, TASK_SYSTEM, extract_json
 from hif.providers import LiteLLMProvider, ModelProvider, ProviderError
-from hif.resources import AdaptiveConcurrency
+from hif.resources import AdaptiveConcurrency, LocalExecutionPool
 from hif.router import ModelRouter
 from hif.schemas import HIFRunResult, NodeResult, PlannedNode
 from hif.storage import HIFStore
@@ -33,7 +33,28 @@ class HIFEngine:
             self.settings.min_free_memory_mb,
             self.settings.local_task_memory_mb,
         )
+        self.local_workers = LocalExecutionPool(
+            self.settings.max_local_threads,
+            self.settings.max_local_processes,
+        )
         self._provider_semaphores: dict[str, asyncio.Semaphore] = {}
+
+    async def run_local_io(self, function, *args):
+        """Execute blocking local I/O helpers without blocking the async event loop."""
+        return await self.local_workers.run_io(function, *args)
+
+    async def run_local_cpu(self, function, *args):
+        """Execute picklable CPU-heavy helpers in a bounded process pool."""
+        return await self.local_workers.run_cpu(function, *args)
+
+    async def security_scan(self, project_path: str):
+        """Run HIF's read-only local security pre-audit in a bounded I/O worker."""
+        from hif.security import scan_project
+        return await self.run_local_io(scan_project, project_path)
+
+    def close(self) -> None:
+        """Release lazy local worker pools without waiting on unrelated work."""
+        self.local_workers.close()
 
     def _semaphore_for(self, model: str) -> asyncio.Semaphore:
         from hif.providers import provider_name
