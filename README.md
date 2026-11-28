@@ -43,6 +43,24 @@ The installer and ZIP packager discover every directory under `skills/` containi
 
 
 
+
+
+## HIF is a universal orchestrator — not only a coding assistant
+
+HIF coordinates domain-specialist workflows for research and information collection, editorial work and professional reporting, marketing/publication campaigns, data analysis, business operations and technology delivery. Software development is one domain pack among several.
+
+Its target interaction is **fast-first, then progressively deeper**: return an initial triage and next action quickly, publish validated milestones as they become available, and finish with a polished evidence-based deliverable. Actual background execution, live progress and multi-agent parallelism require a connected runtime or host tools that explicitly support them.
+
+HIF treats reports as first-class deliverables: executive summaries, methodology, dated sources, findings, evidence, grounded charts/tables, risks, recommendations and limitations. File generation depends on an available artifact tool; it is never claimed without confirmation.
+
+For campaign workflows, HIF can research, draft, adapt content to channels, prepare an editorial calendar and request approvals. Scheduling or publishing requires authorized connectors and explicit approval; HIF never fabricates publication status or engagement.
+
+### Visual orchestration and reporting
+
+The target HIF interface exposes a live timeline and graph of actual orchestrators, agents, tasks, dependencies, tool handoffs and artifacts, alongside a polished report preview, blockers, approvals and evidence. The graph must be generated from real structured runtime events, not simulated agents. This visual dashboard and the full event API are implementation targets, not yet claims of a shipped UI.
+
+See [HIF Universal Orchestrator](docs/HIF-UNIVERSAL-ORCHESTRATOR.md) for domain coverage, fast-first behavior, research provenance, campaign approvals, report structure, graph/event contracts and the implementation sequence.
+
 ## HIF pipeline and multi-model routing
 
 Every non-trivial request follows the same staged pipeline in portable Skills and the connected runtime: intake, classification, architecture assessment, specialist planning, model assignment, execution, cross-review, validation, synthesis and remaining-work checklist. Skill-only mode uses the active host model and native sub-agents only when available; connected mode uses HIF's configured multi-provider DAG engine.
