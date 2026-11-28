@@ -41,6 +41,22 @@ Installing a skill does not install the HIF runtime or create independent access
 
 The installer and ZIP packager discover every directory under `skills/` containing a `SKILL.md`, so newly added mode skills are included automatically.
 
+
+
+## HIF pipeline and multi-model routing
+
+Every non-trivial request follows the same staged pipeline in portable Skills and the connected runtime: intake, classification, architecture assessment, specialist planning, model assignment, execution, cross-review, validation, synthesis and remaining-work checklist. Skill-only mode uses the active host model and native sub-agents only when available; connected mode uses HIF's configured multi-provider DAG engine.
+
+The default model catalog covers:
+- OpenAI: GPT-6 Luna, GPT-6.1 Sol and GPT-6 Astra.
+- Anthropic: Claude Haiku 4.5, Sonnet 5 and Opus 5.
+- Gemini: Gemini 3.5 Flash-Lite, Gemini 3.8 Flash and Gemini 3.1 Pro Preview.
+- DeepSeek: DeepSeek Flash and DeepSeek V4 Pro.
+
+Starter models are activated only when the corresponding provider API key is configured. Leave HIF_MODEL_POOL and HIF_TASK_MODEL_PREFERENCES empty to use the credential-aware defaults, or override them explicitly in .env. Provider API access may be billed separately from consumer subscriptions. See [Pipeline and Model Routing](docs/PIPELINE-AND-MODEL-ROUTING.md).
+
+The Root Orchestrator also acts as the technical architect. It may appoint an Assistant Architect for independent design review and an Infrastructure Architect for hosting, network, identity, capacity, resilience, observability, backup/recovery and cost recommendations.
+
 ## Implemented in HIF 0.3.0
 
 1. **Task planning:** create and validate a dependency-aware graph of up to 12 specialist nodes.
