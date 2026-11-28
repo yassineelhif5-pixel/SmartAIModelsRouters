@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -48,9 +49,21 @@ def test_all_host_skill_mirrors_match_canonical_sources() -> None:
         }
         assert actual_names == expected_names, str(host_root)
         for skill_name in expected_names:
-            canonical = (SKILLS / skill_name / "SKILL.md").read_bytes()
-            mirrored = (host_root / skill_name / "SKILL.md").read_bytes()
-            assert mirrored == canonical, f"{host_root}/{skill_name}"
+            canonical_root = SKILLS / skill_name
+            mirrored_root = host_root / skill_name
+            canonical_files = {
+                item.relative_to(canonical_root)
+                for item in canonical_root.rglob("*") if item.is_file()
+            }
+            mirrored_files = {
+                item.relative_to(mirrored_root)
+                for item in mirrored_root.rglob("*") if item.is_file()
+            }
+            assert mirrored_files == canonical_files, f"{host_root}/{skill_name} file set"
+            for relative in canonical_files:
+                assert (mirrored_root / relative).read_bytes() == (
+                    canonical_root / relative
+                ).read_bytes(), f"{host_root}/{skill_name}/{relative}"
 
 
 def test_skill_packager_creates_one_valid_archive_per_skill(tmp_path: Path) -> None:
@@ -164,3 +177,27 @@ def test_powershell_installer_accepts_new_hosts_in_whatif_mode() -> None:
     )
     assert result.returncode == 0, result.stderr
     assert "What if:" in result.stdout
+
+
+def test_portable_plugin_manifest_marketplace_and_bundled_modules() -> None:
+    plugin_root = ROOT / "plugins" / "hif-universal"
+    manifest = json.loads((plugin_root / "plugin.json").read_text(encoding="utf-8"))
+    marketplace = json.loads(
+        (ROOT / ".agents" / "plugins" / "marketplace.json").read_text(encoding="utf-8")
+    )
+    assert manifest["name"] == "hif-universal"
+    assert manifest["extensions"]["com.openai"]["onboardingSkill"] == "./skills/hif/SKILL.md"
+    assert marketplace["plugins"][0]["source"]["path"] == "./plugins/hif-universal"
+
+    for skill_dir in _skill_dirs():
+        bundled = plugin_root / "skills" / skill_dir.name / "SKILL.md"
+        assert bundled.is_file(), skill_dir.name
+        assert bundled.read_bytes() == (skill_dir / "SKILL.md").read_bytes()
+
+    module_names = {item.name for item in (SKILLS / "hif" / "modules").glob("*.md")}
+    bundled_modules = plugin_root / "skills" / "hif" / "modules"
+    assert {item.name for item in bundled_modules.glob("*.md")} == module_names
+    for module_name in module_names:
+        assert (bundled_modules / module_name).read_bytes() == (
+            SKILLS / "hif" / "modules" / module_name
+        ).read_bytes()
