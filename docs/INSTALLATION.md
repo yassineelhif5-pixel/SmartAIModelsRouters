@@ -228,3 +228,56 @@ Never overwrite a running Python module in place. Skill files can be updated on 
 The local Core will maintain bounded in-memory queues for active pipeline scheduling, while persisting checkpoints and critical state in SQLite. Each run receives complexity, urgency, priority, dependency graph, deadlines, token/resource budget and safe-resume metadata. Complexity and urgency are separate dimensions. Priority aging prevents low-priority starvation. No pipeline may bypass provider, concurrency, CPU/RAM, privacy or approval limits.
 
 See the HIF 1.0 specification for pipeline classification, scheduling, controlled self-improvement and release acceptance criteria.
+
+
+## J. Multi-model pipeline configuration
+
+HIF includes a starter catalog across OpenAI, Anthropic, Google Gemini and DeepSeek. It activates only the providers for which an API key is configured. You do not need to configure every provider.
+
+1. Copy .env.example to .env.
+2. Add one or more provider API keys to the corresponding environment variables.
+3. Leave HIF_MODEL_POOL empty to activate the built-in catalog for configured providers.
+4. Leave HIF_TASK_MODEL_PREFERENCES empty to use task-specific defaults.
+5. Set explicit values only when you want to override the defaults.
+
+Starter API model identifiers:
+
+| Provider | Fast / standard | Advanced |
+|---|---|---|
+| OpenAI | openai/gpt-6-luna, openai/gpt-6.1-sol | openai/gpt-6-astra |
+| Anthropic | anthropic/claude-haiku-4-5-20251001, anthropic/claude-sonnet-5 | anthropic/claude-opus-5 |
+| Gemini | gemini/gemini-3.5-flash-lite, gemini/gemini-3.8-flash | gemini/gemini-3.1-pro-preview |
+| DeepSeek | deepseek/deepseek-flash | deepseek/deepseek-v4-pro |
+
+Check provider documentation, account access, region and LiteLLM support before using any model in production. Model identifiers and availability can change. HIF's starter order is a fallback preference, not a universal quality benchmark.
+
+Example environment setup:
+
+```dotenv
+OPENAI_API_KEY=your-openai-api-key
+ANTHROPIC_API_KEY=your-anthropic-api-key
+GEMINI_API_KEY=your-gemini-api-key
+DEEPSEEK_API_KEY=your-deepseek-api-key
+
+# Empty means: auto-activate starter models for configured providers.
+HIF_MODEL_POOL=
+HIF_PLANNER_MODEL=
+
+# Empty means: use HIF's task-specific defaults.
+HIF_TASK_MODEL_PREFERENCES=
+```
+
+Do not put real credentials in source control. API calls are billed by providers separately from consumer chat subscriptions. Configure only providers you are authorized to use.
+
+For model routing, task preferences, the Skill-native pipeline and architect roles, see [PIPELINE-AND-MODEL-ROUTING.md](PIPELINE-AND-MODEL-ROUTING.md).
+
+## K. Pipeline behavior in portable Skills
+
+Every HIF Skill follows the same logical pipeline: intake, complexity/urgency classification, architecture assessment when relevant, specialist planning, model/tool capability check, execution, cross-review, validation, synthesis and remaining-work checklist.
+
+- When connected to local HIF MCP, the runtime schedules DAG nodes across configured provider models and reports HIF-measured usage.
+- When installed as a Skill only, the host assistant follows the stages using its current model. It can parallelize only if the host explicitly provides native sub-agents.
+- A Skill cannot independently switch a consumer model, access other vendors' consumer subscriptions or inspect hidden host quotas.
+- If only one model is available, HIF still follows the structured stages with that model; it does not fabricate a multi-model execution report.
+
+The Root Orchestrator is also the architect. It may assign an Assistant Architect for independent design critique and an Infrastructure Architect for deployment, networking, identity, capacity, resilience, observability, backup/recovery and cost recommendations. These advisory roles are activated only when relevant.
