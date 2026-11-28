@@ -177,6 +177,7 @@ def _parse_json_model_map(value: str | None) -> dict[str, tuple[str, ...]]:
 @dataclass(frozen=True)
 class Settings:
     database_path: Path = field(default_factory=default_database_path)
+    execution_profile: str = "auto"
     model_pool: tuple[str, ...] = field(default_factory=tuple)
     planner_model: str | None = None
     task_model_preferences: dict[str, tuple[str, ...]] = field(default_factory=dict)
@@ -215,21 +216,31 @@ class Settings:
 
     @classmethod
     def from_env(cls) -> "Settings":
+        profile = os.getenv("HIF_EXECUTION_PROFILE", "auto").strip().lower()
+        if profile not in {"auto", "browser", "small", "standard", "server"}:
+            raise ValueError("HIF_EXECUTION_PROFILE must be auto, browser, small, standard or server.")
+        profile_defaults = {
+            "browser": {"parallel": 1, "provider_parallel": 1, "threads": 1, "processes": 1, "memory_mb": 256, "timeout": 60, "context": 6000, "output": 900, "reserve_mb": 768},
+            "small": {"parallel": 1, "provider_parallel": 1, "threads": 1, "processes": 1, "memory_mb": 256, "timeout": 75, "context": 8000, "output": 1100, "reserve_mb": 1024},
+            "standard": {"parallel": recommended_parallelism(), "provider_parallel": 3, "threads": 2, "processes": 1, "memory_mb": 512, "timeout": 120, "context": 16000, "output": 1800, "reserve_mb": 1536},
+            "server": {"parallel": min(8, recommended_parallelism()), "provider_parallel": 4, "threads": 2, "processes": 1, "memory_mb": 768, "timeout": 180, "context": 24000, "output": 2400, "reserve_mb": 2048},
+        }
+        defaults = profile_defaults.get(profile, profile_defaults["standard"])
         try:
             threshold = float(os.getenv("HIF_USAGE_FALLBACK_THRESHOLD", "0.80"))
-            parallel = int(os.getenv("HIF_MAX_PARALLEL_TASKS", str(recommended_parallelism())))
-            provider_parallel = int(os.getenv("HIF_MAX_PROVIDER_PARALLEL", "3"))
-            local_threads = int(os.getenv("HIF_MAX_LOCAL_THREADS", "2"))
-            local_processes = int(os.getenv("HIF_MAX_LOCAL_PROCESSES", "1"))
-            local_task_memory = int(os.getenv("HIF_LOCAL_TASK_MEMORY_MB", "512"))
+            parallel = int(os.getenv("HIF_MAX_PARALLEL_TASKS", str(defaults["parallel"])))
+            provider_parallel = int(os.getenv("HIF_MAX_PROVIDER_PARALLEL", str(defaults["provider_parallel"])))
+            local_threads = int(os.getenv("HIF_MAX_LOCAL_THREADS", str(defaults["threads"])))
+            local_processes = int(os.getenv("HIF_MAX_LOCAL_PROCESSES", str(defaults["processes"])))
+            local_task_memory = int(os.getenv("HIF_LOCAL_TASK_MEMORY_MB", str(defaults["memory_mb"])))
             window = int(os.getenv("HIF_USAGE_WINDOW_HOURS", "168"))
             default_budget = int(os.getenv("HIF_DEFAULT_MODEL_TOKEN_BUDGET", "250000"))
-            max_output = int(os.getenv("HIF_MAX_OUTPUT_TOKENS_PER_TASK", "1800"))
-            timeout = int(os.getenv("HIF_REQUEST_TIMEOUT_SECONDS", "120"))
-            max_context = int(os.getenv("HIF_MAX_CONTEXT_CHARS", "16000"))
+            max_output = int(os.getenv("HIF_MAX_OUTPUT_TOKENS_PER_TASK", str(defaults["output"])))
+            timeout = int(os.getenv("HIF_REQUEST_TIMEOUT_SECONDS", str(defaults["timeout"])))
+            max_context = int(os.getenv("HIF_MAX_CONTEXT_CHARS", str(defaults["context"])))
             cpu_threshold = float(os.getenv("HIF_CPU_PRESSURE_THRESHOLD", "85"))
             memory_threshold = float(os.getenv("HIF_MEMORY_PRESSURE_THRESHOLD", "88"))
-            min_free = int(os.getenv("HIF_MIN_FREE_MEMORY_MB", "1536"))
+            min_free = int(os.getenv("HIF_MIN_FREE_MEMORY_MB", str(defaults["reserve_mb"])))
             gateway_port = int(os.getenv("HIF_GATEWAY_PORT", "8765"))
             gateway_rate_limit = int(os.getenv("HIF_GATEWAY_RATE_LIMIT_PER_MINUTE", "60"))
             gateway_max_bytes = int(os.getenv("HIF_GATEWAY_MAX_REQUEST_BYTES", "65536"))
@@ -304,6 +315,7 @@ class Settings:
 
         return cls(
             database_path=database_path,
+            execution_profile=profile,
             model_pool=model_pool,
             planner_model=os.getenv("HIF_PLANNER_MODEL") or None,
             task_model_preferences=task_preferences,
