@@ -1016,3 +1016,74 @@ When connected to local HIF MCP, the skill may delegate pipeline creation, prior
 - Critical events can preempt only at safe checkpoints.
 - HIF self-improvement produces evidence-backed proposals and cannot bypass release/security approval.
 - Installation speed, idle RAM, peak RAM, update duration and pipeline latency are benchmarked before public performance claims.
+
+## 26. Universal pipeline contract for every Skill and model
+
+The pipeline is not exclusive to the connected runtime. Every portable Skill must implement the same logical stages in the host conversation. The execution backend differs by mode.
+
+### 26.1 Skill-native pipeline
+
+In Skill-only mode, the current host assistant follows a visible staged workflow: intake, classification, root architecture assessment, specialist stage planning, model/tool capability check, execution, cross-review, validation, synthesis and remaining-work checklist.
+
+A stage contract contains: stage ID, role, objective, compact input references, output schema, dependencies, acceptance criteria, model identity only when exposed, status, measurable elapsed time and usage only when exposed.
+
+Native host delegation may execute independent stages in parallel only when the host actually exposes sub-agents or parallel tools. If not, the Skill executes stages sequentially using the current host model. A Skill cannot independently switch consumer model selections, inspect private subscription quotas or create API entitlements for other providers. It must never simulate a multi-model run.
+
+### 26.2 Connected runtime pipeline
+
+Connected HIF uses the same stage contracts through the validated DAG engine, active model pool, task preferences, per-provider semaphores, token budgets, shared session memory and runtime telemetry. Each child receives compact role-specific context, not the full chat/repository. Model selection uses actual configured credentials and eligible model IDs.
+
+### 26.3 Model catalog and task routing
+
+The initial starter catalog is configured in src/hif/config.py and documented in docs/PIPELINE-AND-MODEL-ROUTING.md:
+
+- OpenAI: openai/gpt-6-luna, openai/gpt-6.1-sol, openai/gpt-6-astra.
+- Anthropic: anthropic/claude-haiku-4-5-20251001, anthropic/claude-sonnet-5, anthropic/claude-opus-5.
+- Gemini: gemini/gemini-3.5-flash-lite, gemini/gemini-3.8-flash, gemini/gemini-3.1-pro-preview.
+- DeepSeek: deepseek/deepseek-flash, deepseek/deepseek-v4-pro.
+
+The catalog is filtered by configured provider credentials. An empty HIF_MODEL_POOL activates only providers whose API key is present. An explicit HIF_MODEL_POOL overrides the starter catalog. Empty HIF_TASK_MODEL_PREFERENCES uses task-specific starter preferences filtered to active models; explicit JSON overrides them.
+
+The starter routing policy is a configurable baseline, not a guaranteed model-quality ranking. Model IDs, API availability, account entitlements and provider lifecycle must be rechecked against official provider documentation before production rollout. API access may be billed separately from consumer subscriptions.
+
+### 26.4 Architecture-owned root orchestrator
+
+The Root Orchestrator is also responsible for architecture analysis. For relevant software, infrastructure, cloud and migration tasks, it:
+- maps the current state and constraints;
+- identifies architecture boundaries, key dependencies and data/API contracts;
+- proposes a target architecture and records assumptions/open decisions;
+- assigns advisory roles when the design complexity justifies them;
+- reconciles recommendations and freezes a versioned architecture/contract baseline before implementation.
+
+### 26.5 Assistant Architect
+
+The Assistant Architect is an independent advisory role. It challenges the root proposal, compares viable alternatives, checks cohesion/coupling, module/API/data contracts, maintainability, security and technical debt. It provides evidence, trade-offs, risks and recommendations. It cannot silently override the root's approved architecture baseline.
+
+### 26.6 Infrastructure Architect
+
+The Infrastructure Architect reviews:
+- cloud, on-premises and hybrid topology;
+- compute sizing, CPU/RAM, storage and capacity;
+- network, DNS, load balancing, connectivity and trust boundaries;
+- identity, authentication, authorization and secrets;
+- availability, scaling, resilience and disaster recovery;
+- backup/restore, monitoring, logging, alerting and observability;
+- data residency, security/compliance and infrastructure cost.
+
+It returns a current-state assessment, target recommendation, alternatives, dependencies, risks, cost assumptions and validation criteria. It is instantiated only when relevant.
+
+### 26.7 Planner/schema extension
+
+Task types include architecture and infrastructure. Planner role guidance includes tech_lead, solution_architect, assistant_architect and infrastructure_architect alongside implementation, analysis, QA and maintenance roles. The root remains accountable for synthesis and final decisions.
+
+### 26.8 Acceptance criteria
+
+- Skill-only and connected runtime follow the same logical pipeline stages.
+- Skill-only mode accurately reports when native parallelism/model switching is unavailable.
+- The default model catalog covers at least four providers and is filtered by configured credentials.
+- Explicit model pool and task preferences override defaults.
+- Architecture and infrastructure are first-class task types.
+- Root Orchestrator performs architecture assessment for relevant technical tasks.
+- Assistant Architect and Infrastructure Architect provide separate advisory outputs when warranted.
+- Every specialist instruction includes compact context, dependency, output schema and acceptance criteria.
+- The final response separates proposed, implemented, integrated and validated outcomes.
