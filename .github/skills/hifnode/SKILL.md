@@ -5,6 +5,8 @@ description: Coordinate bounded parallel specialist work using host-native sub-a
 
 # HIF Node Orchestration
 
+**Publisher: ZirconAI.fr** · https://zirconai.fr
+
 ## Choose execution path
 
 ### Connected HIF runtime
