@@ -12,6 +12,97 @@ from dotenv import load_dotenv
 load_dotenv(override=False)
 
 
+
+# Multi-provider starter catalog. Model IDs are refreshed against provider documentation;
+# only providers with configured credentials are activated automatically.
+DEFAULT_MODEL_POOL: tuple[str, ...] = (
+    "openai/gpt-6-luna",
+    "gemini/gemini-3.5-flash-lite",
+    "deepseek/deepseek-flash",
+    "anthropic/claude-haiku-5-5",
+    "openai/gpt-6.2-sol",
+    "gemini/gemini-3.8-flash",
+    "anthropic/claude-sonnet-5-5",
+    "deepseek/deepseek-v4-pro",
+    "openai/gpt-6.2-astra",
+    "gemini/gemini-4-neon",
+    "anthropic/claude-opus-5-5",
+)
+
+DEFAULT_TASK_MODEL_PREFERENCES: dict[str, tuple[str, ...]] = {
+    "analysis": (
+        "openai/gpt-6-luna",
+        "gemini/gemini-3.5-flash-lite",
+        "deepseek/deepseek-flash",
+        "anthropic/claude-haiku-5-5",
+    ),
+    "research": (
+        "gemini/gemini-3.8-flash",
+        "openai/gpt-6.2-sol",
+        "anthropic/claude-sonnet-5-5",
+        "deepseek/deepseek-v4-pro",
+    ),
+    "coding": (
+        "openai/gpt-6.2-sol",
+        "anthropic/claude-sonnet-5-5",
+        "deepseek/deepseek-v4-pro",
+        "gemini/gemini-4-hydrogen",
+    ),
+    "testing": (
+        "openai/gpt-6-luna",
+        "deepseek/deepseek-flash",
+        "anthropic/claude-haiku-5-5",
+    ),
+    "review": (
+        "openai/gpt-6.2-astra",
+        "anthropic/claude-opus-5-5",
+        "gemini/gemini-4-neon",
+        "deepseek/deepseek-v4-pro",
+    ),
+    "documentation": (
+        "openai/gpt-6-luna",
+        "anthropic/claude-sonnet-5-5",
+        "gemini/gemini-3.8-flash",
+    ),
+    "general": (
+        "openai/gpt-6-luna",
+        "gemini/gemini-3.5-flash-lite",
+        "deepseek/deepseek-flash",
+    ),
+}
+
+_PROVIDER_CREDENTIALS: dict[str, tuple[str, ...]] = {
+    "openai": ("OPENAI_API_KEY",),
+    "anthropic": ("ANTHROPIC_API_KEY",),
+    "gemini": ("GEMINI_API_KEY", "GOOGLE_API_KEY"),
+    "deepseek": ("DEEPSEEK_API_KEY",),
+}
+
+
+def _default_models_for_configured_providers() -> tuple[str, ...]:
+    """Activate starter models only for providers with a configured API key."""
+    enabled = {
+        provider
+        for provider, env_names in _PROVIDER_CREDENTIALS.items()
+        if any(os.getenv(name, "").strip() for name in env_names)
+    }
+    return tuple(
+        model for model in DEFAULT_MODEL_POOL
+        if model.split("/", 1)[0] in enabled
+    )
+
+
+def _default_task_preferences(
+    active_models: tuple[str, ...],
+) -> dict[str, tuple[str, ...]]:
+    active = set(active_models)
+    return {
+        task_type: tuple(model for model in models if model in active)
+        for task_type, models in DEFAULT_TASK_MODEL_PREFERENCES.items()
+        if any(model in active for model in models)
+    }
+
+
 def default_database_path() -> Path:
     """Return a per-user path shared by every project on this machine."""
     if os.getenv("LOCALAPPDATA"):
@@ -169,13 +260,24 @@ class Settings:
             else default_database_path()
         )
 
+        configured_pool = os.getenv("HIF_MODEL_POOL", "").strip()
+        model_pool = (
+            _parse_csv(configured_pool)
+            if configured_pool
+            else _default_models_for_configured_providers()
+        )
+        configured_preferences = os.getenv("HIF_TASK_MODEL_PREFERENCES", "").strip()
+        task_preferences = (
+            _parse_json_model_map(configured_preferences)
+            if configured_preferences
+            else _default_task_preferences(model_pool)
+        )
+
         return cls(
             database_path=database_path,
-            model_pool=_parse_csv(os.getenv("HIF_MODEL_POOL")),
+            model_pool=model_pool,
             planner_model=os.getenv("HIF_PLANNER_MODEL") or None,
-            task_model_preferences=_parse_json_model_map(
-                os.getenv("HIF_TASK_MODEL_PREFERENCES")
-            ),
+            task_model_preferences=task_preferences,
             max_parallel_tasks=parallel,
             max_provider_parallel=provider_parallel,
             usage_fallback_threshold=threshold,
@@ -219,8 +321,8 @@ class Settings:
     def get_models(self) -> tuple[str, ...]:
         if not self.model_pool:
             raise RuntimeError(
-                "No model configured. Set HIF_MODEL_POOL with LiteLLM model identifiers. "
-                "See .env.example."
+                "No active model configured. Add a provider API key (OpenAI, Anthropic, Gemini "
+                "or DeepSeek), or set HIF_MODEL_POOL explicitly. See .env.example."
             )
         return self.model_pool
 
