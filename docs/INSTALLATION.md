@@ -244,7 +244,7 @@ Starter API model identifiers:
 
 | Provider | Fast / standard | Advanced |
 |---|---|---|
-| OpenAI | openai/gpt-6-luna, openai/gpt-6.1-sol | openai/gpt-6-astra |
+| OpenAI | openai/gpt-6-luna, openai/gpt-6.1-sol | openai/gpt-6.2-astra |
 | Anthropic | anthropic/claude-haiku-4-5-20251001, anthropic/claude-sonnet-5 | anthropic/claude-opus-5 |
 | Gemini | gemini/gemini-3.5-flash-lite, gemini/gemini-3.8-flash | gemini/gemini-3.1-pro-preview |
 | DeepSeek | deepseek/deepseek-flash | deepseek/deepseek-v4-pro |
