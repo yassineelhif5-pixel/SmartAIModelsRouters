@@ -5,6 +5,8 @@ description: Use HIF (Hybrid Intelligent Flow) to plan substantial tasks, select
 
 # HIF — Hybrid Intelligent Flow
 
+**Publisher: ZirconAI.fr** · https://zirconai.fr
+
 HIF is a portable orchestration workflow. It can operate in two distinct modes. Never claim the connected multi-provider engine is running unless its tools are actually available.
 
 ## 1. Choose the execution mode
