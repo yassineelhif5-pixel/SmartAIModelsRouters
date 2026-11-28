@@ -428,3 +428,10 @@ Phase 7 — Telemetry, benchmarking and hardening
 ## 19. Implementation status rule
 
 This document defines the target contract. It does not claim the five modes, recursive orchestrators, coding runtime, scoring engine or automatic transitions are implemented. A capability is shipped only after code, tests and documentation are merged.
+
+
+## 20. Conversation UX and token governance
+
+The conversation is HIF's primary user interface. The normative requirements for the run header, real-time orchestrator/agent activity, event-driven progress, hierarchical token accounting, actual-versus-estimated usage, fast project intake with bounded block readers, progressive validation and the user-facing remaining-work checklist are defined in [HIF 1.0 — Conversation UX, Token Governance and Progressive Delivery](HIF-1.0-CONVERSATION-UX-TOKEN-MANAGEMENT.md).
+
+These requirements are release-critical: large-scale multi-agent fan-out must not ship before atomic hierarchical budget reservation, per-call usage accounting, truthful progress state and budget-exhaustion behavior are tested.
