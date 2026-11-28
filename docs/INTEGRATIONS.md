@@ -1,5 +1,7 @@
 # HIF multi-host integrations
 
+**Publisher and connector signature: ZirconAI.fr** ([zirconai.fr](https://zirconai.fr))
+
 HIF provides one provider-neutral orchestration engine and a portable instruction skill. Host products differ in skill support, MCP/tool access, local execution, authentication and subscription entitlements.
 
 ## The critical distinction: native subscription vs connected HIF
@@ -114,7 +116,7 @@ See `docs/GATEWAY.md`, `docs/INSTALLATION.md` and `docs/SECURITY.md`.
 
 ## 8. Portable skill installation
 
-The current scripts install local Agent Skill copies for supported local hosts (Claude Code, Codex, Gemini CLI and supported Copilot hosts). They do not install HIF's runtime and do not automatically upload skills to web products.
+The current scripts discover and install every local Agent Skill directory under `skills/` for supported local hosts (Claude Code, Codex, Gemini CLI and supported Copilot hosts). This includes `hif`, `hifnode`, `hif-dev`, `hif-bd`, `hif-arc`, `hif-strong` and `hif-agent`. They do not install HIF's runtime and do not automatically upload skills to web products.
 
 Windows PowerShell:
 ```powershell
@@ -131,11 +133,28 @@ Build ZIP packages for supported web skill-upload surfaces:
 python scripts/package-skills.py
 ```
 
-The package command currently builds the portable `hif` and `hifnode` skill archives. It does not package NotebookLM as a skill.
+The package command automatically builds one ZIP for every portable skill folder, including all five specialist modes. It does not package NotebookLM as a native skill.
 
 ## 9. Cross-host memory and privacy
 
 HIF can share session memory across hosts only for data explicitly stored in the HIF runtime and permitted by the user. It does not merge native ChatGPT, Claude, Gemini, Copilot or NotebookLM chat histories. The user must be able to inspect, scope and delete HIF-stored session/project data under the runtime's retention policy.
+
+
+## 11. ZirconAI.fr signature and specialist mode skills
+
+All HIF skills are published under the **ZirconAI.fr** product signature. The portable skill folders are:
+
+- `hif`: Auto classification and mode selection.
+- `hif-dev`: AI Tech Lead and software engineering workflow.
+- `hif-bd`: Database and data engineering workflow.
+- `hif-arc`: Architecture workflow.
+- `hif-strong`: high-assurance analysis and verification.
+- `hif-agent`: agent workforce design and lifecycle.
+- `hifnode`: connected parallel DAG orchestration.
+
+In coding-agent hosts that expose skills as slash commands, names commonly map to `/hif-dev`, `/hif-bd`, `/hif-arc`, `/hif-strong` and `/hif-agent`. The camel-case aliases `/hifDev`, `/hifBD`, `/hifArc`, `/hifStrong` and `/hifAgent` are semantic aliases; not every host accepts custom slash command spellings. ChatGPT, Claude web, Gemini web and NotebookLM may expose a skill picker or natural-language activation instead of a slash-command interface.
+
+The skill adds specialized instructions and task logic to the host assistant. In Native Subscription mode, it uses only the currently active host model and tools available to that user. It does not create independent API calls to other providers or inspect private subscription quotas. Connected HIF mode requires an explicit MCP connection and configured runtime/provider credentials.
 
 ## 10. Current implementation status
 
