@@ -21,6 +21,8 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 console = Console()
+security_app = typer.Typer(help="Fast, read-only security checks for application source code.")
+app.add_typer(security_app, name="security")
 
 
 @app.command()
