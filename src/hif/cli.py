@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from pathlib import Path
 from typing import Optional
 
@@ -23,6 +24,54 @@ app = typer.Typer(
 console = Console()
 security_app = typer.Typer(help="Fast, read-only security checks for application source code.")
 app.add_typer(security_app, name="security")
+
+
+
+@security_app.command("scan")
+def security_scan(
+    project_path: Path = typer.Argument(Path("."), help="Project directory to scan."),
+    json_output: bool = typer.Option(False, "--json", help="Print machine-readable JSON."),
+) -> None:
+    """Run a lightweight, read-only security pre-audit. Project code is never executed."""
+    engine = HIFEngine()
+    try:
+        report = asyncio.run(engine.security_scan(str(project_path)))
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    finally:
+        engine.close()
+
+    data = report.to_dict()
+    if json_output:
+        typer.echo(json.dumps(data, indent=2))
+        return
+
+    summary = data["summary"]
+    console.print(
+        f"[bold]Security pre-audit[/bold] — {report.scanned_files} files, "
+        f"{report.elapsed_ms} ms"
+    )
+    console.print(
+        f"Critical: {summary['critical']} | High: {summary['high']} | "
+        f"Medium: {summary['medium']}"
+    )
+    table = Table("Severity", "Rule", "File:line", "Finding")
+    for finding in report.findings:
+        table.add_row(
+            finding.severity.upper(), finding.rule_id,
+            f"{finding.path}:{finding.line}", finding.title,
+        )
+    console.print(table)
+    console.print("[bold]Recommended action plan[/bold]")
+    for index, item in enumerate(data["action_plan"], 1):
+        console.print(
+            f"{index}. [{item['priority']}] {item['step']} "
+            f"({item.get('location', 'project-wide')})"
+        )
+        console.print(f"   Owner: {item.get('owner_role', 'security_reviewer')}")
+        console.print(f"   {item['action']}")
+        console.print(f"   Verify: {item['verification']}")
+    console.print("[dim]Heuristic pre-audit only. Review findings; no code was executed.[/dim]")
 
 
 @app.command()
