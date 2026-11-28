@@ -864,3 +864,155 @@ Root allocates child budgets and limits parallelism based on resource pressure. 
 - Root reconciles cross-workstream architecture and dependencies into one plan.
 - User receives a complete phased action plan before code or production changes.
 - Execution requires approval and produces evidence for tests, data reconciliation, cutover and rollback readiness.
+
+
+## 25. ZirconAI Local Runtime, trusted updates and rapid installation
+
+### 25.1 Product identity and publisher trust
+
+The local distribution is published as **HIF by ZirconAI.fr**. Publisher branding is not itself a security signature. Release artifacts must be cryptographically verifiable.
+
+Release requirements:
+- publish version, build identifier, source commit, supported platforms and minimum runtime;
+- generate a release manifest listing every artifact path, SHA-256 digest, size and version;
+- sign the manifest and release metadata using an offline-protected Ed25519 release key (or a platform-native code-signing certificate where applicable);
+- distribute the public verification key/fingerprint through an independently trusted ZirconAI.fr channel and pin it in the installer;
+- sign Windows executables/installers with an Authenticode certificate when available; sign macOS packages/notarize where distributed as native applications;
+- verify publisher signature, manifest signature, hashes, compatibility and rollback policy before installation/update;
+- reject unsigned, tampered, expired or downgrade releases unless an explicit recovery procedure is used;
+- never embed the private signing key in source code, CI logs, packages or the client installer.
+
+A text footer or displayed brand name must never be represented as proof of cryptographic publisher identity.
+
+### 25.2 Fast, minimal local installation
+
+The default local install should be per-user and require no administrator rights:
+1. detect OS, architecture, Python/runtime availability and supported host skill locations;
+2. download one small signed bootstrap/manifest;
+3. verify signature before executing or extracting release payloads;
+4. install a pinned, compatible runtime in an isolated environment (or a self-contained signed binary when packaging is mature);
+5. install the HIF CLI, local MCP stdio connector and selected portable skills;
+6. create per-user data/config/cache directories with restrictive permissions;
+7. run `hif doctor` and a local health/self-test;
+8. display the exact features available in skill-only, local-runtime and connected-provider modes.
+
+Keep installation modular: users may install only skills, the local lightweight runtime, or the complete local runtime plus MCP. Do not install GPU frameworks or local LLM weights by default. Provider API credentials are optional for local indexing/planning utilities but required for independent remote provider inference.
+
+Installer performance goals (targets, not claims): small bootstrap, parallel verified downloads where safe, reuse compatible cached wheels/artifacts, avoid reinstalling unchanged files, and complete a normal workstation install in seconds to a few minutes depending on network/runtime availability. Measure cold and warm install time on supported OS images before publishing speed claims.
+
+### 25.3 Dynamic update architecture
+
+Use a signed update channel with stable, preview and rollback-capable release tracks:
+- a lightweight updater checks a signed version manifest on startup or an adaptive schedule; users/admins can disable automatic checks;
+- verify signature and artifact hashes before applying any update;
+- download only changed components when delta updates are supported and safe;
+- stage the new version side-by-side, validate dependencies and run smoke tests;
+- atomically switch the active version only after successful validation;
+- retain the last known-good version and support automatic rollback on failed startup/health checks;
+- preserve user configuration, credentials, SQLite state and project data; run explicit versioned database migrations with backup and rollback strategy;
+- report release notes, changed skills/runtime components, compatibility and required restart;
+- allow enterprise policy to pin versions, defer updates or use an internal mirror.
+
+Do not replace running Python modules in-place. The updater should stage files and restart/reload the service at a safe boundary. For skill files, update atomically; host assistants may cache skills until a new session/reload, so HIF must not promise instantaneous host-side skill reload where the host does not support it.
+
+### 25.4 In-memory adaptive pipeline engine
+
+HIF adds a priority-aware pipeline scheduler. The in-memory representation is an execution cache, not the sole durable source of truth.
+
+Each pipeline has:
+- pipeline/run ID, parent/root ID and project/session scope;
+- request classification and priority;
+- DAG nodes, dependencies and state;
+- deadline/SLA when provided;
+- estimated token/cost/time budgets and actual usage;
+- resource requirements and provider constraints;
+- checkpoint/artifact references and retry policy;
+- cancellation, pause/resume and idempotency metadata.
+
+Persist critical state and checkpoints in SQLite so a process restart can recover safely. Keep only active scheduling state, small queues and hot metadata in memory. Bound memory by configurable limits and evict completed run objects after durable persistence.
+
+### 25.5 Request classification and priority policy
+
+Classify every incoming task by both complexity and urgency:
+- complexity: simple, complicated, too_complicated;
+- priority: critical, high, normal, low;
+- execution class: deterministic_local, lightweight_model, standard_model, strong_review, human_approval.
+
+Priority must consider explicit user priority, production/customer impact, deadlines, blocked downstream work, severity and safety. Do not equate complexity with urgency: a simple production incident may be critical; a complex research task may be low priority.
+
+Use weighted fair scheduling with priority aging to prevent starvation. Respect dependencies: a high-priority node cannot run before required prerequisites. Reserve capacity for critical tasks and final synthesis, but enforce global/provider/resource budgets. Support bounded preemption only at safe checkpoints; never interrupt a non-idempotent side effect mid-flight.
+
+### 25.6 Pipeline creation and dynamic adaptation
+
+The root orchestrator:
+1. classifies intent, complexity, urgency, risk and data sensitivity;
+2. selects the smallest suitable workflow/mode;
+3. creates a pipeline DAG with explicit dependencies and acceptance criteria;
+4. allocates child budgets and resource slots;
+5. schedules ready nodes by priority and estimated marginal value;
+6. adapts concurrency and model tier from CPU/RAM pressure, provider limits, deadlines, token budgets and observed failures;
+7. reprioritizes when new critical events arrive;
+8. checkpoints and safely pauses/requeues work when resources or provider access become unavailable;
+9. synthesizes validated results and releases transient memory.
+
+Pipeline templates may be reused, but each run must bind current project hashes, policies, contracts and inputs. Do not reuse stale plans after material project changes.
+
+### 25.7 HIF self-improvement and controlled evolution
+
+HIF may continuously analyze its own telemetry, benchmark results, failed tasks, user feedback and issue reports to propose improvements to:
+- routing policies and model capability profiles;
+- prompt/context templates and token budgets;
+- pipeline templates and scheduling weights;
+- cache/index strategies;
+- skill instructions and documentation;
+- tests, diagnostics and resource controls.
+
+Self-evolution must follow a controlled engineering loop:
+1. observe and identify a measurable problem;
+2. create a change proposal with evidence, expected benefit, risk and token/resource impact;
+3. create an isolated branch/worktree and tests;
+4. implement only within an explicitly authorized development scope;
+5. run unit, integration, security, performance and regression checks;
+6. compare against baseline benchmarks;
+7. prepare a signed release candidate and changelog;
+8. require maintainer/user approval for release publication or production rollout unless a narrowly scoped auto-update policy explicitly authorizes it;
+9. monitor rollout and rollback automatically on health regression.
+
+HIF must never modify its own installed executable, signing keys, update trust roots, security policy, provider credentials, user data or production environment without explicit authorization. A model-generated patch is untrusted until tests and policy gates pass. Self-improvement cannot grant itself new tools or permissions.
+
+### 25.8 Skills-first rapid operation
+
+When HIF is installed only as a skill, it must remain useful immediately using the host's current model and native tools. It should:
+- classify the task quickly;
+- select a specialized workflow;
+- create compact plans and role-specific instructions;
+- use native sub-agents only when available;
+- provide useful partial results and explicit remaining work;
+- avoid claiming HIF runtime telemetry, background pipelines, dynamic updates or cross-provider routing that do not exist in skill-only mode.
+
+When connected to local HIF MCP, the skill may delegate pipeline creation, priority scheduling, shared memory and actual telemetry to the local runtime. The UI should distinguish skill-only, local runtime and connected provider modes.
+
+### 25.9 Resource and responsiveness requirements
+
+- No resident local LLM by default.
+- No permanent process per agent; agents are logical tasks on bounded workers.
+- Keep active queues and pipeline metadata memory-bounded.
+- Use async event handling and bounded queues with back-pressure.
+- Fast triage uses deterministic rules or lightweight models; deep analysis runs asynchronously.
+- Stream progress events when the host supports it; otherwise provide concise phase updates.
+- Use cancellation, deadlines, retries, circuit breakers and safe checkpoints.
+- Expose measured HIF process RAM/CPU, active/queued pipelines and scheduler priority without claiming whole-machine resource usage.
+
+### 25.10 Acceptance criteria
+
+- Local installer verifies publisher signature and all release artifact hashes before execution.
+- Per-user installation succeeds without administrator rights on supported platforms.
+- Skill-only and full-runtime installation paths are clearly separated.
+- Updates are staged, verified, atomic and rollback-capable; user data/configuration are preserved.
+- Host skill reload limitations are disclosed; no false promise of live reload.
+- Pipeline queue and active state are bounded in memory and recover from durable checkpoints.
+- Complexity and urgency are independently classified.
+- Priority aging prevents starvation; dependencies and resource budgets are always enforced.
+- Critical events can preempt only at safe checkpoints.
+- HIF self-improvement produces evidence-backed proposals and cannot bypass release/security approval.
+- Installation speed, idle RAM, peak RAM, update duration and pipeline latency are benchmarked before public performance claims.
