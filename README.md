@@ -59,17 +59,13 @@ For campaign workflows, HIF can research, draft, adapt content to channels, prep
 
 The target HIF interface exposes a live timeline and graph of actual orchestrators, agents, tasks, dependencies, tool handoffs and artifacts, alongside a polished report preview, blockers, approvals and evidence. The graph must be generated from real structured runtime events, not simulated agents. This visual dashboard and the full event API are implementation targets, not yet claims of a shipped UI.
 
-See [HIF Universal Orchestrator](docs/HIF-UNIVERSAL-ORCHESTRATOR.md) for domain coverage, fast-first behavior, research provenance, campaign approvals, report structure, graph/event contracts and the implementation sequence.
+See [HIF Universal Orchestrator](docs/HIF-UNIVERSAL-ORCHESTRATOR.md) for domain coverage, fast-first behavior, research provenance, campaign approvals, report structure, graph/event contracts and the implementation sequence. The portable Skill output, report structure, lifecycle vocabulary, Mermaid fallback and quality gates are standardized in [HIF Skill Delivery Contract](docs/HIF-SKILL-DELIVERY-CONTRACT.md).
 
 ## HIF pipeline and multi-model routing
 
 Every non-trivial request follows the same staged pipeline in portable Skills and the connected runtime: intake, classification, architecture assessment, specialist planning, model assignment, execution, cross-review, validation, synthesis and remaining-work checklist. Skill-only mode uses the active host model and native sub-agents only when available; connected mode uses HIF's configured multi-provider DAG engine.
 
-The default model catalog covers:
-- OpenAI: GPT-6 Luna, GPT-6.1 Sol and GPT-6.2 Astra.
-- Anthropic: Claude Haiku 4.5, Sonnet 5 and Opus 5.
-- Gemini: Gemini 3.5 Flash-Lite, Gemini 3.8 Flash and Gemini 3.1 Pro Preview.
-- DeepSeek: DeepSeek Flash and DeepSeek V4 Pro.
+The default model catalog covers OpenAI, Anthropic, Google Gemini, DeepSeek, Moonshot AI (Kimi), Alibaba DashScope (Qwen), xAI (Grok), Z.AI (GLM) and MiniMax. Mistral, Groq and OpenRouter are also supported through explicit LiteLLM model IDs when their credentials are configured. Cursor is supported as an AI coding-agent host, not as a model API provider.
 
 Starter models are activated only when the corresponding provider API key is configured. Leave HIF_MODEL_POOL and HIF_TASK_MODEL_PREFERENCES empty to use the credential-aware defaults, or override them explicitly in .env. Provider API access may be billed separately from consumer subscriptions. See [Pipeline and Model Routing](docs/PIPELINE-AND-MODEL-ROUTING.md).
 

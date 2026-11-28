@@ -47,18 +47,27 @@ HIF ships with a starter catalog spanning multiple providers. It does not assume
 
 | Provider | Starter model IDs | Intended default use |
 |---|---|---|
-| OpenAI | openai/gpt-6-luna, openai/gpt-6.1-sol, openai/gpt-6.2-astra | Fast triage, general/coding work, complex review |
-| Anthropic | anthropic/claude-haiku-4-5-20251001, anthropic/claude-sonnet-5, anthropic/claude-opus-5 | Fast extraction, engineering, deep review |
-| Google Gemini | gemini/gemini-3.5-flash-lite, gemini/gemini-3.8-flash, gemini/gemini-3.1-pro-preview | Low-latency tasks, agentic/research work, advanced reasoning |
-| DeepSeek | deepseek/deepseek-flash, deepseek/deepseek-v4-pro | Cost-sensitive tasks and deeper reasoning |
+| OpenAI | openai/gpt-luna-latest, openai/gpt-sol-latest, openai/gpt-astra-latest | Fast triage, general/coding work, complex review |
+| Anthropic | anthropic/claude-haiku-latest, anthropic/claude-sonnet-latest, anthropic/claude-opus-latest | Fast extraction, engineering, deep review |
+| Google Gemini | gemini/gemini-3.5-flash-lite, gemini/gemini-3.8-flash, gemini/gemini-4-hydrogen, gemini/gemini-4-neon | Low-latency tasks, agentic/research work, advanced reasoning |
+| DeepSeek | deepseek/deepseek-flash-latest, deepseek/deepseek-pro-latest | Cost-sensitive tasks and deeper reasoning |
+| Moonshot AI (Kimi) | moonshot/kimi-latest | Long-context reasoning and research |
+| Alibaba Cloud (Qwen) | dashscope/qwen-max-latest, dashscope/qwen-flash-latest | General reasoning, coding and fast tasks |
+| xAI | xai/grok-latest | Alternative reasoning and research |
+| Z.AI (GLM) | zai/glm-latest, zai/glm-flash-latest | General and fast tasks |
+| MiniMax | minimax/minimax-latest | General-purpose tasks |
+| Mistral, Groq, OpenRouter | User-selected LiteLLM model IDs | Additional hosted models and routing options; explicit model IDs required |
 
-These are API model identifiers, not consumer subscription entitlements. Access, regional availability, account limits, pricing and lifecycle can change. Confirm the exact provider model ID and LiteLLM compatibility before production use. Preview models should be pinned deliberately and reviewed for lifecycle changes.
+Model aliases and provider routes follow LiteLLM documentation and can change with upstream releases. Verify account/region availability and test the selected model before production rollout. These are API model identifiers, not consumer subscription entitlements. Access, regional availability, account limits, pricing and lifecycle can change. Confirm the exact provider model ID and LiteLLM compatibility before production use. Preview models should be pinned deliberately and reviewed for lifecycle changes.
 
 Official model references:
 - OpenAI model/API overview: https://platform.openai.com/overview
 - Anthropic model lifecycle: https://docs.anthropic.com/en/docs/about-claude/model-deprecations
 - Gemini model list: https://ai.google.dev/gemini-api/docs/models
 - DeepSeek model list and pricing: https://api-docs.deepseek.com/api/list-models/ and https://api-docs.deepseek.com/quick_start/pricing/
+- LiteLLM provider catalog and aliases: https://docs.litellm.ai/docs/providers and https://docs.litellm.ai/docs/model_latest_aliases
+- Moonshot/Kimi: https://platform.moonshot.ai/
+- Alibaba DashScope/Qwen: https://dashscope.console.aliyun.com/
 
 ## 4. Automatic provider activation
 
@@ -68,8 +77,12 @@ The runtime activates starter models only for providers with a configured API ke
 - ANTHROPIC_API_KEY activates Anthropic starter models.
 - GEMINI_API_KEY or GOOGLE_API_KEY activates Gemini starter models.
 - DEEPSEEK_API_KEY activates DeepSeek starter models.
+- MOONSHOT_API_KEY activates Moonshot/Kimi.
+- DASHSCOPE_API_KEY activates Alibaba DashScope/Qwen.
+- XAI_API_KEY, ZAI_API_KEY and MINIMAX_API_KEY activate Grok, GLM and MiniMax.
+- MISTRAL_API_KEY, GROQ_API_KEY and OPENROUTER_API_KEY are accepted for explicitly configured model IDs.
 
-If HIF_MODEL_POOL is empty, HIF builds the active pool from configured provider credentials. If it is explicitly set, that list overrides the starter catalog.
+If HIF_MODEL_POOL is empty, HIF builds the active pool from configured provider credentials. The Moonshot, DashScope, xAI, Z.AI and MiniMax starters use LiteLLM provider routes. If it is explicitly set, that list overrides the starter catalog.
 
 If HIF_TASK_MODEL_PREFERENCES is empty, HIF uses the default task preferences filtered to active models. Explicit JSON preferences override those defaults.
 
@@ -80,7 +93,7 @@ HIF does not require all four providers. One configured provider is sufficient t
 ### 5.1 Install portable Skills (Windows)
 
 ```powershell
-git clone -b feature/hif-1.0-five-modes https://github.com/yassineelhif5-pixel/SmartAIModelsRouters.git
+git clone -b main https://github.com/yassineelhif5-pixel/SmartAIModelsRouters.git
 cd SmartAIModelsRouters
 .\scripts\install-hif-skills.ps1 -Hosts Claude,Codex,GeminiCLI,Copilot
 ```
@@ -96,7 +109,7 @@ Install one host only if preferred:
 ```bash
 git clone -b feature/hif-1.0-five-modes https://github.com/yassineelhif5-pixel/SmartAIModelsRouters.git
 cd SmartAIModelsRouters
-bash scripts/install-hif-skills.sh --hosts claude,codex,gemini,copilot
+bash scripts/install-hif-skills.sh --hosts claude,codex,gemini,copilot,cursor,kimi,qwen
 ```
 
 Start a new host session and confirm that the HIF Skills are visible. Host-specific command syntax varies.
@@ -151,7 +164,7 @@ Upload the generated ZIPs through the host's supported Skills import UI. A web S
 
 ## 6. Default task-to-model routing
 
-The starter preferences are deliberately multi-provider and ordered for fallback:
+The starter preferences are deliberately multi-provider and ordered for fallback. Additional provider models remain eligible as fallback candidates even when they are not first-choice for a task type:
 
 | Task type | First-choice profile | Fallback profile |
 |---|---|---|

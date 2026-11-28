@@ -13,6 +13,9 @@ HOST_SKILL_ROOTS = (
     ROOT / ".claude" / "skills",
     ROOT / ".gemini" / "skills",
     ROOT / ".github" / "skills",
+    ROOT / ".cursor" / "skills",
+    ROOT / ".kimi-code" / "skills",
+    ROOT / ".qwen" / "skills",
 )
 
 
@@ -91,6 +94,9 @@ def test_shell_installer_copies_all_skills_and_backups_existing_install(tmp_path
         home / ".claude" / "skills",
         home / ".agents" / "skills",
         home / ".gemini" / "skills",
+        home / ".cursor" / "skills",
+        home / ".kimi-code" / "skills",
+        home / ".qwen" / "skills",
     ]
     destination = destinations[1]
     existing = destination / "hif"
@@ -103,7 +109,7 @@ def test_shell_installer_copies_all_skills_and_backups_existing_install(tmp_path
         bash,
         str(ROOT / "scripts" / "install-hif-skills.sh"),
         "--hosts",
-        "claude,codex,gemini",
+        "claude,codex,gemini,cursor,kimi,qwen",
     ]
     first = subprocess.run(command, env=env, capture_output=True, text=True, timeout=20)
     assert first.returncode == 0, first.stderr
@@ -123,3 +129,38 @@ def test_shell_installer_copies_all_skills_and_backups_existing_install(tmp_path
     second = subprocess.run(command, env=env, capture_output=True, text=True, timeout=20)
     assert second.returncode == 0, second.stderr
     assert len(list(destination.glob("hif.backup.*"))) == 2
+
+
+def test_every_skill_implements_the_portable_delivery_contract() -> None:
+    required = (
+        "HIF portable delivery contract",
+        "Fast-first interaction",
+        "Capability and execution truth",
+        "Standard report format",
+        "Final quality gate",
+    )
+    for skill_dir in _skill_dirs():
+        content = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        for phrase in required:
+            assert phrase in content, f"{skill_dir.name} missing {phrase}"
+        assert "Proposed workflow" in content
+        assert "Markdown is the portable default" in content
+
+
+def test_powershell_installer_accepts_new_hosts_in_whatif_mode() -> None:
+    import shutil
+    import pytest
+
+    pwsh = shutil.which("pwsh")
+    if pwsh is None:
+        pytest.skip("PowerShell 7 is not installed on this runner")
+    script_path = str(ROOT / "scripts" / "install-hif-skills.ps1").replace("'", "''")
+    command = f"& '{script_path}' -Hosts @('Cursor', 'Kimi', 'Qwen') -WhatIf"
+    result = subprocess.run(
+        [pwsh, "-NoProfile", "-Command", command],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "What if:" in result.stdout

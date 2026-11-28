@@ -6,12 +6,12 @@ This guide separates installation of the **skill instructions** from installatio
 
 ## A. Install skill instructions on Windows
 
-Supported targets in the current installer: Claude Code, OpenAI Codex, Gemini CLI and GitHub Copilot.
+Supported targets in the current installer: Claude Code, OpenAI Codex, Gemini CLI, GitHub Copilot, Cursor, Kimi Code CLI and Qwen Code.
 
     git clone https://github.com/yassineelhif5-pixel/SmartAIModelsRouters.git
     cd SmartAIModelsRouters
 
-    # Install the two skills globally for all supported local hosts
+    # Install all HIF skills for all supported local hosts
     .\scripts\install-hif-skills.ps1
 
     # Or select only the host you use
@@ -38,8 +38,19 @@ The installer backs up an existing HIF skill directory before replacing it. It i
     bash scripts/install-hif-skills.sh --hosts gemini
     bash scripts/install-hif-skills.sh --hosts copilot
     bash scripts/install-hif-skills.sh --hosts codex
+    bash scripts/install-hif-skills.sh --hosts cursor
+    bash scripts/install-hif-skills.sh --hosts kimi
+    bash scripts/install-hif-skills.sh --hosts qwen
 
 The script makes timestamped backups of existing directories. Start a new assistant session after installation.
+
+### Additional coding-agent hosts
+
+- **Cursor:** user Skills install to `~/.cursor/skills`; the repository also contains `.cursor/skills`. Enable Sync Skills for Cloud Agents when using personal Skills remotely.
+- **Kimi Code CLI:** user Skills install to `~/.kimi-code/skills`; the repository contains `.kimi-code/skills`. The generic `.agents/skills` path is also supported by Kimi Code.
+- **Qwen Code:** user Skills install to `~/.qwen/skills`; the repository contains `.qwen/skills`. Qwen Code also discovers `.agents/skills`.
+
+The scripts copy the portable instructions only. They do not authenticate to those products or configure their MCP servers.
 
 ## C. Create ZIP packages for web assistants
 

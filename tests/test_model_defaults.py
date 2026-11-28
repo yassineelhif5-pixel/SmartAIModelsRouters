@@ -6,7 +6,9 @@ from hif.config import Settings
 def clear_provider_keys(monkeypatch) -> None:
     for name in (
         "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY",
-        "GOOGLE_API_KEY", "DEEPSEEK_API_KEY",
+        "GOOGLE_API_KEY", "DEEPSEEK_API_KEY", "MOONSHOT_API_KEY",
+        "DASHSCOPE_API_KEY", "XAI_API_KEY", "ZAI_API_KEY", "MINIMAX_API_KEY",
+        "MISTRAL_API_KEY", "GROQ_API_KEY", "OPENROUTER_API_KEY",
     ):
         monkeypatch.delenv(name, raising=False)
 
@@ -84,3 +86,26 @@ def test_architecture_and_infrastructure_are_valid_pipeline_types() -> None:
 
     assert architecture.task_type == "architecture"
     assert infrastructure.task_type == "infrastructure"
+
+
+def test_kimi_qwen_and_additional_providers_activate_only_with_credentials(monkeypatch) -> None:
+    clear_provider_keys(monkeypatch)
+    monkeypatch.setenv("MOONSHOT_API_KEY", "test-moonshot")
+    monkeypatch.setenv("DASHSCOPE_API_KEY", "test-dashscope")
+    monkeypatch.setenv("XAI_API_KEY", "test-xai")
+    monkeypatch.setenv("ZAI_API_KEY", "test-zai")
+    monkeypatch.setenv("MINIMAX_API_KEY", "test-minimax")
+    monkeypatch.delenv("HIF_MODEL_POOL", raising=False)
+    monkeypatch.delenv("HIF_TASK_MODEL_PREFERENCES", raising=False)
+
+    settings = Settings.from_env()
+
+    providers = {model.split("/", 1)[0] for model in settings.model_pool}
+    assert providers == {"moonshot", "dashscope", "xai", "zai", "minimax"}
+    assert "moonshot/kimi-latest" in settings.model_pool
+    assert "dashscope/qwen-max-latest" in settings.model_pool
+    assert all(
+        model in settings.model_pool
+        for models in settings.task_model_preferences.values()
+        for model in models
+    )

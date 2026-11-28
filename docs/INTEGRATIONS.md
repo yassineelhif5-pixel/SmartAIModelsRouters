@@ -28,6 +28,9 @@ HIF provides one provider-neutral orchestration engine and a portable instructio
 | Microsoft 365 Copilot | Copilot Studio agent instructions | Copilot Studio tool/MCP connection to remote HIF gateway | Requires tenant governance and configured Copilot Studio environment; not a simple consumer-app skill install |
 | Microsoft Copilot consumer app | No generic portable HIF skill installation is assumed | Only if Microsoft provides an enabled extension/agent path for that user | Do not conflate with GitHub Copilot or Microsoft 365 Copilot Studio |
 | OpenAI Codex | `.agents/skills` | Local stdio MCP or supported remote MCP | Separate host/runtime configuration |
+| Cursor Agent / Cloud Agents | `.cursor/skills`, also compatible with `.agents/skills` | MCP configured in Cursor; local/remote according to Cursor surface | Cloud Agents require Skills Sync or project-level skills; host model routing remains controlled by Cursor |
+| Kimi Code CLI | `.kimi-code/skills` and generic `.agents/skills` | Kimi CLI MCP configuration | Kimi's own model login/API and provider limits remain separate |
+| Qwen Code | `.qwen/skills` and generic `.agents/skills` | Qwen Code MCP configuration | Native sub-agents/teams are Qwen harness features; HIF does not claim to control them unless connected |
 | NotebookLM | HIF NotebookLM companion workflow and user-provided HIF reference sources | No generic NotebookLM Agent Skill/MCP tool execution is assumed | NotebookLM is treated as a source-grounded research workspace, not as a general HIF host or agent runtime |
 
 A portable skill is an **instruction layer**. MCP is a **tool connection**. HIF local/remote runtime is the **execution layer**. They are separate and must be installed/configured separately.
@@ -87,7 +90,35 @@ Official documentation:
 - https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/tools-add-mcp-server
 - https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-custom-engine-agent
 
-## 6. NotebookLM — companion workflow, not a native HIF skill
+## 6. Cursor Agent
+
+Cursor supports the Agent Skills format in project `.cursor/skills/` and user `~/.cursor/skills/` locations. It also discovers compatible `.agents/skills/` folders. The repository includes a native `.cursor/skills/` mirror and the installer supports a user-level Cursor installation.
+
+For Cloud Agents, either commit skills in the repository or enable Cursor's Sync Skills for personal skills. Local user skills are not automatically uploaded to Cloud Agents unless synchronized.
+
+Official documentation:
+- https://cursor.com/docs/skills
+
+## 7. Kimi Code CLI
+
+Kimi Code CLI supports Agent Skills with a Kimi-specific user directory and the generic Agent Skills directories. The repository includes a `.kimi-code/skills/` mirror. The installer copies Skills to `~/.kimi-code/skills/` for the current Kimi Code CLI layout. Older Kimi CLI distributions may use `~/.kimi/skills/`; verify the active CLI's discovery paths before installation.
+
+Kimi model calls through the HIF runtime use the Moonshot provider adapter (`moonshot/`) and require a Moonshot API key. Installing a Skill does not log in to Kimi or provide access to a Kimi consumer subscription.
+
+Official documentation:
+- https://moonshotai.github.io/kimi-code/en/customization/skills
+- https://moonshotai.github.io/kimi-cli/en/customization/skills.html
+
+## 8. Qwen Code
+
+Qwen Code supports Agent Skills from `.qwen/skills/` and the generic `.agents/skills/` directory. The repository includes a native `.qwen/skills/` mirror and the installer supports `~/.qwen/skills/`.
+
+Qwen model calls through HIF use the DashScope provider adapter (`dashscope/`) and require a DashScope/Qwen API key. Qwen Code's native sub-agent/team capabilities are controlled by Qwen Code itself; HIF does not claim to orchestrate those features unless the HIF runtime is explicitly connected.
+
+Official documentation:
+- https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/skills.md
+
+## 9. NotebookLM — companion workflow, not a native HIF skill
 
 Do not advertise NotebookLM as a generic Agent Skills or MCP host. HIF provides a companion workflow that helps users prepare a research brief and source pack for NotebookLM:
 1. Use HIF (in a supported host or local runtime) to identify research questions and gather user-approved documents/sources.
@@ -98,7 +129,7 @@ Do not advertise NotebookLM as a generic Agent Skills or MCP host. HIF provides 
 
 NotebookLM's own source access, sharing, account limits and supported imports remain controlled by Google. HIF does not claim direct NotebookLM API control, notebook creation, source injection or autonomous notebook access unless Google provides a supported integration and it is actually implemented.
 
-## 7. Local installation and remote gateway
+## 10. Local installation and remote gateway
 
 Local runtime:
 - Install HIF in a per-user virtual environment.
@@ -114,18 +145,18 @@ Remote web clients:
 
 See `docs/GATEWAY.md`, `docs/INSTALLATION.md` and `docs/SECURITY.md`.
 
-## 8. Portable skill installation
+## 11. Portable skill installation
 
-The current scripts discover and install every local Agent Skill directory under `skills/` for supported local hosts (Claude Code, Codex, Gemini CLI and supported Copilot hosts). This includes `hif`, `hifnode`, `hif-dev`, `hif-bd`, `hif-arc`, `hif-strong` and `hif-agent`. They do not install HIF's runtime and do not automatically upload skills to web products.
+The current scripts discover and install every local Agent Skill directory under `skills/` for supported local hosts (Claude Code, Codex, Gemini CLI, supported Copilot hosts, Cursor, Kimi Code CLI and Qwen Code). This includes `hif`, `hifnode`, `hif-dev`, `hif-bd`, `hif-arc`, `hif-strong` and `hif-agent`. They do not install HIF's runtime and do not automatically upload skills to web products.
 
 Windows PowerShell:
 ```powershell
-.\scripts\install-hif-skills.ps1 -Hosts Claude,Codex,GeminiCLI,Copilot
+.\scripts\install-hif-skills.ps1 -Hosts Claude,Codex,GeminiCLI,Copilot,Cursor,Kimi,Qwen
 ```
 
 Linux/macOS:
 ```bash
-bash scripts/install-hif-skills.sh --hosts claude,codex,gemini,copilot
+bash scripts/install-hif-skills.sh --hosts claude,codex,gemini,copilot,cursor,kimi,qwen
 ```
 
 Build ZIP packages for supported web skill-upload surfaces:
@@ -135,12 +166,12 @@ python scripts/package-skills.py
 
 The package command automatically builds one ZIP for every portable skill folder, including all five specialist modes. It does not package NotebookLM as a native skill.
 
-## 9. Cross-host memory and privacy
+## 12. Cross-host memory and privacy
 
 HIF can share session memory across hosts only for data explicitly stored in the HIF runtime and permitted by the user. It does not merge native ChatGPT, Claude, Gemini, Copilot or NotebookLM chat histories. The user must be able to inspect, scope and delete HIF-stored session/project data under the runtime's retention policy.
 
 
-## 11. ZirconAI.fr signature and specialist mode skills
+## 13. ZirconAI.fr signature and specialist mode skills
 
 All HIF skills are published under the **ZirconAI.fr** product signature. The portable skill folders are:
 
@@ -156,7 +187,7 @@ In coding-agent hosts that expose skills as slash commands, names commonly map t
 
 The skill adds specialized instructions and task logic to the host assistant. In Native Subscription mode, it uses only the currently active host model and tools available to that user. It does not create independent API calls to other providers or inspect private subscription quotas. Connected HIF mode requires an explicit MCP connection and configured runtime/provider credentials.
 
-## 10. Current implementation status
+## 14. Current implementation status
 
 - Portable HIF and HIF Node instructions exist in the repository and are mirrored for supported coding-agent hosts.
 - ZIP packaging and local skill-copy scripts exist as source code.
@@ -165,14 +196,14 @@ The skill adds specialized instructions and task logic to the host assistant. In
 - Host plan eligibility, UI labels and connector availability change over time. Recheck official host documentation before publishing end-user installation instructions.
 
 
-## 12. Pipeline and architecture advisory roles
+## 15. Pipeline and architecture advisory roles
 
 All HIF Skills use the common staged pipeline. See [Pipeline Engine and Multi-Model Routing](PIPELINE-AND-MODEL-ROUTING.md) for the lifecycle, default provider catalog, configuration, installation and Skill-only versus connected execution behavior.
 
 The root orchestrator is also the architecture owner. It may assign an Assistant Architect for independent design critique and an Infrastructure Architect for deployment, network, identity, capacity, resilience, observability, backup/recovery and cost recommendations. See docs/HIF-1.0-MODES-SPEC.md section 26 for the normative contract.
 
 
-## 13. Lightweight runtime and application security
+## 16. Lightweight runtime and application security
 
 The runtime adapts concurrency to available CPU and RAM, uses non-blocking telemetry, async provider I/O and lazy bounded local worker pools. Skills-only mode does not start local workers or background services.
 

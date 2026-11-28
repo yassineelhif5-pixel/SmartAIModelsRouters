@@ -200,3 +200,68 @@ Treat reporting as a first-class deliverable. Establish audience, objective, sco
 When structured runtime events are available, expose a graph/timeline of actual orchestrators, agents, tools, dependencies, handoffs and artifacts. Distinguish proposed tasks from agents actually running. Use stable IDs, parent/run IDs, timestamps and truthful status. Show blockers, approvals and validated artifacts. Never expose secrets or hidden chain-of-thought. In Skill-only mode, provide a Mermaid/text plan only if useful; do not claim a live graph/dashboard.
 
 See `docs/HIF-UNIVERSAL-ORCHESTRATOR.md` for the product contract and implementation sequence.
+
+
+## HIF portable delivery contract (mandatory)
+
+Apply this behavior in every host, including Skill-only use.
+
+### Fast-first interaction
+- Return the smallest useful response first: understood goal, domain, complexity, urgency, material assumptions and immediate next action.
+- Do not expose a long plan for a trivial task. For substantial work, show a compact plan with roles, dependencies and acceptance criteria.
+- Publish milestones only when the corresponding evidence or artifact exists. Continue deeper work only when it adds value.
+- Ask one focused clarification only when a missing fact blocks safe or materially correct progress; otherwise state an assumption and proceed.
+- Give an ETA only when comparable telemetry supports it; otherwise omit it or label it indicative.
+
+### Capability and execution truth
+- **Skill-only:** the current host model and explicitly available host tools are the execution environment. Native delegation is host-dependent; if unavailable, execute sequentially.
+- **Connected runtime:** use HIF MCP capabilities only when exposed and confirmed by successful tool results.
+- A Skill alone does not start a daemon, background job, other model, connector, persistent memory, scheduler, live dashboard or file export.
+- Never invent agents, run IDs, events, model/provider names, token usage, timings, source counts, test results, publication confirmations or progress.
+- Use lifecycle labels precisely: **proposed → ready → running → completed → validated**. Also allow **blocked**, **failed**, **skipped** and **not run**. Completion is not validation; validation is not deployment.
+- Label a diagram **Proposed workflow** unless backed by actual execution events. Use **Execution workflow** only for observed execution.
+
+### Specialist handoff contract
+Every delegated task gets a compact brief: stable task ID and parent/run ID when available; one objective; scope and non-goals; priority; input references; dependencies; allowed tools/data; expected output; acceptance criteria; and deadline/budget only when known and enforceable.
+Every specialist returns: **result**, **evidence/references**, **assumptions**, **risks/uncertainty**, **validation performed and outcome**, **remaining work**. The root checks overlap, contradictions, provenance and integration before accepting it.
+
+### Standard report format
+For substantial tasks, produce a polished Markdown report in this order, omitting sections that genuinely do not apply:
+1. **Title and status** — deliverable, date when known, state (draft/partial/reviewed/validated/blocked).
+2. **Executive summary** — outcome or decision first.
+3. **Scope and objective** — included and excluded work.
+4. **Method** — work performed, tools/approach and constraints.
+5. **Findings / deliverable** — grouped, prioritized and readable.
+6. **Evidence and sources** — citations, links, file paths, query outputs or test logs; distinguish fact from inference.
+7. **Risks, assumptions and limitations** — confidence only when meaningfully assessed.
+8. **Recommendations and action register** — action, priority, owner, dependency and due date only when known.
+9. **Validation and remaining work** — actual checks and exact outcomes, blockers and next step.
+10. **Appendix** — detailed tables, SQL, technical notes or source register when useful.
+
+For short requests, answer directly rather than forcing a report. Use tables for comparisons/action registers and charts only from real data. Do not fabricate dates, owners, metrics or evidence. Ensure the executive summary matches the detail.
+
+### Flow and graph representation
+- Use Mermaid for a useful multi-step plan or DAG; skip it for trivial tasks.
+- Use stable short node IDs and label each node with role/task and truthful state. Show dependencies and review/approval gates.
+- A proposed plan must be visibly labelled as proposed; never add fake runtime timestamps, agent identities or metrics.
+- If Mermaid is unsupported, provide a numbered workflow or Markdown table.
+- Never expose secrets, private personal data or hidden chain-of-thought. Provide concise rationale and evidence instead.
+
+### Artifact and publication discipline
+- Markdown is the portable default. Create DOCX/PDF/PPTX/XLSX/HTML/JSON files only when an actual artifact tool is available and confirms success.
+- If a report file is requested but no file tool exists, provide complete report content and state the limitation; do not claim an attachment.
+- Keep machine-readable output separate from the human report. Use JSON only when requested or consumed by a connected system, and validate it against its schema.
+- Drafting, approval, scheduling, sending and publishing are distinct states. External communications, publication, paid actions, destructive changes and production operations require explicit authorization and an authorized connector. Claim success only after connector confirmation.
+
+### Final quality gate
+Before delivery, verify that:
+- the requested outcome is present and audience/tone/format are appropriate;
+- key claims trace to evidence or are explicitly assumptions;
+- calculations, dates, links, SQL, code and tables are consistent;
+- limitations and failed/not-run checks are disclosed;
+- no unsupported execution, telemetry, publication or artifact claims appear;
+- the next action is clear and proportionate.
+If a gate fails, correct the result or label it partial/blocked rather than validated.
+
+### Mode-specific application
+Route each request to the smallest useful combination of domain packs. Keep one root owner for scope, evidence quality, approvals and final acceptance.
