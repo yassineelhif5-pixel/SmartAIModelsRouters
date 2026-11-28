@@ -197,3 +197,17 @@ hif security scan . --json
 ```
 
 The scanner never executes project code and does not read .env contents. It reports heuristic findings, evidence, severity and a prioritized remediation plan. It is not a full SAST/DAST or security certification. See [Security Review for Vibe-Coded Software](docs/SECURITY-VIBE-CODING.md) and [Resource Management](docs/RESOURCE-MANAGEMENT.md).
+
+
+## HIF 0.4 — independent project validation and portable plugin
+
+HIF now includes an optional independent project-evaluation stage:
+- `hif_evaluate_project` requests 2–4 independent assessments from at least two configured provider families, compares feasibility, risks, blockers and recommendations, and returns `validated`, `conditional`, `rejected` or `inconclusive`.
+- Negative or conditional reviews can propose falsifiable counter-tests. `hif_countertest_plan` requires explicit approval and prepares a bounded test protocol only; it never executes commands or changes systems.
+- Execution profiles `auto`, `browser`, `small`, `standard` and `server` adapt concurrency, context and output limits to the available environment.
+- The root HIF Skill now loads supporting modules from `skills/hif/modules/` and remains available in the host mirrors.
+- A portable Agent Plugin is packaged under `plugins/hif-universal/`, with a local marketplace entry in `.agents/plugins/marketplace.json`.
+
+See [Multi-model evaluation](docs/MULTI-MODEL-EVALUATION.md), [Plugin and Skill packaging](docs/PLUGIN-AND-SKILL-PACKAGING.md), and [Resource management](docs/RESOURCE-MANAGEMENT.md).
+
+**Important:** the portable plugin packages Skills, not a deployed provider service. To perform real cross-provider calls, configure the HIF runtime, at least two distinct provider API credentials and the host's MCP connection. A validated model review is not a production certification.

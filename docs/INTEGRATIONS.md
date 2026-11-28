@@ -24,7 +24,7 @@ HIF provides one provider-neutral orchestration engine and a portable instructio
 | Claude Code | `.claude/skills` | Local stdio MCP or remote MCP | HIF runtime must be installed/configured; provider APIs still need authorized credentials |
 | Gemini web app | Skills feature where available | Supported remote MCP/tool integration if exposed to the account | Skill upload alone does not connect the local runtime |
 | Gemini CLI | Agent Skills | Local stdio MCP or supported remote MCP | CLI runs in its own local environment |
-| GitHub Copilot (supported agent hosts) | Agent Skills in supported harnesses | Local or remote MCP configured in the host | Availability varies by Copilot product, IDE and organization policy |
+| GitHub Copilot (VS Code, CLI and app where supported) | Agent Skills in `.github/skills/` or personal skill locations | Local or remote MCP configured in the host | Native locations and features vary by harness and organization policy |\n| VS Code Agent Skills | `.github/skills/`, `.claude/skills/`, `.agents/skills/`; extensions can contribute `chatSkills` | MCP or extension-provided tools | Extension packaging requires a separate VS Code extension manifest; not bundled in this repo |
 | Microsoft 365 Copilot | Copilot Studio agent instructions | Copilot Studio tool/MCP connection to remote HIF gateway | Requires tenant governance and configured Copilot Studio environment; not a simple consumer-app skill install |
 | Microsoft Copilot consumer app | No generic portable HIF skill installation is assumed | Only if Microsoft provides an enabled extension/agent path for that user | Do not conflate with GitHub Copilot or Microsoft 365 Copilot Studio |
 | OpenAI Codex | `.agents/skills` | Local stdio MCP or supported remote MCP | Separate host/runtime configuration |
@@ -33,7 +33,7 @@ HIF provides one provider-neutral orchestration engine and a portable instructio
 | Qwen Code | `.qwen/skills` and generic `.agents/skills` | Qwen Code MCP configuration | Native sub-agents/teams are Qwen harness features; HIF does not claim to control them unless connected |
 | NotebookLM | HIF NotebookLM companion workflow and user-provided HIF reference sources | No generic NotebookLM Agent Skill/MCP tool execution is assumed | NotebookLM is treated as a source-grounded research workspace, not as a general HIF host or agent runtime |
 
-A portable skill is an **instruction layer**. MCP is a **tool connection**. HIF local/remote runtime is the **execution layer**. They are separate and must be installed/configured separately.
+A portable skill is an **instruction layer**. A Plugin bundles Skills and optional MCP configuration under a portable manifest. MCP is a **tool connection**. HIF local/remote runtime is the **execution layer**. They are separate and must be installed/configured separately. The repository now includes `plugins/hif-universal/plugin.json` and `.agents/plugins/marketplace.json`; this makes the Skills package discoverable in supported plugin hosts, but does not deploy or authenticate the MCP runtime.
 
 ## 1. ChatGPT
 

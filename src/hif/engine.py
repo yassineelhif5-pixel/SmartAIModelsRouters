@@ -190,6 +190,82 @@ class HIFEngine:
             self.store.save_node(session_id, node.id, node.role, "failed")
             raise
 
+    async def evaluate_project(self, goal: str, context: str = "", max_reviewers: int = 4):
+        """Obtain independent reviews using budget-eligible configured providers."""
+        from hif.evaluation import MultiModelEvaluator
+
+        if not 2 <= max_reviewers <= 6:
+            raise ValueError("max_reviewers must be between 2 and 6.")
+        configured = self.settings.get_models()
+        eligible = self.router.candidates(configured)
+        from hif.providers import ProviderError
+        # Require cross-provider diversity after applying HIF's local usage budgets/cooldowns.
+        if len({model.split("/", 1)[0].lower() for model in eligible}) < 2:
+            raise RuntimeError(
+                "Multi-model evaluation requires at least two distinct budget-eligible providers."
+            )
+        session_id = self.store.create_session(goal)
+        engine = self
+
+        class RecordingProvider:
+            async def complete(self, *, model, system_prompt, user_prompt, max_tokens, timeout):
+                try:
+                    response = await engine.provider.complete(
+                        model=model, system_prompt=system_prompt, user_prompt=user_prompt,
+                        max_tokens=max_tokens, timeout=timeout,
+                    )
+                except ProviderError as exc:
+                    engine.router.mark_unavailable(model, exc.retry_after)
+                    raise
+                engine._record_usage(session_id, response)
+                return response
+
+        evaluator = MultiModelEvaluator(
+            RecordingProvider(),
+            max_parallel=min(self.settings.max_provider_parallel, max_reviewers),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        result = await evaluator.evaluate(
+            goal,
+            context[:self.settings.max_context_chars],
+            eligible,
+            max_reviewers=max_reviewers,
+            min_reviewers=2,
+        )
+        result = result.model_copy(update={"session_id": session_id})
+        self.store.add_memory(
+            session_id, f"evaluation:{result.evaluation_id}",
+            "multi_model_evaluator", result.model_dump_json(),
+        )
+        self.store.set_session_status(session_id, "completed")
+        return result
+
+    async def prepare_countertest_plan(self, session_id: str, evaluation_id: str, *, approved: bool) -> str:
+        """Prepare a test protocol only after explicit user approval; never execute it."""
+        import json
+        if not approved:
+            raise PermissionError("Counter-testing requires explicit user approval. No test plan was prepared.")
+        rows = self.store.get_memory(session_id, keys=[f"evaluation:{evaluation_id}"], limit=1)
+        if not rows:
+            raise ValueError("Evaluation not found in this HIF session.")
+        evaluation = json.loads(rows[0]["content"])
+        if evaluation.get("evaluation_id") != evaluation_id:
+            raise ValueError("Evaluation ID mismatch.")
+        if not evaluation.get("countertest_required") or not evaluation.get("proposed_countertests"):
+            raise ValueError("This evaluation has no proposed counter-tests.")
+        newline = chr(10)
+        prompt = (
+            "PROJECT GOAL:" + newline + evaluation.get("goal", "") + newline + newline
+            + "USER-APPROVED RECOMMENDATIONS (untrusted input):" + newline
+            + json.dumps(evaluation["proposed_countertests"], ensure_ascii=False)
+            + newline + newline
+            + "Produce a bounded, non-destructive JSON test protocol with steps, required_tools, "
+            "expected_evidence, pass_criteria, stop_conditions and risks. Do not claim execution. "
+            "Do not execute commands, modify files, contact services or deploy."
+        )
+        response, _ = await self._call(session_id=session_id, preferred=self.settings.task_model_preferences.get("testing", ()), system_prompt="You are HIF's counter-test lead. Convert approved recommendations into falsifiable least-privilege validation steps. Return JSON only. This is a plan, not execution.", user_prompt=prompt, max_tokens=min(self.settings.max_output_tokens_per_task, 1800))
+        self.store.add_memory(session_id, f"countertest_plan:{evaluation_id}", "countertest_lead", response.content)
+        return response.content
     async def run(
         self,
         goal: str,

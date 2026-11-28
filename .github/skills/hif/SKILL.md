@@ -265,3 +265,31 @@ If a gate fails, correct the result or label it partial/blocked rather than vali
 
 ### Mode-specific application
 Route each request to the smallest useful combination of domain packs. Keep one root owner for scope, evidence quality, approvals and final acceptance.
+
+
+## Multi-model project validation — first-class HIF stage
+
+For a new idea, product, architecture, migration or project, decide whether independent feasibility validation is important. For consequential or uncertain proposals, use the dedicated project-evaluation module at `modules/project-evaluation.md` before implementation.
+
+- In connected-runtime mode, call `hif_evaluate_project` only when at least two distinct provider families are configured and permitted.
+- Default to 2–4 independent reviewers, not every available model. Use the same concise brief and ask for independent evidence-based reviews.
+- Return a decision of `validated`, `conditional`, `rejected` or `inconclusive`, with each model's actual verdict, provider, score, confidence, blockers, risks and disagreements.
+- A `validated` result means reviewer support for feasibility; it does not mean the project is implemented, secure, compliant or production-ready.
+- If providers fail or there are fewer than two distinct providers, mark the result `inconclusive`. Never manufacture consensus.
+
+When a result is negative or conditional, load `modules/approval-gated-countertest.md`. Propose falsifiable, reversible tests and ask the user for explicit approval. Only after approval call `hif_countertest_plan` with `approved=true`. This tool prepares a protocol; it does not execute tests. The host may execute the approved steps only through available, authorized tools. Obtain separate approval for destructive, external, costly or production actions.
+
+## Adaptive runtime and fragile hosts
+
+Before planning, select a per-run profile using `modules/adaptive-execution-profiles.md`. Use browser/small mode for fragile browser sessions, low-RAM machines or intermittent connections: sequential calls, small context, compact outputs, checkpoints and graceful resume. Do not assume browser access to local files, shell, RAM telemetry, background processes or persistent sessions.
+
+Connected runtime profile values:
+- `HIF_EXECUTION_PROFILE=auto|browser|small|standard|server`
+- Explicit `HIF_*` settings override the selected profile.
+- In Skill-only mode, adapt behavior to the host's exposed capabilities without claiming that local runtime settings were changed.
+
+## Modular Skill and Plugin architecture
+
+The root `hif` Skill is the entry point and orchestrator. Load only the relevant supporting modules from `modules/` and specialist Skills; do not paste every module into every request. Keep domain skills independently invocable, while HIF owns routing, acceptance, cross-agent synthesis and final delivery.
+
+The project supports three separate integration layers: portable Agent Skill, MCP execution server, and host Plugin/App package. Installing one layer does not silently install or authenticate the others. Follow `modules/host-and-plugin-compatibility.md` and report host-specific limitations.

@@ -56,6 +56,23 @@ def create_mcp_server(
         return result.model_dump_json(indent=2)
 
     @server.tool()
+    @server.tool()
+    async def hif_evaluate_project(goal: str, context: str = "", max_reviewers: int = 4) -> str:
+        """Evaluate an idea with independent models from at least two providers.
+        Returns evidence, disagreements and a decision. Counter-tests are proposals only.
+        """
+        result = await _engine().evaluate_project(goal, context, max_reviewers)
+        return result.model_dump_json(indent=2)
+
+    @server.tool()
+    async def hif_countertest_plan(session_id: str, evaluation_id: str, approved: bool = False) -> str:
+        """Prepare a non-destructive counter-test protocol after explicit user approval.
+        This tool creates a plan only. It does not execute commands, edit files or deploy.
+        """
+        return await _engine().prepare_countertest_plan(
+            session_id, evaluation_id, approved=approved
+        )
+
     def hif_session_status(session_id: str) -> str:
         """Return persisted HIF node statuses for a session."""
         return json.dumps(_engine().status(session_id), ensure_ascii=False, indent=2)
