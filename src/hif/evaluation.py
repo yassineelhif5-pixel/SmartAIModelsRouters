@@ -33,6 +33,10 @@ class ProjectReview(BaseModel):
     blockers: list[str] = Field(default_factory=list)
     recommendations_to_test: list[str] = Field(default_factory=list)
     validation_tests: list[str] = Field(default_factory=list)
+    input_tokens: int = 0
+    output_tokens: int = 0
+    duration_ms: int = 0
+    cost_usd: float | None = None
     error: str | None = None
 
 
