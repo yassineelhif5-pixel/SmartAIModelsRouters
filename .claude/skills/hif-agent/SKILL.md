@@ -116,4 +116,4 @@ For publication campaigns, separate research, drafting, editorial review, compli
 
 For report production, assign the report designer only when the output needs a polished artifact. Charts and quantitative conclusions must use verified data, not illustrative numbers presented as real.
 
-See [HIF Universal Orchestrator](../docs/HIF-UNIVERSAL-ORCHESTRATOR.md).
+See `docs/HIF-UNIVERSAL-ORCHESTRATOR.md`.
