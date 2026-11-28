@@ -217,3 +217,128 @@ Checklist states come from persisted task and acceptance records, not hand-writt
 6. Add benchmarks, budget exhaustion tests, concurrency tests and reconnect/replay tests.
 
 The first usable version should favor a small truthful UI and strict accounting over elaborate animations or an oversized agent dashboard.
+
+
+## 11. Token efficiency engine — target: up to 70% fewer tokens
+
+### 11.1 Objective and honest measurement
+
+Token efficiency is a primary HIF product differentiator. HIF should target **up to 70% fewer billable input/output tokens** than a defined baseline for comparable tasks, while preserving or improving task quality and completion rate.
+
+This is an optimization target, not a universal guarantee. Results depend on provider tokenization, task type, context size, caching support, model behavior and the number of independent reasoning passes required. HIF must never claim a 70% saving unless benchmark evidence supports that claim for the relevant workload.
+
+Benchmark protocol:
+- Baseline: same task and source snapshot sent to a capable selected model with full relevant context and no HIF context reuse.
+- HIF: same task, acceptance criteria and source material, using routing, retrieval, caching, compression and hierarchical orchestration.
+- Report input, output and total tokens separately; provider-reported cached tokens separately; latency, cost (only with trustworthy pricing), completion rate and quality checks.
+- Token reduction = (baseline total tokens - HIF total tokens) / baseline total tokens × 100.
+- Compare equivalent completed work only. A shorter incomplete answer is not a saving.
+- Publish workload, sample size, provider/model, date and variation. Do not generalize a small sample to every task.
+- Do not count provider cache discounts as tokens eliminated.
+
+### 11.2 Prompt Compiler
+
+Before every provider call, build the smallest sufficient context:
+1. stable system policy and role template;
+2. concise task objective and acceptance criteria;
+3. only relevant project facts and source excerpts;
+4. dependency summaries rather than full transcripts;
+5. explicit output schema and token ceiling.
+
+Remove repeated instructions, repeated chat history, irrelevant file content and redundant agent outputs. Preserve user constraints, safety rules, source provenance and uncertainty. Every agent receives a role-specific context package, not the entire project or conversation. Record included context references for traceability.
+
+### 11.3 Project Knowledge Index — read once, reuse many times
+
+On project intake, scan the tree and key manifests, fingerprint files with stable hashes, and create a compact project map of modules, entry points, dependencies, APIs, database schema, tests and configuration.
+
+Maintain:
+- compact project index: names, relationships, symbols, routes, tables, interfaces and source references;
+- detailed evidence store: targeted excerpts and bounded file/page chunks fetched only when needed.
+
+Store summaries with source hashes and dependency fingerprints. Reuse them across agents/runs only while those fingerprints remain valid. Invalidate affected summaries when source files or dependencies change. Never reuse stale summaries as current facts.
+
+### 11.4 Smart block reading
+
+Divide large projects and documents into bounded, independently readable chunks. Reader agents return concise structured records: source path and line/page range, purpose, key facts, interfaces, dependencies, risks, uncertainty and evidence references.
+
+A consolidator deduplicates overlapping findings and produces a shared project summary. Other agents request relevant chunks by reference. Do not send the same large file to five agents. Parallelize reading only when chunks are independent and the consolidated result is cheaper than repeated full-context calls. Exclude secrets and sensitive files unless explicitly authorized and protected.
+
+### 11.5 Hierarchical context sharing
+
+Root creates a compact mission brief and project index. Child orchestrators receive only their domain slice. Agents receive only their task contract and evidence. Agents return compact structured results and artifact references. Parents share only relevant fields with dependent agents.
+
+Examples:
+- share API contracts with frontend/backend integration agents;
+- share schema summaries with database-dependent developers;
+- share test failures only with the responsible implementation agent and reviewer;
+- send validated child summaries and essential evidence to root synthesis.
+
+Keep large artifacts in storage; prompts carry references and relevant excerpts, not repeated artifact bodies.
+
+### 11.6 Model routing
+
+Select the least expensive and fastest eligible model that meets quality, capability, privacy and context requirements. Use small capable models or deterministic code for simple extraction, classification, formatting and summarization where reliable. Reserve stronger models for difficult reasoning, ambiguous requirements and independent verification.
+
+Use observed quality and failure rates, not brand assumptions. If a small model fails validation, escalate using a compact failure summary rather than replaying the full conversation. Do not call multiple models when one response plus deterministic validation is sufficient.
+
+### 11.7 Output budgets and progressive synthesis
+
+Every agent has a role-specific output schema and maximum output budget. Request concise findings, evidence references, risks and next actions rather than long essays. Use structured output for machine handoffs and a readable summary only at the user boundary.
+
+Agents return compact findings; child orchestrators deduplicate and resolve local contradictions; root receives child summaries and essential evidence. Preserve full artifacts outside prompts. Do not repeatedly ask models to restate validated information.
+
+### 11.8 Cache and deterministic preprocessing
+
+Cache eligible results with keys including normalized task/instruction version, relevant source hashes, model/provider and generation settings, output schema and validation policy, plus privacy/tenant scope.
+
+Cache only safe reusable work. Do not reuse time-sensitive answers, confidential outputs across scopes, or side-effecting actions as if re-executed. Revalidate cached artifacts and invalidate on source/prompt/schema changes.
+
+Use deterministic code for file inventory, hashing, CSV parsing, simple transformations, schema extraction and duplicate detection. Do not spend LLM tokens on operations that deterministic tooling performs accurately.
+
+### 11.9 Adaptive stopping and delegation
+
+Before creating a child or reviewer, estimate marginal value: what new information or independent validation will it add, is it already available, and does the expected benefit justify tokens, latency and cost?
+
+Do not duplicate an agent's assignment or evidence. Stop optional branches when acceptance criteria are satisfied and more analysis is unlikely to change the result. Keep mandatory safety/security review. Reduce optional fan-out before cutting essential validation.
+
+### 11.10 Live token-efficiency panel
+
+In addition to the budget meter, show HIF tokens used, comparable baseline tokens (if available), tokens saved and reduction percentage, input/output split, reused summaries, cache hits and avoided duplicate reads/calls.
+
+Illustrative only:
+
+    HIF token efficiency
+    Comparable baseline: 100,000 tokens (estimated)
+    HIF consumption:       30,000 tokens (actual)
+    Potential reduction:       70% (provisional)
+    Reused summaries: 14 · Cache hits: 8 · Duplicate reads avoided: 6
+
+Show a saving percentage only when a comparable baseline exists. Otherwise show "savings not yet measured". Label measured versus estimated baselines. A provider cache discount is a billing feature, not tokens eliminated.
+
+### 11.11 Benchmark suite and release gate
+
+Benchmark representative workloads: repository onboarding, multi-file code changes, SQL analysis, architecture review, long document analysis, multi-step research and test-failure diagnosis.
+
+Run baseline and HIF multiple times on identical inputs and acceptance criteria. Record total/input/output tokens, cached tokens, cache hit rate, provider calls, duplicated context, latency, retries, completion rate and quality/test outcomes.
+
+HIF 1.0 release gates:
+- demonstrate meaningful median token reduction on the benchmark suite;
+- pursue up to 70% reduction on workloads with substantial repeated context;
+- no regression in mandatory acceptance checks or security controls;
+- no hidden reduction in task scope or deliverable completeness;
+- accurate budget accounting under concurrency;
+- publish per-workload results, including cases where HIF saves little or uses more tokens.
+
+### 11.12 Implementation order
+
+1. Per-call token telemetry and baseline benchmark harness.
+2. Prompt compiler and strict role-specific input/output budgets.
+3. Project fingerprint, source hashes and reusable summaries.
+4. Bounded block reader and context-reference retrieval.
+5. Hierarchical context routing and deduplicated synthesis.
+6. Deterministic preprocessing and cache.
+7. Capability/quality-aware model routing.
+8. Marginal-value-based delegation and adaptive stopping.
+9. Live token savings panel.
+
+Do not optimize by indiscriminately cutting context, shrinking every output or skipping verification. Remove repeated and irrelevant tokens while retaining the evidence needed for a correct result.
