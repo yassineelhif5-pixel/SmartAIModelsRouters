@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import timedelta
 
 import pytest
 
@@ -8,7 +9,7 @@ from hif.config import Settings
 from hif.engine import HIFEngine
 from hif.evaluation import MultiModelEvaluator, select_diverse_models
 from hif.providers import ModelResponse
-from hif.storage import HIFStore
+from hif.storage import HIFStore, utc_now
 
 
 class ReviewProvider:
@@ -91,6 +92,8 @@ async def test_countertest_requires_approval_and_only_prepares_plan(tmp_path):
     engine = HIFEngine(settings=settings, provider=ReviewProvider(), store=HIFStore(database))
     result = await engine.evaluate_project("Build a project", "Local sandbox", max_reviewers=2)
     assert result.session_id
+    assert engine.store.model_usage_since("alpha/model-a", utc_now() - timedelta(days=1)) > 0
+    assert engine.store.model_usage_since("beta/model-b", utc_now() - timedelta(days=1)) > 0
     with pytest.raises(PermissionError, match="explicit user approval"):
         await engine.prepare_countertest_plan(
             result.session_id, result.evaluation_id, approved=False
