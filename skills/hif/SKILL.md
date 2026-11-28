@@ -108,3 +108,20 @@ Recognize `/hifTransform` and `/hifMigrate` as transformation intents (host slas
 7. obtain user approval before making code, data, infrastructure or production changes.
 
 Do not claim multi-channel access or parallel execution unless the host/runtime actually provides it. Root AI Tech Lead retains final coherence and acceptance responsibility.
+
+
+## Local HIF, pipelines and controlled evolution
+
+If connected to the HIF local runtime:
+- classify complexity (simple/complicated/too_complicated) separately from urgency (critical/high/normal/low);
+- create a dependency-aware pipeline with explicit priority, budgets, deadlines and acceptance criteria;
+- schedule ready work within bounded CPU/RAM, provider, concurrency and token limits;
+- use in-memory state only for active scheduling; rely on durable HIF checkpoints for recovery;
+- provide fast triage first, then deeper specialist analysis asynchronously when useful;
+- preserve a final synthesis/verification budget and prevent priority starvation.
+
+If only this Skill is installed, provide the same planning logic using the current host's capabilities, but do not claim persistent background pipelines, local resource telemetry, live channel monitoring, dynamic updates or cross-provider orchestration. Those require the HIF runtime and authorized connections.
+
+For local updates, accept only verified releases from the trusted ZirconAI.fr signing channel. Never bypass signature/hash checks, silently change trust roots or rewrite the running runtime in place. Stage updates, test, switch at a safe restart boundary and preserve rollback. Host assistants may need a new session to reload updated skill instructions.
+
+HIF may identify and prepare self-improvement proposals, tests and release candidates. It must not publish or install its own changes, change security policy, alter signing keys or update production without the configured maintainer approval policy.
