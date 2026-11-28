@@ -123,3 +123,19 @@ def test_shell_installer_copies_all_skills_and_backups_existing_install(tmp_path
     second = subprocess.run(command, env=env, capture_output=True, text=True, timeout=20)
     assert second.returncode == 0, second.stderr
     assert len(list(destination.glob("hif.backup.*"))) == 2
+
+
+def test_every_skill_implements_the_portable_delivery_contract() -> None:
+    required = (
+        "HIF portable delivery contract",
+        "Fast-first interaction",
+        "Capability and execution truth",
+        "Standard report format",
+        "Final quality gate",
+    )
+    for skill_dir in _skill_dirs():
+        content = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        for phrase in required:
+            assert phrase in content, f"{skill_dir.name} missing {phrase}"
+        assert "Proposed workflow" in content
+        assert "Markdown is the portable default" in content
