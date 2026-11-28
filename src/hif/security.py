@@ -194,6 +194,10 @@ def scan_project(root: str | Path, *, timeout_seconds: float = DEFAULT_TIMEOUT_S
                     if not match:
                         continue
                     evidence = line.strip()[:180]
+                    # Never echo private-key material, even when a PEM marker and
+                    # payload are embedded on one minified source line.
+                    if rule_id == "SEC001":
+                        evidence = "[private-key marker detected; line contents redacted]"
                     # Redact probable credential literals in evidence.
                     evidence = re.sub(
                         r"""(?i)((?:api[_-]?key|client[_-]?secret|access[_-]?token|password)\s*[:=]\s*)['"][^'"]+['"]""",
