@@ -58,3 +58,33 @@ def test_adaptive_concurrency_never_returns_zero() -> None:
 
 def test_recommended_parallelism_is_bounded() -> None:
     assert 1 <= recommended_parallelism() <= 8
+
+
+def test_resource_monitor_uses_non_blocking_cpu_sampling(monkeypatch) -> None:
+    import psutil
+    from hif.resources import ResourceMonitor
+
+    calls = []
+    monkeypatch.setattr(psutil, "cpu_percent", lambda interval=None: calls.append(interval) or 23.0)
+    monitor = ResourceMonitor()
+
+    first = monitor.snapshot()
+    second = monitor.snapshot()
+
+    assert calls == [None, None]
+    assert first.cpu_percent is None
+    assert second.cpu_percent == 23.0
+
+
+def test_local_io_pool_uses_bounded_worker_thread() -> None:
+    import asyncio
+    import threading
+    from hif.resources import LocalExecutionPool
+
+    pool = LocalExecutionPool(max_threads=1, max_processes=1)
+    try:
+        result = asyncio.run(pool.run_io(lambda: threading.current_thread().name))
+    finally:
+        pool.close()
+
+    assert result.startswith("hif-io")
