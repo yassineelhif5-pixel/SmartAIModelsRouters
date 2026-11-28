@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-HOSTS="claude,codex,gemini,copilot"
+HOSTS="claude,codex,gemini,copilot,cursor,kimi,qwen"
 while (($#)); do
   case "$1" in
     --hosts) [[ $# -ge 2 ]] || { echo "Missing --hosts value" >&2; exit 2; }; HOSTS="$2"; shift 2 ;;
-    -h|--help) echo "Usage: bash scripts/install-hif-skills.sh [--hosts claude,codex,gemini,copilot]"; exit 0 ;;
+    -h|--help) echo "Usage: bash scripts/install-hif-skills.sh [--hosts claude,codex,gemini,copilot,cursor,kimi,qwen]"; exit 0 ;;
     *) echo "Unknown argument: $1" >&2; exit 2 ;;
   esac
 done
@@ -21,6 +21,9 @@ for raw_host in "${HOST_LIST[@]}"; do
     codex) DEST_ROOT="$HOME/.agents/skills" ;;
     gemini) DEST_ROOT="$HOME/.gemini/skills" ;;
     copilot) DEST_ROOT="$REPO_ROOT/.github/skills" ;;
+    cursor) DEST_ROOT="$HOME/.cursor/skills" ;;
+    kimi) DEST_ROOT="$HOME/.kimi-code/skills" ;;
+    qwen) DEST_ROOT="$HOME/.qwen/skills" ;;
     *) echo "Unsupported host: $host" >&2; exit 2 ;;
   esac
   mkdir -p "$DEST_ROOT"
@@ -44,4 +47,5 @@ echo
 echo "HIF skills installed for: $HOSTS"
 echo "Start a new assistant session to load them."
 echo "GitHub Copilot skills were installed in the repository-level .github/skills directory."
+echo "Cursor, Kimi Code and Qwen Code use their native skill directories; Codex and other compatible hosts can use ~/.agents/skills."
 echo "NOTE: Skills are instructions only; runtime/MCP and provider API permissions are separate."
