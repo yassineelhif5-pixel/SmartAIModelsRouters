@@ -158,3 +158,9 @@ The Root Orchestrator must analyze architecture before delegating relevant techn
 - **Infrastructure Architect:** reviews compute, hosting, cloud/on-prem topology, network/DNS, identity, secrets, storage, capacity, availability, observability, backup/restore, disaster recovery, scaling and infrastructure cost.
 
 The advisors provide evidence-based recommendations and trade-offs. They do not silently change the architecture baseline. Root resolves disagreements, records decisions and ensures implementation tasks follow the approved design. For simple work, combine roles rather than spawning separate agents.
+
+## 6. Lightweight host protection and security review
+
+HIF must adapt to the host machine. Connected runtime uses CPU/RAM-aware bounded concurrency, async provider I/O, a lazy bounded local I/O thread pool and a small CPU process pool only for explicitly submitted picklable helpers. Do not spawn unbounded agents, threads, processes or model calls. Never change OS priority/CPU affinity or run a persistent background monitor for a Skill-only install.
+
+For repository work, use the local read-only pre-audit when HIF runtime is connected: `hif security scan .` or `hif security scan . --json`. It never executes project code and does not read .env contents. For AI-generated applications, follow the security review pipeline: architecture/threat model, deterministic scan, dependency checks, application-security review, regression tests and a prioritized remediation plan. See `docs/SECURITY-VIBE-CODING.md`. Do not claim the heuristic scan is a full SAST, DAST or security certification.
