@@ -1,4 +1,8 @@
-# SmartAIModelsRouters
+# HIF — Hybrid Intelligent Flow
+
+**A ZirconAI.fr product** · [zirconai.fr](https://zirconai.fr)
+
+Repository: SmartAIModelsRouters
 
 **HIF — Hybrid Intelligent Flow** is a multi-provider AI task orchestrator. It is designed to make Claude, ChatGPT, Gemini and Microsoft/GitHub Copilot delegate work to the right models, parallelize independent tasks, reuse shared task memory and reduce unnecessary context/token usage.
 
@@ -8,6 +12,34 @@ HIF is built around two workflows:
 - **/hifnode** — split a complex goal into specialist nodes (architect, researcher, implementer, tester, reviewer, writer), run independent nodes concurrently and share one HIF session ID and approved memory.
 
 > **Project status:** HIF 0.3.0 adds an authenticated REST + Streamable HTTP MCP gateway for a single-tenant private pilot, including an external OIDC/JWT resource-server verifier for OAuth 2.1 clients. The local text-only engine, DAG nodes, shared SQLite session memory, measured-token fallback budgets, retry handling and CPU/RAM-aware bounded concurrency remain available. multi-tenant identity isolation, fine-grained tool scopes, file-editing agents, Windows Service/systemd packaging and full end-to-end host integrations remain future work.
+
+
+## ZirconAI.fr — HIF skills
+
+HIF is published by **ZirconAI.fr**. Install the portable skills in a supported assistant to add specialized workflows on top of that assistant's own subscription and native tools.
+
+| Skill | Workflow |
+|---|---|
+| `hif` | Auto classification and task routing |
+| `hif-dev` | AI Tech Lead, software engineering, repository analysis, implementation and QA |
+| `hif-bd` | DBA, SQL, data modeling, optimization and migrations |
+| `hif-arc` | Solution, software, cloud and security architecture |
+| `hif-strong` | High-assurance analysis, independent verification and risk controls |
+| `hif-agent` | Specialist agent design, delegation and lifecycle |
+| `hifnode` | Parallel specialist DAG workflow when connected HIF tools are available |
+
+In supported coding-agent hosts, skills are usually invoked by their skill names (for example `/hif-dev` or `/hif-strong`). Other products expose skills through a picker or natural-language activation rather than slash commands. The aliases `/hifDev`, `/hifBD`, `/hifArc`, `/hifStrong` and `/hifAgent` describe the same mode intent; exact command syntax depends on the host.
+
+### Two ways to use HIF
+
+1. **Native subscription mode:** install the skill and use the assistant's currently selected model and native tools. No HIF API key is required for this workflow. The host controls its own subscription, model selection, quota and billing.
+2. **Connected HIF mode:** connect the HIF MCP runtime to use HIF-managed sessions, provider adapters, orchestration, shared memory and telemetry. Independent provider API access may require separate credentials and billing.
+
+Installing a skill does not install the HIF runtime or create independent access to other providers' consumer subscriptions. HIF never bypasses provider authentication, quotas or terms.
+
+### Install all HIF skills
+
+The installer and ZIP packager discover every directory under `skills/` containing a `SKILL.md`, so newly added mode skills are included automatically.
 
 ## Implemented in HIF 0.3.0
 
