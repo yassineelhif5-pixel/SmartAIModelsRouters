@@ -203,7 +203,7 @@ All HIF Skills use the common staged pipeline. See [Pipeline Engine and Multi-Mo
 The root orchestrator is also the architecture owner. It may assign an Assistant Architect for independent design critique and an Infrastructure Architect for deployment, network, identity, capacity, resilience, observability, backup/recovery and cost recommendations. See docs/HIF-1.0-MODES-SPEC.md section 26 for the normative contract.
 
 
-## 13. Lightweight runtime and application security
+## 16. Lightweight runtime and application security
 
 The runtime adapts concurrency to available CPU and RAM, uses non-blocking telemetry, async provider I/O and lazy bounded local worker pools. Skills-only mode does not start local workers or background services.
 
