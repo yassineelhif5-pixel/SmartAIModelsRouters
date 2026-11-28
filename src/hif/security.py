@@ -54,6 +54,18 @@ _RULES: tuple[tuple[str, str, str, re.Pattern[str], str], ...] = (
     ("SEC010", "medium", "Wildcard CORS origin",
      re.compile(r"""(?i)(?:allow_origins\s*=\s*\[\s*['"]\*['"]|Access-Control-Allow-Origin['"]?\s*[:,=]\s*['"]\*['"])"""),
      "Restrict CORS to explicit trusted origins; do not combine wildcard origins with credentials."),
+    ("SEC012", "high", "Potential SQL query built with string interpolation",
+     re.compile(r"""(?i)\b(?:execute|executemany)\s*\(\s*(?:f['"]|['"][^'"]*(?:%s|\.format\s*\())"""),
+     "Use parameterized SQL statements and bind values separately; add injection regression tests."),
+    ("SEC013", "high", "JWT signature verification may be disabled",
+     re.compile(r"""(?i)jwt\.decode\s*\([^\n]*(?:verify_signature['"]?\s*:\s*False|verify\s*=\s*False)"""),
+     "Require signature verification, an explicit algorithm allowlist, issuer and audience validation."),
+    ("SEC014", "medium", "Cookie security attribute explicitly disabled",
+     re.compile(r"""(?i)(?:httponly|secure)\s*=\s*False"""),
+     "Enable HttpOnly and Secure where applicable; choose an intentional SameSite policy."),
+    ("SEC015", "high", "Potential unsafe HTML injection sink",
+     re.compile(r"""(?i)(?:dangerouslySetInnerHTML|\.innerHTML\s*=)"""),
+     "Avoid injecting untrusted HTML; encode output or sanitize with a maintained allowlist sanitizer."),
 )
 
 @dataclass(frozen=True)
@@ -64,6 +76,7 @@ class SecurityFinding:
     path: str
     line: int
     evidence: str
+    owner_role: str
     recommendation: str
 
 @dataclass(frozen=True)
@@ -96,15 +109,20 @@ class SecurityReport:
 
 def _action_plan(findings: tuple[SecurityFinding, ...]) -> list[dict[str, str]]:
     order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+    priority_codes = {"critical": "P0", "high": "P1", "medium": "P2", "low": "P3"}
     plan = []
-    seen: set[str] = set()
+    seen: set[tuple[str, str, int]] = set()
     for item in sorted(findings, key=lambda x: (order.get(x.severity, 9), x.path, x.line)):
-        if item.rule_id in seen:
+        key = (item.rule_id, item.path, item.line)
+        if key in seen:
             continue
-        seen.add(item.rule_id)
+        seen.add(key)
         plan.append({
-            "priority": item.severity,
+            "priority": priority_codes.get(item.severity, "P3"),
+            "severity": item.severity,
             "step": f"{item.rule_id}: {item.title}",
+            "location": f"{item.path}:{item.line}",
+            "owner_role": item.owner_role,
             "action": item.recommendation,
             "verification": "Re-run the scan and add a regression/security test for the corrected behavior.",
         })
@@ -116,6 +134,14 @@ def _action_plan(findings: tuple[SecurityFinding, ...]) -> list[dict[str, str]]:
             "verification": "Run the project's dependency scanner, tests and deployment security checks.",
         })
     return plan
+
+def _owner_for_rule(rule_id: str) -> str:
+    if rule_id in {"SEC001", "SEC002", "SEC007", "SEC011"}:
+        return "devops_engineer"
+    if rule_id in {"SEC009", "SEC010", "SEC014"}:
+        return "platform_engineer"
+    return "backend_developer"
+
 
 def scan_project(root: str | Path, *, timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
                  max_files: int = MAX_FILES) -> SecurityReport:
@@ -132,6 +158,7 @@ def scan_project(root: str | Path, *, timeout_seconds: float = DEFAULT_TIMEOUT_S
             findings.append(SecurityFinding(
                 "SEC011", "high", "Local secret file exists in project root",
                 secret_name, 0, "File presence only; contents were not read.",
+                "devops_engineer",
                 "Ensure this file is gitignored, restrict filesystem permissions, and rotate any secret previously committed.",
             ))
 
@@ -169,7 +196,7 @@ def scan_project(root: str | Path, *, timeout_seconds: float = DEFAULT_TIMEOUT_S
                 )
                 findings.append(SecurityFinding(
                     rule_id, severity, title, relative.as_posix(), line_number,
-                    evidence, recommendation,
+                    evidence, _owner_for_rule(rule_id), recommendation,
                 ))
     return SecurityReport(
         root=str(base), scanned_files=scanned, skipped_files=skipped,
