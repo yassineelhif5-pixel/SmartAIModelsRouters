@@ -490,3 +490,136 @@ The same /hif, /hifDev, /hifBD, /hifArc, /hifStrong, /hifAgent and /hifnode inte
 - Host adapters expose their actual available delegation and usage capabilities.
 - NotebookLM workflow is documented as a manual source-grounded handoff until an official integration exists.
 - Cross-host session memory contains only information explicitly stored in HIF and approved by the user.
+
+
+## 21. AI Tech Lead and cross-agent engineering consistency
+
+HIF is accountable for the coherence of the complete software project. Delegating implementation does not delegate away architectural responsibility: the root AI Tech Lead owns the architecture baseline, contracts, integration sequence and final quality gates.
+
+### 21.1 Project constitution and source of truth
+
+Before parallel development, HIF creates or refreshes a versioned Project Constitution containing:
+- repository structure and module boundaries;
+- chosen languages, frameworks, runtime versions and dependency policy;
+- architectural decisions and approved patterns;
+- naming, formatting, error-handling, logging and observability conventions;
+- API contracts, event schemas and database ownership;
+- security, privacy, authentication and authorization requirements;
+- testing strategy, quality gates and definition of done.
+
+The constitution is stored as a project artifact (and optionally as repository documentation) with a revision/hash. Agents must reference the same approved revision. Changes require an explicit proposal and approval by the root Tech Lead; agents cannot silently redefine project-wide standards.
+
+### 21.2 Project Structure and Dependency Graph
+
+HIF builds a structural map before assigning development:
+- directories, packages, services and module responsibilities;
+- imports/references and build dependencies;
+- API routes, DTOs, events and integration boundaries;
+- database tables, migrations, entities and repositories;
+- frontend routes, components, state and service clients;
+- tests, deployment manifests, environment/configuration and CI workflows.
+
+Represent module dependencies as a directed graph. Detect cycles, duplicated responsibilities, forbidden dependencies and layer violations. Define allowed dependency direction (for example UI -> application/API contracts -> domain; domain must not depend on infrastructure) according to the project's chosen architecture, not a universal hard-coded pattern.
+
+### 21.3 Developer task contracts and ownership
+
+Every developer agent receives a task contract:
+- unique task and owner;
+- exact module/file scope and explicit non-goals;
+- approved constitution revision;
+- interfaces/contracts to consume and produce;
+- upstream dependencies and downstream consumers;
+- expected files/artifacts and output schema;
+- acceptance tests, budget and deadline;
+- branch/worktree or workspace isolation instructions.
+
+Maintain a file/module ownership registry. Avoid concurrent writes to the same files. If two tasks need a shared file, appoint one owner or create a separate integration task. Shared contract changes must be proposed to the Tech Lead before implementation.
+
+### 21.4 Contract-first parallel development
+
+Parallel agents must not invent incompatible interfaces independently.
+
+1. Tech Lead defines or approves API, DTO, event, database and module contracts.
+2. Backend, frontend, database and integration agents receive the same versioned contract references.
+3. Teams may work in parallel against approved contracts or mocks.
+4. Contract changes produce a new version and impact analysis.
+5. Downstream tasks are notified and revalidated before merge.
+6. Integration Manager checks compatibility across implementations.
+
+Contracts should be machine-checkable where possible (OpenAPI, JSON Schema, protobuf, SQL migration metadata, typed interfaces). Store contract version/hash with each task result.
+
+### 21.5 Cross-model normalization and consistency
+
+Agents may use different providers/models, but their outputs must follow common HIF task and artifact schemas. Normalize:
+- terminology and identifiers;
+- file paths and module names;
+- language/framework versions;
+- API and schema names;
+- assumptions, evidence, risks and uncertainty;
+- test reports and completion status.
+
+Model-specific suggestions are proposals, not project decisions. HIF compares them against the Project Constitution, source code and approved contracts. When models disagree, Tech Lead resolves the difference using evidence and project constraints; do not silently blend incompatible designs. Never assume model brand guarantees expertise.
+
+### 21.6 Integration Manager and merge gates
+
+Use an Integration Manager as a dedicated logical role under the root Tech Lead. It:
+- collects branch/worktree outputs and change manifests;
+- checks file ownership and overlapping edits;
+- verifies contract and dependency compatibility;
+- runs formatters, linters, type checks, builds and tests;
+- inspects migrations and generated artifacts;
+- checks secrets, dependency vulnerabilities and policy violations;
+- detects duplicated code, circular imports and architectural boundary violations;
+- resolves conflicts or returns a precise correction task to the responsible agent.
+
+Merge gates:
+- no unreviewed cross-module contract break;
+- no unresolved merge conflict;
+- all mandatory tests for affected modules pass;
+- no blocking security finding or leaked secret;
+- database migrations are ordered, reversible where feasible and validated;
+- architecture/constitution deviation is documented and approved;
+- change set remains within assigned scope.
+
+HIF must not claim consistency merely because every individual agent reports success. Integration validation is a separate required phase.
+
+### 21.7 Continuous architecture and code consistency checks
+
+At intake and after integration, evaluate:
+- project tree against approved target structure;
+- dependency graph and layer rules;
+- duplicate modules and competing implementations;
+- naming and type consistency;
+- API/DTO/database field compatibility;
+- dependency/version drift;
+- configuration and environment variable consistency;
+- test coverage and test ownership;
+- security, error handling, logging and observability conventions.
+
+Use deterministic tools first (AST/parser, compiler, type checker, linter, dependency scanner, schema diff, tests). Use LLM review for semantic issues that static tools cannot establish. Report actual tool output and distinguish not-run from passed.
+
+### 21.8 Change impact and regression routing
+
+When a contract, shared module or schema changes, compute downstream impact from the dependency graph. Reopen only affected tasks/tests, not the whole project. Route regression failures to the owning agent with:
+- failing command and exact output;
+- relevant diff and source references;
+- contract/constitution revision;
+- minimal reproduction and acceptance condition.
+
+The root keeps a single project-level status and does not mark a milestone complete until dependent integration gates pass.
+
+### 21.9 Human governance and protected actions
+
+The Tech Lead may plan, inspect, propose and validate within granted permissions. Explicit approval is required for protected branch merges, releases, deployments, production migrations, destructive operations, credential changes and externally visible actions. Preserve diffs, test evidence and rollback instructions.
+
+### 21.10 Acceptance criteria
+
+- HIF creates a project map and constitution before multi-agent coding.
+- Every implementation task has explicit ownership, scope, contracts and acceptance tests.
+- Agents consume the same approved contract versions.
+- Concurrent edits to shared files are prevented or serialized through an integration owner.
+- Different model outputs are normalized and checked against project source of truth.
+- Integration is a separate phase with deterministic build/test/security/contract checks.
+- Breaking contract changes trigger targeted downstream revalidation.
+- Final status distinguishes agent-completed work from integrated and validated project work.
+- A project is not reported as coherent or complete until required integration gates pass.
