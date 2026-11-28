@@ -28,7 +28,7 @@ def create_mcp_server(
 ) -> FastMCP:
     """Create an MCP server with optional OAuth resource-server authentication."""
     server = FastMCP(
-        "HIF Smart AI Models Router",
+        "HIF — Hybrid Intelligent Flow by ZirconAI.fr",
         auth=auth,
         token_verifier=token_verifier,
         host=host,

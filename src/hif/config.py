@@ -9,7 +9,101 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from hif.resources import recommended_parallelism
+
 load_dotenv(override=False)
+
+
+
+# Multi-provider starter catalog. Model IDs are refreshed against provider documentation;
+# only providers with configured credentials are activated automatically.
+DEFAULT_MODEL_POOL: tuple[str, ...] = (
+    "openai/gpt-6-luna",
+    "openai/gpt-6.1-sol",
+    "openai/gpt-6.2-astra",
+    "anthropic/claude-haiku-4-5-20251001",
+    "anthropic/claude-sonnet-5",
+    "anthropic/claude-opus-5",
+    "gemini/gemini-3.5-flash-lite",
+    "gemini/gemini-3.8-flash",
+    "gemini/gemini-3.1-pro-preview",
+    "deepseek/deepseek-flash",
+    "deepseek/deepseek-v4-pro",
+)
+
+DEFAULT_TASK_MODEL_PREFERENCES: dict[str, tuple[str, ...]] = {
+    "analysis": (
+        "openai/gpt-6-luna", "gemini/gemini-3.5-flash-lite",
+        "deepseek/deepseek-flash", "anthropic/claude-haiku-4-5-20251001",
+    ),
+    "research": (
+        "gemini/gemini-3.8-flash", "openai/gpt-6.1-sol",
+        "anthropic/claude-sonnet-5", "deepseek/deepseek-v4-pro",
+    ),
+    "coding": (
+        "openai/gpt-6.1-sol", "anthropic/claude-sonnet-5",
+        "deepseek/deepseek-v4-pro", "gemini/gemini-3.8-flash",
+    ),
+    "testing": (
+        "openai/gpt-6-luna", "deepseek/deepseek-flash",
+        "anthropic/claude-haiku-4-5-20251001",
+    ),
+    "review": (
+        "openai/gpt-6.2-astra", "anthropic/claude-opus-5",
+        "gemini/gemini-3.1-pro-preview", "deepseek/deepseek-v4-pro",
+    ),
+    "documentation": (
+        "openai/gpt-6-luna", "anthropic/claude-sonnet-5",
+        "gemini/gemini-3.8-flash",
+    ),
+    "architecture": (
+        "openai/gpt-6.2-astra", "anthropic/claude-opus-5",
+        "gemini/gemini-3.1-pro-preview",
+    ),
+    "infrastructure": (
+        "openai/gpt-6.1-sol", "anthropic/claude-sonnet-5",
+        "gemini/gemini-3.8-flash",
+    ),
+    "security": (
+        "openai/gpt-6.2-astra", "anthropic/claude-opus-5",
+        "deepseek/deepseek-v4-pro",
+    ),
+    "general": (
+        "openai/gpt-6-luna", "gemini/gemini-3.5-flash-lite",
+        "deepseek/deepseek-flash",
+    ),
+}
+
+_PROVIDER_CREDENTIALS: dict[str, tuple[str, ...]] = {
+    "openai": ("OPENAI_API_KEY",),
+    "anthropic": ("ANTHROPIC_API_KEY",),
+    "gemini": ("GEMINI_API_KEY", "GOOGLE_API_KEY"),
+    "deepseek": ("DEEPSEEK_API_KEY",),
+}
+
+
+def _default_models_for_configured_providers() -> tuple[str, ...]:
+    """Activate starter models only for providers with a configured API key."""
+    enabled = {
+        provider
+        for provider, env_names in _PROVIDER_CREDENTIALS.items()
+        if any(os.getenv(name, "").strip() for name in env_names)
+    }
+    return tuple(
+        model for model in DEFAULT_MODEL_POOL
+        if model.split("/", 1)[0] in enabled
+    )
+
+
+def _default_task_preferences(
+    active_models: tuple[str, ...],
+) -> dict[str, tuple[str, ...]]:
+    active = set(active_models)
+    return {
+        task_type: tuple(model for model in models if model in active)
+        for task_type, models in DEFAULT_TASK_MODEL_PREFERENCES.items()
+        if any(model in active for model in models)
+    }
 
 
 def default_database_path() -> Path:
@@ -71,6 +165,9 @@ class Settings:
     task_model_preferences: dict[str, tuple[str, ...]] = field(default_factory=dict)
     max_parallel_tasks: int = 4
     max_provider_parallel: int = 3
+    max_local_threads: int = 2
+    max_local_processes: int = 1
+    local_task_memory_mb: int = 512
     usage_fallback_threshold: float = 0.80
     usage_window_hours: int = 168
     default_model_token_budget: int = 250_000
@@ -103,8 +200,11 @@ class Settings:
     def from_env(cls) -> "Settings":
         try:
             threshold = float(os.getenv("HIF_USAGE_FALLBACK_THRESHOLD", "0.80"))
-            parallel = int(os.getenv("HIF_MAX_PARALLEL_TASKS", "4"))
+            parallel = int(os.getenv("HIF_MAX_PARALLEL_TASKS", str(recommended_parallelism())))
             provider_parallel = int(os.getenv("HIF_MAX_PROVIDER_PARALLEL", "3"))
+            local_threads = int(os.getenv("HIF_MAX_LOCAL_THREADS", "2"))
+            local_processes = int(os.getenv("HIF_MAX_LOCAL_PROCESSES", "1"))
+            local_task_memory = int(os.getenv("HIF_LOCAL_TASK_MEMORY_MB", "512"))
             window = int(os.getenv("HIF_USAGE_WINDOW_HOURS", "168"))
             default_budget = int(os.getenv("HIF_DEFAULT_MODEL_TOKEN_BUDGET", "250000"))
             max_output = int(os.getenv("HIF_MAX_OUTPUT_TOKENS_PER_TASK", "1800"))
@@ -122,6 +222,9 @@ class Settings:
         positive = {
             "HIF_MAX_PARALLEL_TASKS": parallel,
             "HIF_MAX_PROVIDER_PARALLEL": provider_parallel,
+            "HIF_MAX_LOCAL_THREADS": local_threads,
+            "HIF_MAX_LOCAL_PROCESSES": local_processes,
+            "HIF_LOCAL_TASK_MEMORY_MB": local_task_memory,
             "HIF_USAGE_WINDOW_HOURS": window,
             "HIF_DEFAULT_MODEL_TOKEN_BUDGET": default_budget,
             "HIF_MAX_OUTPUT_TOKENS_PER_TASK": max_output,
@@ -169,15 +272,29 @@ class Settings:
             else default_database_path()
         )
 
+        configured_pool = os.getenv("HIF_MODEL_POOL", "").strip()
+        model_pool = (
+            _parse_csv(configured_pool)
+            if configured_pool
+            else _default_models_for_configured_providers()
+        )
+        configured_preferences = os.getenv("HIF_TASK_MODEL_PREFERENCES", "").strip()
+        task_preferences = (
+            _parse_json_model_map(configured_preferences)
+            if configured_preferences
+            else _default_task_preferences(model_pool)
+        )
+
         return cls(
             database_path=database_path,
-            model_pool=_parse_csv(os.getenv("HIF_MODEL_POOL")),
+            model_pool=model_pool,
             planner_model=os.getenv("HIF_PLANNER_MODEL") or None,
-            task_model_preferences=_parse_json_model_map(
-                os.getenv("HIF_TASK_MODEL_PREFERENCES")
-            ),
+            task_model_preferences=task_preferences,
             max_parallel_tasks=parallel,
             max_provider_parallel=provider_parallel,
+            max_local_threads=local_threads,
+            max_local_processes=local_processes,
+            local_task_memory_mb=local_task_memory,
             usage_fallback_threshold=threshold,
             usage_window_hours=window,
             default_model_token_budget=default_budget,
@@ -219,8 +336,8 @@ class Settings:
     def get_models(self) -> tuple[str, ...]:
         if not self.model_pool:
             raise RuntimeError(
-                "No model configured. Set HIF_MODEL_POOL with LiteLLM model identifiers. "
-                "See .env.example."
+                "No active model configured. Add a provider API key (OpenAI, Anthropic, Gemini "
+                "or DeepSeek), or set HIF_MODEL_POOL explicitly. See .env.example."
             )
         return self.model_pool
 

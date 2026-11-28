@@ -1,10 +1,19 @@
 #!/usr/bin/env python3
-"""Build ZIP packages for uploading HIF skills to web assistant interfaces."""
+"""Build ZIP packages for every portable HIF skill."""
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
+
+
+def discover_skills(repo_root: Path) -> list[str]:
+    skills_root = repo_root / "skills"
+    return sorted(
+        item.name
+        for item in skills_root.iterdir()
+        if item.is_dir() and (item / "SKILL.md").is_file()
+    )
 
 
 def package_skill(repo_root: Path, skill_name: str, output_dir: Path) -> Path:
@@ -17,7 +26,6 @@ def package_skill(repo_root: Path, skill_name: str, output_dir: Path) -> Path:
     with ZipFile(archive_path, "w", compression=ZIP_DEFLATED) as archive:
         for item in sorted(source_dir.rglob("*")):
             if item.is_file():
-                # The ZIP root must be the skill folder itself: hif/SKILL.md.
                 archive.write(item, item.relative_to(source_dir.parent))
     return archive_path
 
@@ -30,9 +38,13 @@ def main() -> int:
 
     root = args.repo_root.resolve()
     output_dir = (args.output_dir or root / "dist").resolve()
-    for skill_name in ("hif", "hifnode"):
+    skill_names = discover_skills(root)
+    if not skill_names:
+        raise SystemExit(f"No skills found under {root / 'skills'}")
+
+    for skill_name in skill_names:
         print(f"Created: {package_skill(root, skill_name, output_dir)}")
-    print("See docs/INTEGRATIONS.md for upload instructions.")
+    print(f"Packaged {len(skill_names)} HIF skills. See docs/INTEGRATIONS.md.")
     return 0
 
 

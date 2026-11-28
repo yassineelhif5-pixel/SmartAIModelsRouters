@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 TaskType = Literal[
-    "analysis", "research", "coding", "testing", "review", "documentation", "general"
+    "analysis", "research", "coding", "testing", "review", "documentation", "architecture", "infrastructure", "security", "general"
 ]
 
 

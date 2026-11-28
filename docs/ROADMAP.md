@@ -23,6 +23,9 @@
 - [ ] Add a durable artifact index and file/content hash references.
 - [x] CPU/RAM telemetry through psutil on supported Windows/Linux/macOS hosts.
 - [x] Adaptive concurrency with global and per-provider request caps.
+- [x] Non-blocking CPU sampling and CPU/RAM-derived default concurrency (capped at eight).
+- [x] Lazy bounded local I/O thread pool and CPU helper process pool.
+- [x] Lightweight read-only application security pre-audit with JSON findings and remediation plan.
 - [x] Deterministic tests and CI that require no paid API credentials.
 
 ## Phase 2 — Provider integrations
@@ -90,3 +93,63 @@
 - [ ] Proxy deployment templates for Caddy, Nginx and IIS ARR.
 - [ ] Load, soak, security and failure-injection tests.
 - [ ] Production audit events with secret and context redaction.
+
+
+## Phase 1.1 — Host responsiveness and application security
+- [x] Avoid blocking the asyncio event loop during CPU telemetry sampling.
+- [x] Derive default task concurrency from available CPU/RAM; preserve explicit operator overrides.
+- [x] Bound local I/O threads and local CPU helper processes; instantiate pools lazily.
+- [x] Add a fast read-only scanner for common vibe-coding security mistakes.
+- [x] Add security CLI output with severity, evidence and prioritized remediation.
+- [ ] Add AST-aware and data-flow SAST for supported languages.
+- [ ] Add optional dependency vulnerability, secret-history, container and IaC scanners.
+- [ ] Add safe test-environment DAST/fuzzing integrations.
+- [ ] Add configurable CI release gates and documented risk acceptance.
+- [ ] Add Windows Job Object and Linux cgroup deployment examples with measured resource caps.
+
+
+## Universal Orchestration roadmap
+
+### Phase U1 — Domain-neutral core contracts
+- [ ] Define versioned run, orchestrator, task, event, handoff, artifact and report schemas.
+- [ ] Add domain classification and configurable domain packs beyond software engineering.
+- [ ] Implement fast-first triage and progressive milestone delivery without fabricated background progress.
+- [ ] Add priority/deadline scheduling separate from complexity classification.
+- [ ] Record truthful queue, execution, validation and retry telemetry; estimate P50/P90 only from sufficient comparable history.
+
+### Phase U2 — Research and information collection
+- [ ] Add authorized source/connectors abstraction and evidence ledger.
+- [ ] Track source provenance, publication/retrieval dates, freshness, claim links and conflicts.
+- [ ] Add source-grounded research synthesis and coverage/uncertainty reporting.
+- [ ] Add privacy-aware collection, retention and connector scope enforcement.
+
+### Phase U3 — Professional reporting and artifacts
+- [ ] Add report specification, audience profiles and reusable modern templates.
+- [ ] Add executive summary, methodology, evidence, recommendations, risks and source register sections.
+- [ ] Add chart/table generation from verified data with reproducible calculations.
+- [ ] Add DOCX/PDF/PPTX/XLSX artifact adapters and validation when supported.
+- [ ] Add preview, versioning, artifact references and export status.
+
+### Phase U4 — Campaign and publication orchestration
+- [ ] Add campaign objectives, audience/brand constraints and channel-specific content variants.
+- [ ] Add editorial calendar, draft/review/approval/schedule/publish state machine.
+- [ ] Add authorized CMS/social/email connectors with platform-compliant rate limits.
+- [ ] Require explicit approval for external publication and outbound communication by default.
+- [ ] Track confirmed publication IDs/status and real campaign metrics only when connectors return them.
+
+### Phase U5 — Visual orchestration and event API
+- [ ] Publish structured, append-only run/task/handoff/artifact events with stable correlation IDs.
+- [ ] Add graph projection for orchestrators, agents, tools, dependencies, handoffs and artifacts.
+- [ ] Add responsive dashboard: run timeline, graph, status filters, report preview, blockers and approvals.
+- [ ] Add text/table accessibility alternative and prevent secrets/chain-of-thought in visual event payloads.
+- [ ] Add graph/event consistency tests against actual execution traces.
+
+### Universal acceptance criteria
+- A non-software task can be classified and routed to an appropriate domain pack.
+- A useful first triage is returned before optional deep work when execution mode allows progressive delivery.
+- All displayed agent states, elapsed times, ETAs and provider usage are backed by actual host/runtime data or explicitly labelled estimates.
+- Research claims link to source evidence and disclose gaps/conflicts.
+- Publication cannot be marked complete without a confirmed authorized connector result.
+- Reports distinguish verified data from assumptions and never invent chart values.
+- The visual graph is a faithful projection of structured execution events, not a decorative simulation.
+- All external, paid, destructive or production actions respect explicit approval and permission scopes.

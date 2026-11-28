@@ -9,7 +9,7 @@ from typing import Any
 from hif.config import Settings
 from hif.planner import PLANNER_SYSTEM, SYNTHESIS_SYSTEM, TASK_SYSTEM, extract_json
 from hif.providers import LiteLLMProvider, ModelProvider, ProviderError
-from hif.resources import AdaptiveConcurrency
+from hif.resources import AdaptiveConcurrency, LocalExecutionPool
 from hif.router import ModelRouter
 from hif.schemas import HIFRunResult, NodeResult, PlannedNode
 from hif.storage import HIFStore
@@ -31,8 +31,30 @@ class HIFEngine:
             self.settings.cpu_pressure_threshold,
             self.settings.memory_pressure_threshold,
             self.settings.min_free_memory_mb,
+            self.settings.local_task_memory_mb,
+        )
+        self.local_workers = LocalExecutionPool(
+            self.settings.max_local_threads,
+            self.settings.max_local_processes,
         )
         self._provider_semaphores: dict[str, asyncio.Semaphore] = {}
+
+    async def run_local_io(self, function, *args):
+        """Execute blocking local I/O helpers without blocking the async event loop."""
+        return await self.local_workers.run_io(function, *args)
+
+    async def run_local_cpu(self, function, *args):
+        """Execute picklable CPU-heavy helpers in a bounded process pool."""
+        return await self.local_workers.run_cpu(function, *args)
+
+    async def security_scan(self, project_path: str):
+        """Run HIF's read-only local security pre-audit in a bounded I/O worker."""
+        from hif.security import scan_project
+        return await self.run_local_io(scan_project, project_path)
+
+    def close(self) -> None:
+        """Release lazy local worker pools without waiting on unrelated work."""
+        self.local_workers.close()
 
     def _semaphore_for(self, model: str) -> asyncio.Semaphore:
         from hif.providers import provider_name
@@ -223,20 +245,24 @@ class HIFEngine:
                 if not ready:
                     raise RuntimeError("No runnable nodes remain in the HIF task graph.")
 
-                if self.settings.resource_aware_scheduling:
-                    resource_limit, _snapshot = self.resources.effective_limit()
-                else:
-                    resource_limit = self.settings.max_parallel_tasks
-                batch_limit = min(
-                    resource_limit,
-                    self.settings.max_parallel_tasks,
-                    len(ready),
-                )
-                if not parallel:
-                    batch_limit = 1
+                remaining_ready = list(ready)
+                while remaining_ready:
+                    # Re-sample after every completed batch so rising host pressure
+                    # reduces the next batch instead of waiting for a new DAG wave.
+                    if self.settings.resource_aware_scheduling:
+                        resource_limit, _snapshot = self.resources.effective_limit()
+                    else:
+                        resource_limit = self.settings.max_parallel_tasks
+                    batch_limit = min(
+                        resource_limit,
+                        self.settings.max_parallel_tasks,
+                        len(remaining_ready),
+                    )
+                    if not parallel:
+                        batch_limit = 1
 
-                for offset in range(0, len(ready), max(1, batch_limit)):
-                    group = ready[offset:offset + max(1, batch_limit)]
+                    group = remaining_ready[:max(1, batch_limit)]
+                    remaining_ready = remaining_ready[len(group):]
                     batch = await asyncio.gather(
                         *(
                             self._run_node(

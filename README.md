@@ -1,4 +1,8 @@
-# SmartAIModelsRouters
+# HIF — Hybrid Intelligent Flow
+
+**A ZirconAI.fr product** · [zirconai.fr](https://zirconai.fr)
+
+Repository: SmartAIModelsRouters
 
 **HIF — Hybrid Intelligent Flow** is a multi-provider AI task orchestrator. It is designed to make Claude, ChatGPT, Gemini and Microsoft/GitHub Copilot delegate work to the right models, parallelize independent tasks, reuse shared task memory and reduce unnecessary context/token usage.
 
@@ -8,6 +12,68 @@ HIF is built around two workflows:
 - **/hifnode** — split a complex goal into specialist nodes (architect, researcher, implementer, tester, reviewer, writer), run independent nodes concurrently and share one HIF session ID and approved memory.
 
 > **Project status:** HIF 0.3.0 adds an authenticated REST + Streamable HTTP MCP gateway for a single-tenant private pilot, including an external OIDC/JWT resource-server verifier for OAuth 2.1 clients. The local text-only engine, DAG nodes, shared SQLite session memory, measured-token fallback budgets, retry handling and CPU/RAM-aware bounded concurrency remain available. multi-tenant identity isolation, fine-grained tool scopes, file-editing agents, Windows Service/systemd packaging and full end-to-end host integrations remain future work.
+
+
+## ZirconAI.fr — HIF skills
+
+HIF is published by **ZirconAI.fr**. Install the portable skills in a supported assistant to add specialized workflows on top of that assistant's own subscription and native tools.
+
+| Skill | Workflow |
+|---|---|
+| `hif` | Auto classification and task routing |
+| `hif-dev` | AI Tech Lead, software engineering, repository analysis, implementation and QA |
+| `hif-bd` | DBA, SQL, data modeling, optimization and migrations |
+| `hif-arc` | Solution, software, cloud and security architecture |
+| `hif-strong` | High-assurance analysis, independent verification and risk controls |
+| `hif-agent` | Specialist agent design, delegation and lifecycle |
+| `hifnode` | Parallel specialist DAG workflow when connected HIF tools are available |
+
+In supported coding-agent hosts, skills are usually invoked by their skill names (for example `/hif-dev` or `/hif-strong`). Other products expose skills through a picker or natural-language activation rather than slash commands. The aliases `/hifDev`, `/hifBD`, `/hifArc`, `/hifStrong` and `/hifAgent` describe the same mode intent; exact command syntax depends on the host.
+
+### Two ways to use HIF
+
+1. **Native subscription mode:** install the skill and use the assistant's currently selected model and native tools. No HIF API key is required for this workflow. The host controls its own subscription, model selection, quota and billing.
+2. **Connected HIF mode:** connect the HIF MCP runtime to use HIF-managed sessions, provider adapters, orchestration, shared memory and telemetry. Independent provider API access may require separate credentials and billing.
+
+Installing a skill does not install the HIF runtime or create independent access to other providers' consumer subscriptions. HIF never bypasses provider authentication, quotas or terms.
+
+### Install all HIF skills
+
+The installer and ZIP packager discover every directory under `skills/` containing a `SKILL.md`, so newly added mode skills are included automatically.
+
+
+
+
+
+## HIF is a universal orchestrator — not only a coding assistant
+
+HIF coordinates domain-specialist workflows for research and information collection, editorial work and professional reporting, marketing/publication campaigns, data analysis, business operations and technology delivery. Software development is one domain pack among several.
+
+Its target interaction is **fast-first, then progressively deeper**: return an initial triage and next action quickly, publish validated milestones as they become available, and finish with a polished evidence-based deliverable. Actual background execution, live progress and multi-agent parallelism require a connected runtime or host tools that explicitly support them.
+
+HIF treats reports as first-class deliverables: executive summaries, methodology, dated sources, findings, evidence, grounded charts/tables, risks, recommendations and limitations. File generation depends on an available artifact tool; it is never claimed without confirmation.
+
+For campaign workflows, HIF can research, draft, adapt content to channels, prepare an editorial calendar and request approvals. Scheduling or publishing requires authorized connectors and explicit approval; HIF never fabricates publication status or engagement.
+
+### Visual orchestration and reporting
+
+The target HIF interface exposes a live timeline and graph of actual orchestrators, agents, tasks, dependencies, tool handoffs and artifacts, alongside a polished report preview, blockers, approvals and evidence. The graph must be generated from real structured runtime events, not simulated agents. This visual dashboard and the full event API are implementation targets, not yet claims of a shipped UI.
+
+See [HIF Universal Orchestrator](docs/HIF-UNIVERSAL-ORCHESTRATOR.md) for domain coverage, fast-first behavior, research provenance, campaign approvals, report structure, graph/event contracts and the implementation sequence.
+
+## HIF pipeline and multi-model routing
+
+Every non-trivial request follows the same staged pipeline in portable Skills and the connected runtime: intake, classification, architecture assessment, specialist planning, model assignment, execution, cross-review, validation, synthesis and remaining-work checklist. Skill-only mode uses the active host model and native sub-agents only when available; connected mode uses HIF's configured multi-provider DAG engine.
+
+The default model catalog covers:
+- OpenAI: GPT-6 Luna, GPT-6.1 Sol and GPT-6.2 Astra.
+- Anthropic: Claude Haiku 4.5, Sonnet 5 and Opus 5.
+- Gemini: Gemini 3.5 Flash-Lite, Gemini 3.8 Flash and Gemini 3.1 Pro Preview.
+- DeepSeek: DeepSeek Flash and DeepSeek V4 Pro.
+
+Starter models are activated only when the corresponding provider API key is configured. Leave HIF_MODEL_POOL and HIF_TASK_MODEL_PREFERENCES empty to use the credential-aware defaults, or override them explicitly in .env. Provider API access may be billed separately from consumer subscriptions. See [Pipeline and Model Routing](docs/PIPELINE-AND-MODEL-ROUTING.md).
+
+The Root Orchestrator also acts as the technical architect. It may appoint an Assistant Architect for independent design review and an Infrastructure Architect for hosting, network, identity, capacity, resilience, observability, backup/recovery and cost recommendations.
 
 ## Implemented in HIF 0.3.0
 
@@ -96,3 +162,42 @@ Creates dist/hif.zip and dist/hifnode.zip. Upload instructions for Claude, ChatG
 ## License
 
 No open-source license has been selected yet. Until a LICENSE file is added, the repository is public but all rights are reserved by default.
+
+
+### New HIF 1.0 capabilities
+
+- **Technical Leader:** coordinates connected issues, pull requests, CI events, task comments, logs and support channels; triages updates concurrently and returns actionable solutions with owners and next steps. Access is limited to explicitly connected and authorized channels.
+- **Transformation / Migration:** `/hifTransform` and `/hifMigrate` intents inspect the existing project, define a target architecture, launch bounded child orchestrators by workstream and produce a phased migration plan with risks, tests, cutover and rollback before implementation approval.
+- **Expanded engineering team:** Business/System Analyst, Maintenance & Reliability Engineer, Integration Manager and specialist developers work under the root AI Tech Lead.
+
+These workflows are documented in `docs/HIF-1.0-MODES-SPEC.md`. Host-specific slash-command availability varies; skills may also be activated via a picker or natural language.
+
+
+### Local-first ZirconAI runtime, signed updates and adaptive pipelines
+
+HIF 1.0's target distribution is a fast per-user install branded **HIF by ZirconAI.fr**, with separate Skills-only, Local Core and Connected modes. The local Core is designed to stay lightweight: no local LLM weights by default, logical agents rather than resident processes, bounded memory and async execution.
+
+The planned release updater verifies a signed ZirconAI.fr manifest and artifact hashes, stages updates, smoke-tests, switches atomically and rolls back on failure. Cryptographic publisher trust requires an actual published signing key/certificate and signed release artifacts; branding alone is not a signature.
+
+The adaptive Pipeline Engine classifies complexity and urgency separately, creates priority-aware dependency DAGs, runs bounded in-memory queues, persists checkpoints in SQLite and adapts to token/provider/CPU/RAM limits. HIF may propose and test self-improvements, but cannot modify its trust roots, security policy or production installation without approval.
+
+See:
+- `docs/HIF-1.0-MODES-SPEC.md` — full local runtime, pipeline, update and controlled self-evolution design.
+- `docs/INSTALLATION.md` — install tiers and update workflow.
+- `docs/SECURITY.md` — release-signing and update security requirements.
+
+**Implementation status:** these are HIF 1.0 specifications and release requirements. A production ZirconAI signing key, signed release pipeline, atomic updater and adaptive persistent pipeline scheduler must be implemented and tested before claiming these capabilities are available to end users.
+
+
+## Lightweight local execution and application security
+
+HIF adapts its default concurrency to the host's logical CPU count and available RAM. Resource samples are non-blocking; remote provider calls remain asynchronous and per-provider bounded. Local blocking I/O uses a lazy bounded thread pool, while explicitly submitted CPU-heavy helper functions use a bounded process pool. Skills-only installation starts no runtime service, worker or background monitor.
+
+For a quick read-only security pre-audit of AI-generated/vibe-coded applications:
+
+```bash
+hif security scan .
+hif security scan . --json
+```
+
+The scanner never executes project code and does not read .env contents. It reports heuristic findings, evidence, severity and a prioritized remediation plan. It is not a full SAST/DAST or security certification. See [Security Review for Vibe-Coded Software](docs/SECURITY-VIBE-CODING.md) and [Resource Management](docs/RESOURCE-MANAGEMENT.md).

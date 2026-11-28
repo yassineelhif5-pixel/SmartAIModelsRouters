@@ -10,35 +10,38 @@ while (($#)); do
 done
 SCRIPT_DIR="$(cd -- "$(dirname -- "$0")" && pwd)"
 REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
-TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
-OLD_IFS="$IFS"
-IFS=','
-read -r -a HOST_LIST <<< "$HOSTS"
-IFS="$OLD_IFS"
+SKILLS_ROOT="$REPO_ROOT/skills"
+TIMESTAMP="$(date +%Y%m%d-%H%M%S)-${RANDOM}"
+OLD_IFS="$IFS"; IFS=','; read -r -a HOST_LIST <<< "$HOSTS"; IFS="$OLD_IFS"
+
 for raw_host in "${HOST_LIST[@]}"; do
   host="$(printf '%s' "$raw_host" | tr '[:upper:]' '[:lower:]' | xargs)"
   case "$host" in
     claude) DEST_ROOT="$HOME/.claude/skills" ;;
     codex) DEST_ROOT="$HOME/.agents/skills" ;;
     gemini) DEST_ROOT="$HOME/.gemini/skills" ;;
-    copilot) DEST_ROOT="$HOME/.copilot/skills" ;;
+    copilot) DEST_ROOT="$REPO_ROOT/.github/skills" ;;
     *) echo "Unsupported host: $host" >&2; exit 2 ;;
   esac
   mkdir -p "$DEST_ROOT"
-  for skill in hif hifnode; do
-    SOURCE="$REPO_ROOT/skills/$skill"
+  found=0
+  for SOURCE in "$SKILLS_ROOT"/*/; do
+    [[ -f "${SOURCE}SKILL.md" ]] || continue
+    found=1
+    skill="$(basename "$SOURCE")"
     TARGET="$DEST_ROOT/$skill"
-    [[ -f "$SOURCE/SKILL.md" ]] || { echo "Missing $SOURCE/SKILL.md" >&2; exit 1; }
     if [[ -e "$TARGET" ]]; then
       BACKUP="$TARGET.backup.$TIMESTAMP"
       mv "$TARGET" "$BACKUP"
-      echo "Backed up existing $host/$skill to $BACKUP"
+      echo "Backed up $host/$skill to $BACKUP"
     fi
     cp -a "$SOURCE" "$TARGET"
     echo "Installed $host/$skill => $TARGET"
   done
+  [[ "$found" -eq 1 ]] || { echo "No HIF skills found under $SKILLS_ROOT" >&2; exit 1; }
 done
 echo
-echo "HIF skill instructions installed for: $HOSTS"
-echo "Start a new assistant session to load the skills."
-echo "NOTE: This installs skill instructions only, not the HIF orchestration backend or MCP gateway."
+echo "HIF skills installed for: $HOSTS"
+echo "Start a new assistant session to load them."
+echo "GitHub Copilot skills were installed in the repository-level .github/skills directory."
+echo "NOTE: Skills are instructions only; runtime/MCP and provider API permissions are separate."

@@ -1,5 +1,7 @@
 # HIF Installation Guide
 
+**ZirconAI.fr distribution:** HIF local runtime, portable Skills and MCP connector. Publisher identity is verified by signed release metadata once the signed-release channel is implemented and published. Until then, source repository branding is not proof of a cryptographic signature.
+
 This guide separates installation of the **skill instructions** from installation of the **HIF orchestration service**. They are not the same thing.
 
 ## A. Install skill instructions on Windows
@@ -45,7 +47,7 @@ Use Python 3.10+:
 
     python scripts/package-skills.py
 
-This creates dist/hif.zip and dist/hifnode.zip. Each ZIP contains the skill directory at its root, for example hif/SKILL.md.
+This creates one ZIP per skill directory discovered under `skills/`, including specialist modes. Each ZIP contains the skill directory at its root.
 
 ### Claude web/Desktop
 
@@ -191,3 +193,123 @@ For remote access, put the process behind a trusted TLS reverse proxy, restrict 
 The first gateway is a **single-tenant private pilot**: one shared bearer token, one service identity, one HIF memory database and one provider credential set. It is not suitable for mutually untrusted users or public SaaS use. OAuth/OIDC, tenant isolation, per-user permissions, distributed rate limits and audit exports remain future work.
 
 The gateway does not yet enable file edits, arbitrary shell execution, browsing, deployments or automatic tool execution on behalf of remote assistants.
+
+
+## I. Fast install and update design (HIF 1.0 target)
+
+The product target is a fast, per-user installation with three selectable levels:
+- **Skills only:** copies portable workflow instructions into supported local assistant hosts.
+- **Local Core:** adds the lightweight Python runtime, SQLite state, CLI and local stdio MCP connector.
+- **Connected:** Local Core plus explicitly configured provider adapters/API credentials or a remote HIF gateway.
+
+The default installation must not download local LLM weights, GPU frameworks or start one process per agent. It should reuse compatible runtime/cache artifacts, install only selected components, and run `hif doctor` plus a local self-test. Provider API keys are not required for skills-only use or deterministic local utilities; they are required for independent remote model calls.
+
+### Signed release verification
+
+The planned ZirconAI.fr release channel will publish a signed manifest containing version, platform, source commit, artifact SHA-256 digests and compatibility metadata. The installer must verify the manifest signature against a trusted public key before running or extracting artifacts, then verify every artifact hash. Windows native binaries should use Authenticode signing when distributed as executables/installers.
+
+**Current limitation:** until a ZirconAI.fr signing key/certificate, public verification key distribution and signed release artifacts are published, do not describe repository downloads as cryptographically signed. The product name/signature in documentation is branding only.
+
+### Dynamic updates
+
+The updater target is staged, verified and rollback-capable:
+1. check the signed manifest on startup or a configurable schedule;
+2. download only changed files/artifacts where safe;
+3. verify signatures and hashes;
+4. stage a side-by-side version and run smoke tests;
+5. switch atomically at a safe restart boundary;
+6. keep the previous known-good version and roll back on health failure;
+7. preserve config, credentials, SQLite state and user project data.
+
+Never overwrite a running Python module in place. Skill files can be updated on disk, but host assistants may cache instructions until a new session/reload. Auto-update must be configurable, with stable/preview channels, version pinning and deferral for enterprise users.
+
+### Adaptive in-memory pipelines
+
+The local Core will maintain bounded in-memory queues for active pipeline scheduling, while persisting checkpoints and critical state in SQLite. Each run receives complexity, urgency, priority, dependency graph, deadlines, token/resource budget and safe-resume metadata. Complexity and urgency are separate dimensions. Priority aging prevents low-priority starvation. No pipeline may bypass provider, concurrency, CPU/RAM, privacy or approval limits.
+
+See the HIF 1.0 specification for pipeline classification, scheduling, controlled self-improvement and release acceptance criteria.
+
+
+## J. Multi-model pipeline configuration
+
+HIF includes a starter catalog across OpenAI, Anthropic, Google Gemini and DeepSeek. It activates only the providers for which an API key is configured. You do not need to configure every provider.
+
+1. Copy .env.example to .env.
+2. Add one or more provider API keys to the corresponding environment variables.
+3. Leave HIF_MODEL_POOL empty to activate the built-in catalog for configured providers.
+4. Leave HIF_TASK_MODEL_PREFERENCES empty to use task-specific defaults.
+5. Set explicit values only when you want to override the defaults.
+
+Starter API model identifiers:
+
+| Provider | Fast / standard | Advanced |
+|---|---|---|
+| OpenAI | openai/gpt-6-luna, openai/gpt-6.1-sol | openai/gpt-6.2-astra |
+| Anthropic | anthropic/claude-haiku-4-5-20251001, anthropic/claude-sonnet-5 | anthropic/claude-opus-5 |
+| Gemini | gemini/gemini-3.5-flash-lite, gemini/gemini-3.8-flash | gemini/gemini-3.1-pro-preview |
+| DeepSeek | deepseek/deepseek-flash | deepseek/deepseek-v4-pro |
+
+Check provider documentation, account access, region and LiteLLM support before using any model in production. Model identifiers and availability can change. HIF's starter order is a fallback preference, not a universal quality benchmark.
+
+Example environment setup:
+
+```dotenv
+OPENAI_API_KEY=your-openai-api-key
+ANTHROPIC_API_KEY=your-anthropic-api-key
+GEMINI_API_KEY=your-gemini-api-key
+DEEPSEEK_API_KEY=your-deepseek-api-key
+
+# Empty means: auto-activate starter models for configured providers.
+HIF_MODEL_POOL=
+HIF_PLANNER_MODEL=
+
+# Empty means: use HIF's task-specific defaults.
+HIF_TASK_MODEL_PREFERENCES=
+```
+
+Do not put real credentials in source control. API calls are billed by providers separately from consumer chat subscriptions. Configure only providers you are authorized to use.
+
+For model routing, task preferences, the Skill-native pipeline and architect roles, see [PIPELINE-AND-MODEL-ROUTING.md](PIPELINE-AND-MODEL-ROUTING.md).
+
+## K. Pipeline behavior in portable Skills
+
+Every HIF Skill follows the same logical pipeline: intake, complexity/urgency classification, architecture assessment when relevant, specialist planning, model/tool capability check, execution, cross-review, validation, synthesis and remaining-work checklist.
+
+- When connected to local HIF MCP, the runtime schedules DAG nodes across configured provider models and reports HIF-measured usage.
+- When installed as a Skill only, the host assistant follows the stages using its current model. It can parallelize only if the host explicitly provides native sub-agents.
+- A Skill cannot independently switch a consumer model, access other vendors' consumer subscriptions or inspect hidden host quotas.
+- If only one model is available, HIF still follows the structured stages with that model; it does not fabricate a multi-model execution report.
+
+The Root Orchestrator is also the architect. It may assign an Assistant Architect for independent design critique and an Infrastructure Architect for deployment, networking, identity, capacity, resilience, observability, backup/recovery and cost recommendations. These advisory roles are activated only when relevant.
+
+
+## L. Adaptive resource usage on workstations and servers
+
+By default, HIF derives the initial task concurrency from the machine's logical CPU count and available RAM, with a conservative maximum of eight. Runtime sampling is non-blocking. Remote provider requests use async I/O and provider-specific semaphores. Local blocking I/O uses a lazy bounded thread pool; explicitly submitted CPU-heavy helper functions use a lazy bounded process pool.
+
+In .env, leave HIF_MAX_PARALLEL_TASKS unset/commented to use auto sizing. Optional overrides:
+
+```dotenv
+HIF_MAX_PROVIDER_PARALLEL=3
+HIF_MAX_LOCAL_THREADS=2
+HIF_MAX_LOCAL_PROCESSES=1
+HIF_LOCAL_TASK_MEMORY_MB=512
+HIF_CPU_PRESSURE_THRESHOLD=85
+HIF_MEMORY_PRESSURE_THRESHOLD=88
+HIF_MIN_FREE_MEMORY_MB=1536
+```
+
+For a shared server, benchmark under representative load and set a conservative explicit HIF_MAX_PARALLEL_TASKS. Run HIF under a dedicated least-privilege OS account and apply external OS/container resource limits. In-process adaptive concurrency is cooperative; it is not a hard memory/CPU isolation boundary. A Skills-only installation creates no local runtime, threads, services or background workers.
+
+## M. Vibe-coded application security pre-audit
+
+After installing the HIF runtime, run the local read-only scanner against the project. The provider API extra is not required for this local scan:
+
+```bash
+hif security scan .
+hif security scan . --json
+```
+
+It checks common source/configuration patterns, reports evidence and severity, and produces a prioritized remediation plan. It does not execute application code, does not open .env contents and does not modify files. It is a lightweight heuristic pre-audit, not full SAST/DAST or a security certification.
+
+Use the full [Security Review for Vibe-Coded Software](SECURITY-VIBE-CODING.md) guide for dependency scanning, threat modeling, authentication/authorization checks, tenant isolation, regression tests and release recommendations.
