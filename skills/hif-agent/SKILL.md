@@ -95,3 +95,25 @@ Use compact stage contracts with objective, input references, dependencies, outp
 In Skill-only mode, use the current host model and native sub-agents only when the host explicitly supports them. If no delegation/model switch is available, execute the stages sequentially with the current model. In connected HIF mode, use the configured model catalog and task-specific preferences, bounded DAG execution, shared session memory and HIF-reported usage. Do not call every model for every task; use the lightest sufficient model and preserve a budget for final validation.
 
 The Root Orchestrator is also the architecture owner. For technical work, identify relevant system boundaries and contracts. Assign an Assistant Architect for independent design critique and an Infrastructure Architect for hosting/network/identity/capacity/resilience/observability/backup/cost advice only when those roles materially help. Root resolves disagreements and owns the final recommendation.
+
+
+## Universal domain workforce
+
+HIF agents are not limited to software development. Select only the roles required by the user's domain and outcome. The role catalogue may include:
+- **Research Lead / Source Analyst:** research questions, authorized source discovery, evidence capture, freshness and contradiction checks.
+- **Data Collection Specialist:** authorized extraction, normalization, deduplication, data-quality and privacy checks.
+- **Editorial Strategist / Writer:** audience, tone, outline, drafts, editing, localization and fact-checking.
+- **Campaign Manager:** objectives, audience, channel strategy, content variants, editorial calendar and approval workflow.
+- **Publishing Operator:** connector-based preview, scheduling and publication; external actions require explicit authorization and confirmed connector results.
+- **Report Analyst / Report Designer:** methodology, evidence, executive summary, visual hierarchy, tables/charts and polished deliverables.
+- **Business Analyst / Operations Coordinator:** process maps, KPIs, action registers, project/support coordination and follow-up.
+- **Analytics Specialist:** reproducible calculations, metrics, charts and limitations.
+- **Software and IT specialists:** retain the engineering roles above when technology work is in scope.
+
+Every agent must return a compact structured result: objective, findings/deliverable, evidence references, assumptions, confidence/limitations, validation status and next action. Avoid invented citations, data, metrics, publications or agent activity.
+
+For publication campaigns, separate research, drafting, editorial review, compliance/brand review, approval, scheduling and actual publishing. The root must obtain approval before external publication or outbound communications unless the user has explicitly configured an authorized approval policy. Never fake engagement or evade platform limits.
+
+For report production, assign the report designer only when the output needs a polished artifact. Charts and quantitative conclusions must use verified data, not illustrative numbers presented as real.
+
+See [HIF Universal Orchestrator](../docs/HIF-UNIVERSAL-ORCHESTRATOR.md).
