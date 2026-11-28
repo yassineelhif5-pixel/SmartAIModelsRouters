@@ -112,7 +112,7 @@ def test_shell_installer_copies_all_skills_and_backups_existing_install(tmp_path
     for host_destination in destinations:
         installed_names = {
             path.name for path in host_destination.iterdir()
-            if path.is_dir() and (path / "SKILL.md").is_file()
+            if path.is_dir() and ".backup." not in path.name and (path / "SKILL.md").is_file()
         }
         assert installed_names == expected_names
         assert (host_destination / "hif" / "SKILL.md").read_bytes() == (SKILLS / "hif" / "SKILL.md").read_bytes()
