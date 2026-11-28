@@ -31,6 +31,7 @@ class HIFEngine:
             self.settings.cpu_pressure_threshold,
             self.settings.memory_pressure_threshold,
             self.settings.min_free_memory_mb,
+            self.settings.local_task_memory_mb,
         )
         self._provider_semaphores: dict[str, asyncio.Semaphore] = {}
 
