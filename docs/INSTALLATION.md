@@ -11,7 +11,7 @@ Supported targets in the current installer: Claude Code, OpenAI Codex, Gemini CL
     git clone https://github.com/yassineelhif5-pixel/SmartAIModelsRouters.git
     cd SmartAIModelsRouters
 
-    # Install the two skills globally for all supported local hosts
+    # Install all HIF skills for all supported local hosts
     .\scripts\install-hif-skills.ps1
 
     # Or select only the host you use
