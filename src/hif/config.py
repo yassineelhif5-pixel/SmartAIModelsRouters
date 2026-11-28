@@ -18,27 +18,33 @@ load_dotenv(override=False)
 # Multi-provider starter catalog. Model IDs are refreshed against provider documentation;
 # only providers with configured credentials are activated automatically.
 DEFAULT_MODEL_POOL: tuple[str, ...] = (
-    "openai/gpt-6-luna",
-    "openai/gpt-6.1-sol",
-    "openai/gpt-6.2-astra",
-    "anthropic/claude-haiku-4-5-20251001",
-    "anthropic/claude-sonnet-5",
-    "anthropic/claude-opus-5",
-    "gemini/gemini-3.5-flash-lite",
+    "openai/gpt-luna-latest",
+    "openai/gpt-sol-latest",
+    "openai/gpt-astra-latest",
+    "anthropic/claude-haiku-latest",
+    "anthropic/claude-sonnet-latest",
+    "anthropic/claude-opus-latest",
     "gemini/gemini-3.8-flash",
-    "gemini/gemini-3.1-pro-preview",
-    "deepseek/deepseek-flash",
-    "deepseek/deepseek-v4-pro",
+    "gemini/gemini-4-hydrogen",
+    "gemini/gemini-4-neon",
+    "deepseek/deepseek-flash-latest",
+    "deepseek/deepseek-pro-latest",
+    "moonshot/kimi-latest",
+    "dashscope/qwen-max-latest",
+    "dashscope/qwen-flash-latest",
+    "xai/grok-latest",
+    "zai/glm-latest",
+    "minimax/minimax-latest",
 )
 
 DEFAULT_TASK_MODEL_PREFERENCES: dict[str, tuple[str, ...]] = {
     "analysis": (
-        "openai/gpt-6-luna", "gemini/gemini-3.5-flash-lite",
-        "deepseek/deepseek-flash", "anthropic/claude-haiku-4-5-20251001",
+        "openai/gpt-luna-latest", "gemini/gemini-3.5-flash-lite",
+        "deepseek/deepseek-flash-latest", "anthropic/claude-haiku-latest",
     ),
     "research": (
-        "gemini/gemini-3.8-flash", "openai/gpt-6.1-sol",
-        "anthropic/claude-sonnet-5", "deepseek/deepseek-v4-pro",
+        "gemini/gemini-3.8-flash", "openai/gpt-sol-latest",
+        "anthropic/claude-sonnet-latest", "deepseek/deepseek-pro-latest",
     ),
     "coding": (
         "openai/gpt-6.1-sol", "anthropic/claude-sonnet-5",
@@ -49,7 +55,7 @@ DEFAULT_TASK_MODEL_PREFERENCES: dict[str, tuple[str, ...]] = {
         "anthropic/claude-haiku-4-5-20251001",
     ),
     "review": (
-        "openai/gpt-6.2-astra", "anthropic/claude-opus-5",
+        "openai/gpt-astra-latest", "anthropic/claude-opus-latest",
         "gemini/gemini-3.1-pro-preview", "deepseek/deepseek-v4-pro",
     ),
     "documentation": (
@@ -79,6 +85,14 @@ _PROVIDER_CREDENTIALS: dict[str, tuple[str, ...]] = {
     "anthropic": ("ANTHROPIC_API_KEY",),
     "gemini": ("GEMINI_API_KEY", "GOOGLE_API_KEY"),
     "deepseek": ("DEEPSEEK_API_KEY",),
+    "moonshot": ("MOONSHOT_API_KEY",),
+    "dashscope": ("DASHSCOPE_API_KEY",),
+    "xai": ("XAI_API_KEY",),
+    "zai": ("ZAI_API_KEY",),
+    "minimax": ("MINIMAX_API_KEY",),
+    "mistral": ("MISTRAL_API_KEY",),
+    "groq": ("GROQ_API_KEY",),
+    "openrouter": ("OPENROUTER_API_KEY",),
 }
 
 
@@ -336,8 +350,9 @@ class Settings:
     def get_models(self) -> tuple[str, ...]:
         if not self.model_pool:
             raise RuntimeError(
-                "No active model configured. Add a provider API key (OpenAI, Anthropic, Gemini "
-                "or DeepSeek), or set HIF_MODEL_POOL explicitly. See .env.example."
+                "No active model configured. Add a supported provider API key (OpenAI, Anthropic, Gemini, "
+                "DeepSeek, Moonshot/Kimi, DashScope/Qwen, xAI, Z.AI or MiniMax), "
+                "or set HIF_MODEL_POOL explicitly. See .env.example."
             )
         return self.model_pool
 
