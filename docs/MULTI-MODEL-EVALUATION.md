@@ -40,3 +40,9 @@ Every reviewer call sends the project brief to the selected provider. Do not inc
 - Model availability, access, pricing and region restrictions depend on provider accounts and LiteLLM routing.
 - Cross-provider diversity does not guarantee statistical independence.
 - Tool execution is not included in the evaluation module.
+
+## Spend limits
+
+Every reviewer call goes through HIF's per-session spend guard (`HIF_SESSION_MAX_TOKENS`,
+`HIF_SESSION_MAX_CALLS`, `HIF_SESSION_MAX_COST_USD`). When the guard trips, the remaining
+reviews are recorded as `inconclusive` instead of reaching a provider.

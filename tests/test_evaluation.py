@@ -110,3 +110,22 @@ async def test_countertest_requires_approval_and_only_prepares_plan(tmp_path):
     )
     assert len(stored) == 1
     engine.close()
+
+
+@pytest.mark.asyncio
+async def test_evaluation_reviews_are_counted_by_the_spend_guard(tmp_path):
+    database = tmp_path / "hif.sqlite3"
+    settings = Settings(
+        database_path=database,
+        model_pool=("alpha/model-a", "beta/model-b"),
+        resource_aware_scheduling=False,
+        session_max_calls=1,
+    )
+    engine = HIFEngine(settings=settings, provider=ReviewProvider(), store=HIFStore(database))
+    result = await engine.evaluate_project("Build a project", "Local sandbox", max_reviewers=2)
+    snapshot = engine.spend_guard.snapshot(result.session_id)
+    # Only one review was allowed to reach a provider; the other was stopped by the guard.
+    assert snapshot["calls"] == 1
+    assert snapshot["tripped"]
+    assert snapshot["tokens"] == 150
+    engine.close()

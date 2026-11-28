@@ -222,6 +222,9 @@ class HIFEngine:
 
         class RecordingProvider:
             async def complete(self, *, model, system_prompt, user_prompt, max_tokens, timeout):
+                # Reviews go through the same per-session spend guard as normal runs; a
+                # tripped guard turns the remaining reviews into "inconclusive".
+                engine.spend_guard.before_call(session_id, model, system_prompt, user_prompt)
                 try:
                     response = await engine.provider.complete(
                         model=model, system_prompt=system_prompt, user_prompt=user_prompt,
@@ -231,6 +234,9 @@ class HIFEngine:
                     engine.router.mark_unavailable(model, exc.retry_after)
                     raise
                 engine._record_usage(session_id, response)
+                engine.spend_guard.record(session_id, response.input_tokens,
+                                          response.output_tokens,
+                                          getattr(response, "cost_usd", None))
                 return response
 
         evaluator = MultiModelEvaluator(

@@ -18,6 +18,7 @@ All notable changes to HIF are listed here. Dates are in ISO format.
   `hif providers`. Any endpoint can be overridden with `HIF_<PREFIX>_BASE_URL`.
 - Agent spend guard (`hif/spend_guard.py`): per-session caps on tokens, model calls and reported
   cost, plus loop detection. Sessions that trip it stop with status `stopped_by_spend_guard`.
+  Multi-model evaluation reviews and counter-test plans are counted by the same guard.
 - Benchmark harness (`hif/bench.py`, `bench/tasks.jsonl`, `hif bench`): 30 deterministic tasks,
   HIF against a single model, Markdown and JSON reports.
 - Apache-2.0 licence, NOTICE, COMMERCIAL.md (open-core boundary), CODE_OF_CONDUCT.md,
