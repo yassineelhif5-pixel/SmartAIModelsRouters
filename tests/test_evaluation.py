@@ -64,6 +64,8 @@ async def test_evaluation_uses_distinct_providers_and_records_negative_consensus
     )
     assert result.decision == "rejected"
     assert result.successful_reviewers == 3
+    assert result.failed_reviewers == 0
+    assert result.inconclusive_reviewers == 0
     assert result.countertest_required is True
     assert result.execution_performed is False
     assert result.countertest_status == "awaiting_user_approval"
