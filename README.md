@@ -48,7 +48,7 @@ The installer and ZIP packager discover every directory under `skills/` containi
 Every non-trivial request follows the same staged pipeline in portable Skills and the connected runtime: intake, classification, architecture assessment, specialist planning, model assignment, execution, cross-review, validation, synthesis and remaining-work checklist. Skill-only mode uses the active host model and native sub-agents only when available; connected mode uses HIF's configured multi-provider DAG engine.
 
 The default model catalog covers:
-- OpenAI: GPT-6 Luna, GPT-6.1 Sol and GPT-6 Astra.
+- OpenAI: GPT-6 Luna, GPT-6.1 Sol and GPT-6.2 Astra.
 - Anthropic: Claude Haiku 4.5, Sonnet 5 and Opus 5.
 - Gemini: Gemini 3.5 Flash-Lite, Gemini 3.8 Flash and Gemini 3.1 Pro Preview.
 - DeepSeek: DeepSeek Flash and DeepSeek V4 Pro.
