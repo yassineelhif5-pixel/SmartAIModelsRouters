@@ -55,7 +55,7 @@ _RULES: tuple[tuple[str, str, str, re.Pattern[str], str], ...] = (
      re.compile(r"""(?i)(?:allow_origins\s*=\s*\[\s*['"]\*['"]|Access-Control-Allow-Origin['"]?\s*[:,=]\s*['"]\*['"])"""),
      "Restrict CORS to explicit trusted origins; do not combine wildcard origins with credentials."),
     ("SEC012", "high", "Potential SQL query built with string interpolation",
-     re.compile(r"""(?i)\b(?:execute|executemany)\s*\(\s*(?:f['"]|['"][^'"]*(?:%s|\.format\s*\())"""),
+     re.compile(r"""(?i)\b(?:execute|executemany)\s*\(\s*(?:f['"]|['"][^'"]*['"]\s*%|['"][^'"]*['"]\.format\s*\()"""),
      "Use parameterized SQL statements and bind values separately; add injection regression tests."),
     ("SEC013", "high", "JWT signature verification may be disabled",
      re.compile(r"""(?i)jwt\.decode\s*\([^\n]*(?:verify_signature['"]?\s*:\s*False|verify\s*=\s*False)"""),
