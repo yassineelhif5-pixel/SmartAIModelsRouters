@@ -89,3 +89,47 @@ class AdaptiveConcurrency:
             if snapshot.available_memory_mb < self.min_free_memory_mb:
                 limit = 1
         return max(1, limit), snapshot
+
+
+class LocalExecutionPool:
+    """Lazy, bounded executors for local I/O and CPU-bound helper work.
+
+    The thread/process pools are created only when used. Network model calls should
+    remain async and must not be sent through these local worker pools.
+    """
+
+    def __init__(self, max_threads: int = 2, max_processes: int = 1):
+        from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+        self.max_threads = max(1, max_threads)
+        self.max_processes = max(1, max_processes)
+        self._thread_executor_type = ThreadPoolExecutor
+        self._process_executor_type = ProcessPoolExecutor
+        self._threads = None
+        self._processes = None
+
+    async def run_io(self, function, *args):
+        """Run blocking file/network-adjacent helper work in a bounded thread pool."""
+        import asyncio
+        if self._threads is None:
+            self._threads = self._thread_executor_type(
+                max_workers=self.max_threads, thread_name_prefix="hif-io"
+            )
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(self._threads, function, *args)
+
+    async def run_cpu(self, function, *args):
+        """Run picklable CPU-bound helper work in a bounded process pool."""
+        import asyncio
+        if self._processes is None:
+            self._processes = self._process_executor_type(max_workers=self.max_processes)
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(self._processes, function, *args)
+
+    def close(self) -> None:
+        """Request non-blocking shutdown; in-flight work is allowed to finish."""
+        if self._threads is not None:
+            self._threads.shutdown(wait=False, cancel_futures=True)
+            self._threads = None
+        if self._processes is not None:
+            self._processes.shutdown(wait=False, cancel_futures=True)
+            self._processes = None
