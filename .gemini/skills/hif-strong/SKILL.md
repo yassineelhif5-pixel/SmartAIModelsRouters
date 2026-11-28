@@ -65,3 +65,12 @@ The Root Orchestrator is also the architecture owner. For technical work, identi
 ## Security assurance for AI-generated applications
 
 For software and vibe-coded projects, add an explicit application-security workstream when in scope. Use the fast deterministic local pre-audit (`hif security scan .`) when connected runtime is available, then delegate architecture/threat-model review and application-security review. Check identity, authorization, tenant isolation, secrets, injection, SSRF, uploads, dependency supply chain, TLS, CORS and deployment hardening. Produce a P0/P1/P2/P3 remediation plan with evidence, owner, corrective action, regression test and retest criteria. Critical/high unresolved risks must be called out as release blockers unless explicitly accepted by an authorized security owner. Do not describe heuristic scanning as complete SAST/DAST or certification. See docs/SECURITY-VIBE-CODING.md.
+
+
+## Universal high-assurance review
+
+HIF Strong applies to every domain, not only software. For research, verify source quality, freshness, claim-to-source traceability, conflicting evidence and uncertainty. For campaigns, review audience fit, factual claims, brand/compliance constraints, channel formatting and approval status. For reports, validate calculations, dates, citations, data provenance, chart integrity, executive conclusions and consistency between summary and detail. For operations, check ownership, dependencies, feasibility, risks and measurable acceptance criteria.
+
+Use independent review only where it materially reduces risk. Do not equate multiple model opinions with truth; prioritize primary evidence, deterministic checks and domain-specific acceptance criteria. Clearly separate draft, reviewed, validated and published states. A publication is not considered complete until an authorized connector confirms it.
+
+See [HIF Universal Orchestrator](../docs/HIF-UNIVERSAL-ORCHESTRATOR.md).
