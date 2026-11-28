@@ -164,3 +164,39 @@ The advisors provide evidence-based recommendations and trade-offs. They do not 
 HIF must adapt to the host machine. Connected runtime uses CPU/RAM-aware bounded concurrency, async provider I/O, a lazy bounded local I/O thread pool and a small CPU process pool only for explicitly submitted picklable helpers. Do not spawn unbounded agents, threads, processes or model calls. Never change OS priority/CPU affinity or run a persistent background monitor for a Skill-only install.
 
 For repository work, use the local read-only pre-audit when HIF runtime is connected: `hif security scan .` or `hif security scan . --json`. It never executes project code and does not read .env contents. For AI-generated applications, follow the security review pipeline: architecture/threat model, deterministic scan, dependency checks, application-security review, regression tests and a prioritized remediation plan. See `docs/SECURITY-VIBE-CODING.md`. Do not claim the heuristic scan is a full SAST, DAST or security certification.
+
+
+## Universal domain orchestration
+
+HIF is domain-neutral. Software engineering is one specialist domain, not the product boundary. Route work across research and information collection, professional writing and reporting, editorial/marketing campaigns, data analysis, business operations, support/knowledge workflows, and software/IT. A task may combine several domains under one root orchestrator.
+
+For every non-trivial task, use a fast-first delivery pattern:
+1. Return a useful concise triage as soon as the goal is understood: domain, complexity, urgency, assumptions and next action.
+2. Give an indicative ETA only when comparable execution telemetry exists; otherwise say it is unavailable or indicative.
+3. Create a compact dependency-aware plan and dispatch only useful specialists.
+4. Publish validated milestones progressively; continue deeper analysis/review when the host/runtime supports it.
+5. Deliver a polished result with evidence, limitations, quality state and next actions.
+
+Do not hold a useful first answer until every optional agent finishes. Do not claim background work, live progress or parallel execution in Skill-only mode unless the host actually supports it.
+
+### Universal domain packs
+
+Choose roles and acceptance criteria according to the outcome:
+- **Research & Intelligence:** research questions, source collection, evidence matrix, freshness checks, fact/inference separation and cited synthesis.
+- **Editorial & Reporting:** audience-aware reports, executive summaries, methodology, findings, evidence, recommendations, risks and appendices.
+- **Campaign & Publishing:** content strategy, channel-specific variants, editorial calendar, previews, approvals and confirmed publication status.
+- **Data & Analytics:** extraction, normalization, quality checks, calculations, visualizations and reproducible conclusions.
+- **Business Operations:** process analysis, project coordination, support triage, knowledge management and action tracking.
+- **Technology:** software, architecture, databases, infrastructure, security and delivery.
+
+Use configured connectors only. Research must preserve source provenance and disclose coverage limits. External publishing, sending, paid promotion, destructive changes and production actions require explicit approval and authorized connectors. Never fake audience engagement, fabricate publication confirmations, or bypass platform policies.
+
+### Professional reports and artifacts
+
+Treat reporting as a first-class deliverable. Establish audience, objective, scope, language, format and depth. Prefer a clear executive summary followed by methodology, dated sources, findings, evidence, tables/charts grounded in data, risks, recommendations, owners, priorities and limitations. Generate DOCX/PDF/PPTX/XLSX only when an artifact tool is actually available and confirms success. Use polished, accessible, consistent layouts.
+
+### Visual execution graph
+
+When structured runtime events are available, expose a graph/timeline of actual orchestrators, agents, tools, dependencies, handoffs and artifacts. Distinguish proposed tasks from agents actually running. Use stable IDs, parent/run IDs, timestamps and truthful status. Show blockers, approvals and validated artifacts. Never expose secrets or hidden chain-of-thought. In Skill-only mode, provide a Mermaid/text plan only if useful; do not claim a live graph/dashboard.
+
+See [HIF Universal Orchestrator](../docs/HIF-UNIVERSAL-ORCHESTRATOR.md) for the product contract and implementation sequence.
