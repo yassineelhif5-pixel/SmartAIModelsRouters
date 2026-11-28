@@ -1,0 +1,20 @@
+{
+  "name": "zirconai-hif",
+  "interface": {
+    "displayName": "ZirconAI HIF Plugins"
+  },
+  "plugins": [
+    {
+      "name": "hif-universal",
+      "source": {
+        "source": "local",
+        "path": "./plugins/hif-universal"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
