@@ -66,3 +66,21 @@ When designing a software delivery team, consider these roles and instantiate on
 - DevOps/Platform Engineer: CI/CD, infrastructure, deployment and observability when in scope.
 
 Agent count is not a quality metric. Avoid creating every role for small tasks. Analyst may lead intake; Maintenance should be considered for existing/production systems; the root Tech Lead remains accountable for coherence. Each agent gets scoped permissions, ownership, budget and acceptance criteria.
+
+
+## Additional roles and orchestrator patterns
+
+### Technical Leader
+Coordinates connected channels and parallel workstreams. It normalizes and deduplicates issue/PR/task/CI/log/support events, triages urgency, dispatches bounded parallel investigations and returns concise solutions with evidence, owner and next action. It only accesses channels explicitly connected and authorized; it does not silently post or change tickets. Root AI Tech Lead retains project authority.
+
+### Transformation Orchestrator
+For restructuring or technology migration requests, create a parent transformation orchestrator that:
+- inventories current code, architecture, dependencies, APIs, data and operations;
+- defines and validates the target state;
+- creates child orchestrators by relevant workstream;
+- has each child prepare concise instructions and acceptance criteria for its specialist models;
+- compares options, risks, effort, compatibility and reversibility;
+- consolidates one dependency-aware phased plan, with cutover, tests and rollback;
+- requests user approval before code/data/infrastructure changes.
+
+Each child returns a structured report with source references, assumptions, options, blockers, recommended actions and test evidence. Avoid duplicating full context or launching redundant agents. Root owns consistency and final synthesis.
