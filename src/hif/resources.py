@@ -74,6 +74,8 @@ class AdaptiveConcurrency:
         self.min_free_memory_mb = min_free_memory_mb
         self.memory_per_task_mb = max(128, memory_per_task_mb)
         self.monitor = ResourceMonitor()
+        self._current_limit: int | None = None
+        self._healthy_samples = 0
 
     def effective_limit(self) -> tuple[int, ResourceSnapshot]:
         snapshot = self.monitor.snapshot()
@@ -88,7 +90,21 @@ class AdaptiveConcurrency:
             limit = min(limit, memory_slots)
             if snapshot.available_memory_mb < self.min_free_memory_mb:
                 limit = 1
-        return max(1, limit), snapshot
+        limit = max(1, limit)
+        if self._current_limit is None:
+            self._current_limit = limit
+        elif limit < self._current_limit:
+            # Reduce immediately under pressure; recover slowly to avoid oscillation.
+            self._current_limit = limit
+            self._healthy_samples = 0
+        elif limit > self._current_limit:
+            self._healthy_samples += 1
+            if self._healthy_samples >= 3:
+                self._current_limit = min(limit, self._current_limit + 1)
+                self._healthy_samples = 0
+        else:
+            self._healthy_samples = 0
+        return max(1, self._current_limit), snapshot
 
 
 class LocalExecutionPool:
