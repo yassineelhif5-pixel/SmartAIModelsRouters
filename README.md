@@ -128,3 +128,12 @@ Creates dist/hif.zip and dist/hifnode.zip. Upload instructions for Claude, ChatG
 ## License
 
 No open-source license has been selected yet. Until a LICENSE file is added, the repository is public but all rights are reserved by default.
+
+
+### New HIF 1.0 capabilities
+
+- **Technical Leader:** coordinates connected issues, pull requests, CI events, task comments, logs and support channels; triages updates concurrently and returns actionable solutions with owners and next steps. Access is limited to explicitly connected and authorized channels.
+- **Transformation / Migration:** `/hifTransform` and `/hifMigrate` intents inspect the existing project, define a target architecture, launch bounded child orchestrators by workstream and produce a phased migration plan with risks, tests, cutover and rollback before implementation approval.
+- **Expanded engineering team:** Business/System Analyst, Maintenance & Reliability Engineer, Integration Manager and specialist developers work under the root AI Tech Lead.
+
+These workflows are documented in `docs/HIF-1.0-MODES-SPEC.md`. Host-specific slash-command availability varies; skills may also be activated via a picker or natural language.
