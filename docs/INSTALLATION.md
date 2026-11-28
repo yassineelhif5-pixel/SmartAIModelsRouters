@@ -303,7 +303,7 @@ For a shared server, benchmark under representative load and set a conservative 
 
 ## M. Vibe-coded application security pre-audit
 
-After installing the HIF runtime and provider extra, run the local read-only scanner against the project:
+After installing the HIF runtime, run the local read-only scanner against the project. The provider API extra is not required for this local scan:
 
 ```bash
 hif security scan .
