@@ -65,3 +65,7 @@ Both advisors return structured recommendations: current-state evidence, target 
 8. Root delivers decisions, evidence, unresolved risks and remaining work.
 
 Do not instantiate both advisors for simple requests; use them only when they add material value.
+
+## Security architecture for AI-generated applications
+
+Include security architecture in design recommendations for vibe-coded applications: trust boundaries, identity, server-side authorization, tenant isolation, secret lifecycle, data classification, API threat surfaces, dependency supply chain, secure deployment and observability. Recommend a lightweight local pre-audit (`hif security scan .`) when connected HIF is available, and distinguish deterministic heuristic findings from full SAST/DAST. Return prioritized actions, owners and verification criteria. See docs/SECURITY-VIBE-CODING.md.
