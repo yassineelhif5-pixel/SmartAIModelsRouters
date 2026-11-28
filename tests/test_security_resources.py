@@ -1,0 +1,60 @@
+from __future__ import annotations
+
+from hif.resources import AdaptiveConcurrency, ResourceSnapshot, recommended_parallelism
+from hif.security import scan_project
+
+
+def test_security_scan_finds_vibe_coding_risks_without_opening_env(tmp_path) -> None:
+    (tmp_path / ".env").write_text("OPENAI_API_KEY=do-not-read-this-value", encoding="utf-8")
+    (tmp_path / "app.py").write_text(
+        "import subprocess\n"
+        "result = eval(user_input)\n"
+        "subprocess.run(command, shell=True)\n"
+        "requests.get(url, verify=False)\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "node_modules").mkdir()
+    (tmp_path / "node_modules" / "ignored.py").write_text("eval(x)", encoding="utf-8")
+
+    report = scan_project(tmp_path)
+    data = report.to_dict()
+
+    rule_ids = {finding.rule_id for finding in report.findings}
+    assert {"SEC003", "SEC004", "SEC007", "SEC011"}.issubset(rule_ids)
+    assert "do-not-read-this-value" not in str(data)
+    assert report.scanned_files == 1
+    assert data["action_plan"]
+    assert data["risk"] == "high"
+
+
+def test_security_scan_is_read_only_and_reports_clean_baseline(tmp_path) -> None:
+    (tmp_path / "safe.py").write_text("print('hello')\n", encoding="utf-8")
+    report = scan_project(tmp_path)
+
+    assert report.scanned_files == 1
+    assert report.findings == ()
+    assert report.to_dict()["risk"] == "no_findings"
+    assert report.to_dict()["action_plan"][0]["priority"] == "baseline"
+
+
+def test_adaptive_concurrency_respects_memory_per_task(tmp_path) -> None:
+    scheduler = AdaptiveConcurrency(
+        8, cpu_threshold=99, memory_threshold=99,
+        min_free_memory_mb=1024, memory_per_task_mb=1024,
+    )
+    scheduler.monitor.snapshot = lambda: ResourceSnapshot(10, 30, 4096, 8)
+    limit, _ = scheduler.effective_limit()
+
+    assert limit == 3
+
+
+def test_adaptive_concurrency_never_returns_zero() -> None:
+    scheduler = AdaptiveConcurrency(8, min_free_memory_mb=4096)
+    scheduler.monitor.snapshot = lambda: ResourceSnapshot(99, 99, 128, 8)
+    limit, _ = scheduler.effective_limit()
+
+    assert limit == 1
+
+
+def test_recommended_parallelism_is_bounded() -> None:
+    assert 1 <= recommended_parallelism() <= 8
