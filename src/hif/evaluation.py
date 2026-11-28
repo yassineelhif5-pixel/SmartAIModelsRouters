@@ -49,6 +49,7 @@ class ProjectEvaluation(BaseModel):
     reviews: list[ProjectReview]
     successful_reviewers: int
     failed_reviewers: int
+    inconclusive_reviewers: int = 0
     score_average: float | None
     consensus: str
     disagreements: list[str]
@@ -170,7 +171,10 @@ class MultiModelEvaluator:
             review for review in reviews
             if review.error is None and review.verdict != "inconclusive"
         ]
-        failed_count = len(reviews) - len(successful)
+        failed_count = sum(review.error is not None for review in reviews)
+        inconclusive_count = sum(
+            review.error is None and review.verdict == "inconclusive" for review in reviews
+        )
         average = (
             round(sum(review.score for review in successful) / len(successful), 1)
             if successful else None
@@ -211,6 +215,7 @@ class MultiModelEvaluator:
             reviews=reviews,
             successful_reviewers=len(successful),
             failed_reviewers=failed_count,
+            inconclusive_reviewers=inconclusive_count,
             score_average=average,
             consensus=consensus,
             disagreements=disagreements,
