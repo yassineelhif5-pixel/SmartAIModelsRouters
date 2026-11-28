@@ -42,6 +42,7 @@ class ProjectReview(BaseModel):
 
 class ProjectEvaluation(BaseModel):
     evaluation_id: str
+    session_id: str = ""
     goal: str
     decision: EvaluationDecision
     reviewers_requested: list[str]
@@ -124,6 +125,10 @@ class MultiModelEvaluator:
                 return ProjectReview(
                     model=response.model or model,
                     provider=provider_name(response.model or model),
+                    input_tokens=response.input_tokens,
+                    output_tokens=response.output_tokens,
+                    duration_ms=response.duration_ms,
+                    cost_usd=response.cost_usd,
                     **payload,
                 )
             except Exception as exc:
@@ -149,6 +154,8 @@ class MultiModelEvaluator:
         if not goal.strip():
             raise ValueError("A project idea or goal is required.")
         selected = select_diverse_models(models, max_reviewers)
+        if len({provider_name(model) for model in selected}) < min_reviewers:
+            raise ValueError("Multi-model validation requires at least two distinct configured providers.")
         if len(selected) < min_reviewers:
             raise ValueError(
                 f"At least {min_reviewers} configured models are required for a multi-model review; "
