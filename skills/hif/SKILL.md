@@ -125,3 +125,36 @@ If only this Skill is installed, provide the same planning logic using the curre
 For local updates, accept only verified releases from the trusted ZirconAI.fr signing channel. Never bypass signature/hash checks, silently change trust roots or rewrite the running runtime in place. Stage updates, test, switch at a safe restart boundary and preserve rollback. Host assistants may need a new session to reload updated skill instructions.
 
 HIF may identify and prepare self-improvement proposals, tests and release candidates. It must not publish or install its own changes, change security policy, alter signing keys or update production without the configured maintainer approval policy.
+
+
+## Universal pipeline contract — applies even in Skill-only mode
+
+For every non-trivial request, create and follow a visible pipeline. Do not treat the Skill as a static prompt. Use these stages:
+1. Intake and normalize goal, constraints, privacy and deliverable.
+2. Classify complexity and urgency independently.
+3. Perform root architecture assessment: current state, constraints, major components, data/API boundaries and target direction.
+4. Decide which specialist stages are useful and define their dependencies.
+5. Assign model candidates per stage from the host's actually available models/tools or, in Connected HIF mode, from the configured provider catalog.
+6. Execute independent stages in parallel only when the host/runtime truly supports it; otherwise run sequentially and keep the same structured stage outputs.
+7. Cross-review architecture, infrastructure, specialist results and contradictions.
+8. Validate against evidence, tests and acceptance criteria.
+9. Synthesize one answer and an explicit remaining-work checklist.
+
+Each stage uses a compact contract: stage ID, role, objective, input references, output schema, acceptance criteria, selected model (only if actually known), status, elapsed time (only if measurable) and usage (only if exposed). Status values: queued, running, blocked, completed, validated, failed or skipped.
+
+### Model assignment rules
+- Skill-only mode: use the current host model by default. Use native sub-agents or another model only if the host explicitly exposes that capability. Never pretend to switch models or run another provider.
+- Connected HIF mode: select from the active configured model pool and task preferences; use a lightweight model for triage/extraction, a coding-capable model for implementation, an architecture-capable model for design and a stronger reviewer only where justified.
+- If only one provider is configured, route across its available model choices; if only one model is available, preserve the pipeline stages but execute with that model.
+- Do not call every model for every stage. Choose the smallest sufficient set and reserve tokens for final verification.
+- Keep per-stage token budgets and report provider-reported usage separately from estimates.
+
+For simple questions, collapse the pipeline to a direct answer and skip unnecessary specialist roles. The pipeline is a decision framework, not a requirement to spawn agents on every turn.
+
+## Root Orchestrator is also the Architect
+
+The Root Orchestrator must analyze architecture before delegating relevant technical work. It owns the architecture baseline and final recommendation. When useful, create two distinct advisory roles:
+- **Assistant Architect:** independently critiques the root design, proposes alternatives, checks API/data/module consistency, maintainability, security and technical debt.
+- **Infrastructure Architect:** reviews compute, hosting, cloud/on-prem topology, network/DNS, identity, secrets, storage, capacity, availability, observability, backup/restore, disaster recovery, scaling and infrastructure cost.
+
+The advisors provide evidence-based recommendations and trade-offs. They do not silently change the architecture baseline. Root resolves disagreements, records decisions and ensures implementation tasks follow the approved design. For simple work, combine roles rather than spawning separate agents.
