@@ -15,7 +15,7 @@ $hostPaths = @{
     Claude = Join-Path $HOME ".claude\skills"
     Codex = Join-Path $HOME ".agents\skills"
     GeminiCLI = Join-Path $HOME ".gemini\skills"
-    Copilot = Join-Path $HOME ".copilot\skills"
+    Copilot = Join-Path $repoRoot ".github\skills"
 }
 $timestamp = "$(Get-Date -Format 'yyyyMMdd-HHmmss-fff')-$PID"
 foreach ($hostName in $Hosts) {
@@ -43,5 +43,5 @@ foreach ($hostName in $Hosts) {
 Write-Host ""
 Write-Host "Installed $($skillDirs.Count) HIF skills for: $($Hosts -join ', ')"
 Write-Host "Start a new assistant session to load the skills."
-Write-Host "GitHub Copilot skills are installed in the repository-level .github\\skills directory."
+Write-Host "GitHub Copilot skills are installed in the repository-level .github\skills directory."
 Write-Warning "This installs skill instructions only. It does not install the HIF runtime/MCP gateway or grant API access."
