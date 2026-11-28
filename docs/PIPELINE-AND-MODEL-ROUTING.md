@@ -93,7 +93,7 @@ HIF does not require all four providers. One configured provider is sufficient t
 ### 5.1 Install portable Skills (Windows)
 
 ```powershell
-git clone -b feature/hif-1.0-five-modes https://github.com/yassineelhif5-pixel/SmartAIModelsRouters.git
+git clone -b main https://github.com/yassineelhif5-pixel/SmartAIModelsRouters.git
 cd SmartAIModelsRouters
 .\scripts\install-hif-skills.ps1 -Hosts Claude,Codex,GeminiCLI,Copilot
 ```
@@ -109,7 +109,7 @@ Install one host only if preferred:
 ```bash
 git clone -b feature/hif-1.0-five-modes https://github.com/yassineelhif5-pixel/SmartAIModelsRouters.git
 cd SmartAIModelsRouters
-bash scripts/install-hif-skills.sh --hosts claude,codex,gemini,copilot
+bash scripts/install-hif-skills.sh --hosts claude,codex,gemini,copilot,cursor,kimi,qwen
 ```
 
 Start a new host session and confirm that the HIF Skills are visible. Host-specific command syntax varies.
