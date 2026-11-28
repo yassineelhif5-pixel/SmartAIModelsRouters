@@ -11,7 +11,7 @@ done
 SCRIPT_DIR="$(cd -- "$(dirname -- "$0")" && pwd)"
 REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 SKILLS_ROOT="$REPO_ROOT/skills"
-TIMESTAMP="$(date +%Y%m%d-%H%M%S)-$"
+TIMESTAMP="$(date +%Y%m%d-%H%M%S)-${RANDOM}"
 OLD_IFS="$IFS"; IFS=','; read -r -a HOST_LIST <<< "$HOSTS"; IFS="$OLD_IFS"
 
 for raw_host in "${HOST_LIST[@]}"; do
