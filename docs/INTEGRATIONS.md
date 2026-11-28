@@ -72,7 +72,7 @@ Official documentation:
 
 ## 4. GitHub Copilot
 
-Use the Agent Skills locations supported by the selected Copilot host (for example VS Code or a repository's `.github/skills`). Register HIF's local or remote MCP server using that host's MCP configuration. Feature availability depends on the Copilot product, IDE version and organization policy.
+Use the Agent Skills locations supported by the selected Copilot host (for example VS Code or a repository's ` .github/skills`). Register HIF's local or remote MCP server using that host's MCP configuration. Feature availability depends on the Copilot product, IDE version and organization policy.
 
 Official documentation:
 - https://code.visualstudio.com/docs/agent-customization/agent-skills
