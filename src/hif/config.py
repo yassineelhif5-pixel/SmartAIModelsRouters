@@ -9,6 +9,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from hif.resources import recommended_parallelism
+
 load_dotenv(override=False)
 
 
@@ -159,6 +161,9 @@ class Settings:
     task_model_preferences: dict[str, tuple[str, ...]] = field(default_factory=dict)
     max_parallel_tasks: int = 4
     max_provider_parallel: int = 3
+    max_local_threads: int = 2
+    max_local_processes: int = 1
+    local_task_memory_mb: int = 512
     usage_fallback_threshold: float = 0.80
     usage_window_hours: int = 168
     default_model_token_budget: int = 250_000
@@ -191,8 +196,11 @@ class Settings:
     def from_env(cls) -> "Settings":
         try:
             threshold = float(os.getenv("HIF_USAGE_FALLBACK_THRESHOLD", "0.80"))
-            parallel = int(os.getenv("HIF_MAX_PARALLEL_TASKS", "4"))
+            parallel = int(os.getenv("HIF_MAX_PARALLEL_TASKS", str(recommended_parallelism())))
             provider_parallel = int(os.getenv("HIF_MAX_PROVIDER_PARALLEL", "3"))
+            local_threads = int(os.getenv("HIF_MAX_LOCAL_THREADS", "2"))
+            local_processes = int(os.getenv("HIF_MAX_LOCAL_PROCESSES", "1"))
+            local_task_memory = int(os.getenv("HIF_LOCAL_TASK_MEMORY_MB", "512"))
             window = int(os.getenv("HIF_USAGE_WINDOW_HOURS", "168"))
             default_budget = int(os.getenv("HIF_DEFAULT_MODEL_TOKEN_BUDGET", "250000"))
             max_output = int(os.getenv("HIF_MAX_OUTPUT_TOKENS_PER_TASK", "1800"))
@@ -210,6 +218,9 @@ class Settings:
         positive = {
             "HIF_MAX_PARALLEL_TASKS": parallel,
             "HIF_MAX_PROVIDER_PARALLEL": provider_parallel,
+            "HIF_MAX_LOCAL_THREADS": local_threads,
+            "HIF_MAX_LOCAL_PROCESSES": local_processes,
+            "HIF_LOCAL_TASK_MEMORY_MB": local_task_memory,
             "HIF_USAGE_WINDOW_HOURS": window,
             "HIF_DEFAULT_MODEL_TOKEN_BUDGET": default_budget,
             "HIF_MAX_OUTPUT_TOKENS_PER_TASK": max_output,
@@ -277,6 +288,9 @@ class Settings:
             task_model_preferences=task_preferences,
             max_parallel_tasks=parallel,
             max_provider_parallel=provider_parallel,
+            max_local_threads=local_threads,
+            max_local_processes=local_processes,
+            local_task_memory_mb=local_task_memory,
             usage_fallback_threshold=threshold,
             usage_window_hours=window,
             default_model_token_budget=default_budget,
